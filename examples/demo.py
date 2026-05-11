@@ -107,8 +107,8 @@ def run_manual_pipeline(video_path: str, question: str) -> str:
 
 def run_agent_pipeline(video_path: str, question: str) -> str:
     """
-    Run the LangChain AgentExecutor with the mock LLM.
-    Shows how the real agent loop will work once connected to Qwen3-8B.
+    Run the LangChain 1.x create_agent with the mock LLM.
+    Shows how the real agent loop will work once connected to DashScope.
     """
     from src.agents.react_agent import build_agent
 
@@ -120,17 +120,25 @@ def run_agent_pipeline(video_path: str, question: str) -> str:
     print(f"{SEP}\n")
 
     session = VideoSession(video_path=video_path)
-    executor = build_agent(session, use_mock=True, verbose=True)
+    agent = build_agent(session, use_mock=True, verbose=True)
+    iters = getattr(agent, "_va_max_iterations", 6)
 
-    result = executor.invoke({"input": question})
+    result = agent.invoke(
+        {"messages": [("user", question)]},
+        config={"recursion_limit": iters * 3 + 1},
+    )
+
+    messages = result["messages"]
+    answer = messages[-1].content
+    tool_steps = sum(1 for m in messages if getattr(m, "type", "") == "tool")
 
     print(f"\n{SEP}")
-    print(f"  Final Answer : {result['output']}")
-    print(f"  Steps taken  : {len(result['intermediate_steps'])}")
+    print(f"  Final Answer : {answer}")
+    print(f"  Tool calls   : {tool_steps}")
     print(f"{SEP}")
     print(f"\n  Session: {session.summary()}\n")
 
-    return result["output"]
+    return answer
 
 
 def main() -> None:

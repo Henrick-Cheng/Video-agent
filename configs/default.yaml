@@ -55,7 +55,7 @@ retrieval:
 
 # ── Agent ─────────────────────────────────────────────────────────────────────
 agent:
-  max_iterations: 10
+  max_iterations: 6
   verbose: true
   return_intermediate_steps: true
   use_mock: false
