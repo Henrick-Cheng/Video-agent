@@ -30,28 +30,18 @@ def make_query_scene_graph(session: "VideoSession"):
 
         Args:
             question: Natural-language question used to guide retrieval,
-                      e.g. "What is the person near the bicycle doing?"
+                      e.g. "自行车旁边的人在做什么？"
 
         Returns:
             JSON with keys:
-            - triplets       (list[dict])  matched triplets (up to 10)
+            - triplets       (list[dict])  matched triplets (up to top_k)
             - entity_summary (str)         all known entities
             - found          (bool)        False if graph is empty
         """
-        # TODO: replace naive keyword match with FAISS vector retrieval
-        #
-        # from sentence_transformers import SentenceTransformer
-        # encoder = SentenceTransformer("all-MiniLM-L6-v2")
-        # q_emb = encoder.encode(question)
-        #
-        # entity_embs = encoder.encode(list(session.scene_graph.entities.keys()))
-        # scores = cosine_similarity([q_emb], entity_embs)[0]
-        # top_entities = [name for name, _ in
-        #                 sorted(zip(session.scene_graph.entities, scores),
-        #                        key=lambda x: x[1], reverse=True)[:5]]
-        # triplets = session.scene_graph.get_triplets_for_entities(top_entities)
+        from src.config import get_settings
+        cfg = get_settings()
 
-        # ── MOCK ──────────────────────────────────────────────────────────────
+        # TODO: replace naive keyword match with FAISS vector retrieval
         if len(session.scene_graph) == 0:
             return json.dumps({
                 "triplets": [],
@@ -64,9 +54,10 @@ def make_query_scene_graph(session: "VideoSession"):
             name for name in session.scene_graph.entities
             if any(kw in name.lower() for kw in words)
         ]
-        # fallback: return first few entities if no keyword match
         if not matched_entities:
-            matched_entities = list(session.scene_graph.entities.keys())[:4]
+            matched_entities = list(session.scene_graph.entities.keys())[
+                :cfg.retrieval.fallback_entity_count
+            ]
 
         relevant = session.scene_graph.get_triplets_for_entities(matched_entities)
 
@@ -79,11 +70,11 @@ def make_query_scene_graph(session: "VideoSession"):
                 "t_end":      t.t_end,
                 "confidence": t.confidence,
             }
-            for t in relevant[:10]
+            for t in relevant[:cfg.retrieval.top_k]
         ]
 
         entity_names = list(session.scene_graph.entities.keys())
-        entity_summary = f"Entities in graph ({len(entity_names)}): {', '.join(entity_names)}"
+        entity_summary = f"Entities ({len(entity_names)}): {', '.join(entity_names)}"
 
         return json.dumps({
             "triplets":       triplets_out,

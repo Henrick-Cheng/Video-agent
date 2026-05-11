@@ -1,17 +1,16 @@
 """
 Tool: inspect_frame
 
-Directs Qwen2.5-VL to perform deep analysis of a specific video frame.
+Directs the VLM to perform deep analysis of a specific video frame.
 New entities and relations discovered are back-propagated into the session's scene graph.
 
-Real mode: calls VLClient → vLLM (requires scripts/start_vllm_vl.sh).
+Real mode: calls VLClient → DashScope or vLLM (configured in configs/default.yaml).
 Mock fallback: used when frame has no saved path (video not on disk).
 """
 
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -30,10 +29,11 @@ def _extract_single_frame(session: "VideoSession", timestamp: float):
     if not Path(video_path).exists():
         return None
     try:
+        import tempfile
+
         from PIL import Image
         from src.memory.session import FrameMeta
 
-        # try decord first, fall back to cv2
         try:
             import decord
             vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
@@ -43,7 +43,6 @@ def _extract_single_frame(session: "VideoSession", timestamp: float):
             arr = vr[idx].asnumpy()
         except ImportError:
             import cv2
-            import numpy as np
             cap = cv2.VideoCapture(video_path)
             fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
             total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -77,7 +76,7 @@ def make_inspect_frame(session: "VideoSession"):
     @tool
     def inspect_frame(timestamp: float, question: str) -> str:
         """
-        Ask Qwen2.5-VL to examine the frame nearest to `timestamp` and answer
+        Ask the VLM to examine the frame nearest to `timestamp` and answer
         a specific question. Newly discovered entities and relations are
         automatically merged back into the session's scene graph.
 
@@ -90,8 +89,7 @@ def make_inspect_frame(session: "VideoSession"):
                        frame is selected automatically. If no frame is near
                        this timestamp, one is extracted on demand.
             question:  Focused question for the VLM, e.g.
-                       "How many people are in the scene?" or
-                       "What does the sign on the wall say?"
+                       "图中有多少人？" or "墙上的牌子写的什么？"
 
         Returns:
             JSON with keys:
@@ -101,13 +99,17 @@ def make_inspect_frame(session: "VideoSession"):
             - new_entities   (list[str])  entity names added to scene graph
             - new_triplets   (list[dict]) triplets added to scene graph
         """
-        # ── 1. find or extract the frame ──────────────────────────────────────
-        frame_meta = session.get_frame_by_timestamp(timestamp, tolerance=2.0)
+        from src.config import get_settings
+        cfg = get_settings()
+
+        # ── 1. find or extract the frame ──────────────────────────────────
+        frame_meta = session.get_frame_by_timestamp(
+            timestamp, tolerance=cfg.perception.frame_tolerance_sec
+        )
         if frame_meta is None:
             frame_meta = _extract_single_frame(session, timestamp)
 
         if frame_meta is None:
-            # no video on disk, no cached frames nearby
             if session.cached_frames:
                 frame_meta = next(iter(session.cached_frames.values()))
             else:
@@ -122,19 +124,12 @@ def make_inspect_frame(session: "VideoSession"):
                     "new_triplets": [],
                 })
 
-        # ── 2. call VLM (real or mock) ────────────────────────────────────────
+        # ── 2. call VLM (real or mock) ────────────────────────────────────
         if frame_meta.path and Path(frame_meta.path).exists():
-            # real path: call Qwen2.5-VL via vLLM
-            from src.perception.vl_client import VLClient
-            import os
-
-            client = VLClient(
-                base_url=os.getenv("VLM_BASE_URL", "http://localhost:8001/v1"),
-                api_key=os.getenv("VLM_API_KEY", "token-abc"),
-            )
+            from src.perception.vl_client import get_vl_client
+            client = get_vl_client()
             result = client.inspect(frame_meta.path, question)
         else:
-            # mock fallback: frame not on disk
             result = {
                 "answer": (
                     f"[MOCK] At t={frame_meta.timestamp:.1f}s: A person in a red jacket "
@@ -143,12 +138,12 @@ def make_inspect_frame(session: "VideoSession"):
                 ),
                 "entities_found": ["person_A", "bicycle", "traffic_light"],
                 "relations_found": [
-                    {"subject": "person_A", "relation": "riding",   "object": "bicycle"},
-                    {"subject": "bicycle",  "relation": "crossing", "object": "intersection"},
+                    {"subject": "person_A", "relation": "骑乘",   "object": "bicycle"},
+                    {"subject": "bicycle",  "relation": "穿过", "object": "intersection"},
                 ],
             }
 
-        # ── 3. back-propagate to scene graph ──────────────────────────────────
+        # ── 3. back-propagate to scene graph ──────────────────────────────
         new_nodes = [
             {"name": name, "type": "object", "attributes": {}}
             for name in result["entities_found"]
@@ -159,8 +154,8 @@ def make_inspect_frame(session: "VideoSession"):
                 "relation":   r["relation"],
                 "object":     r["object"],
                 "t_start":    frame_meta.timestamp,
-                "t_end":      frame_meta.timestamp + 1.0,
-                "confidence": 0.75,
+                "t_end":      frame_meta.timestamp + cfg.scene_graph.merge_window_sec,
+                "confidence": cfg.scene_graph.confidence_threshold,
                 "source":     "inspector",
             }
             for r in result["relations_found"]

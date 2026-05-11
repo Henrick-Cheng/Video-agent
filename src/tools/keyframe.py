@@ -25,17 +25,13 @@ if TYPE_CHECKING:
 # ── private helpers ───────────────────────────────────────────────────────────
 
 def _frame_dir(session: "VideoSession") -> Path:
-    """Consistent per-session frame cache directory under /tmp."""
     d = Path(tempfile.gettempdir()) / "video_agent" / session.session_id
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def _open_video(video_path: str):
-    """
-    Return (reader, fps, total_frames) using decord if available, else OpenCV.
-    The reader object supports _save_frames() via duck-typed get_batch / seek.
-    """
+    """Return (backend, reader, fps, total_frames)."""
     try:
         import decord
         vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
@@ -49,9 +45,7 @@ def _open_video(video_path: str):
 
 
 def _save_frames(backend: str, reader, indices: list[int],
-                 fps: float, out_dir: Path) -> list:
-    """Decode and JPEG-save frames; return list of FrameMeta."""
-    import numpy as np
+                 fps: float, out_dir: Path, image_quality: int) -> list:
     from PIL import Image
     from src.memory.session import FrameMeta
 
@@ -65,22 +59,23 @@ def _save_frames(backend: str, reader, indices: list[int],
             frame_id = f"t_{ts:08.2f}"
             path = out_dir / f"{frame_id}.jpg"
             if not path.exists():
-                Image.fromarray(arr).save(str(path), quality=85)
+                Image.fromarray(arr).save(str(path), quality=image_quality)
             metas.append(FrameMeta(frame_id=frame_id, timestamp=ts,
                                    path=str(path), extracted=True))
-    else:  # cv2
+    else:
         import cv2
         for idx in unique:
             reader.set(cv2.CAP_PROP_POS_FRAMES, idx)
             ret, frame = reader.read()
             if not ret:
                 continue
+            import numpy as np
             arr = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             ts = round(float(idx) / fps, 2)
             frame_id = f"t_{ts:08.2f}"
             path = out_dir / f"{frame_id}.jpg"
             if not path.exists():
-                Image.fromarray(arr).save(str(path), quality=85)
+                Image.fromarray(arr).save(str(path), quality=image_quality)
             metas.append(FrameMeta(frame_id=frame_id, timestamp=ts,
                                    path=str(path), extracted=True))
         reader.release()
@@ -95,10 +90,6 @@ def _uniform_indices(total_frames: int, count: int) -> list[int]:
 
 def _detect_scene_changes(video_path: str, max_count: int,
                            total_frames: int) -> list[int]:
-    """
-    Use PySceneDetect to find shot boundaries.
-    Falls back to uniform if PySceneDetect is not installed or detects no scenes.
-    """
     try:
         from scenedetect import detect, AdaptiveDetector
         scene_list = detect(video_path, AdaptiveDetector())
@@ -142,26 +133,30 @@ def make_extract_keyframes(session: "VideoSession"):
 
         Returns:
             JSON with keys:
-            - frame_ids    (list[str])   registered frame identifiers (format: t_XXXXXXXX.XX)
+            - frame_ids    (list[str])   registered frame identifiers
             - timestamps   (list[float]) corresponding timestamps in seconds
             - total_cached (int)         total frames now in session cache
         """
+        from src.config import get_settings
+        cfg = get_settings()
+
         video_path = session.video_path
 
-        # ── real path ─────────────────────────────────────────────────────────
         if Path(video_path).exists():
             backend, reader, fps, total = _open_video(video_path)
             out_dir = _frame_dir(session)
 
-            if strategy == "uniform" or strategy == "query_aware":
-                # query_aware: TODO replace with CLIP-guided sampling
+            if strategy in ("uniform", "query_aware"):
                 indices = _uniform_indices(total, count)
             elif strategy == "scene_change":
                 indices = _detect_scene_changes(video_path, count, total)
             else:
                 raise ValueError(f"Unknown strategy: {strategy!r}")
 
-            frame_metas = _save_frames(backend, reader, indices, fps, out_dir)
+            frame_metas = _save_frames(
+                backend, reader, indices, fps, out_dir,
+                image_quality=cfg.perception.image_quality,
+            )
             session.register_frames(frame_metas)
 
             return json.dumps({
@@ -170,12 +165,12 @@ def make_extract_keyframes(session: "VideoSession"):
                 "total_cached": len(session.cached_frames),
             })
 
-        # ── mock fallback (no video file) ─────────────────────────────────────
+        # ── mock fallback (no video file) ─────────────────────────────────
         import random
         from src.memory.session import FrameMeta
 
-        mock_duration = 120.0
-        if strategy == "uniform" or strategy == "query_aware":
+        mock_duration = cfg.mock.video_duration
+        if strategy in ("uniform", "query_aware"):
             timestamps = [round(mock_duration * i / max(count - 1, 1), 2)
                           for i in range(count)]
         else:

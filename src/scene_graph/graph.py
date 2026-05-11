@@ -3,6 +3,8 @@ Temporal scene graph data structures.
 
 Triplet format: <subject, relation, object, t_start, t_end>
 The SceneGraph acts as the Agent's structured working memory throughout a session.
+
+v2 change: Entity now carries first_seen / last_seen (added for VLM back-propagation).
 """
 
 from __future__ import annotations
@@ -14,8 +16,10 @@ from typing import Optional
 @dataclass
 class Entity:
     name: str
-    entity_type: str = "object"          # "object" | "person" | "scene"
+    entity_type: str = "object"           # "object" | "person" | "place" | "other"
     attributes: dict[str, str] = field(default_factory=dict)
+    first_seen: float = 0.0               # earliest timestamp this entity was observed
+    last_seen: float = 0.0                # latest timestamp this entity was observed
 
 
 @dataclass
@@ -26,7 +30,7 @@ class Triplet:
     t_start: float
     t_end: float
     confidence: float = 1.0
-    source: str = "vlm"                  # "vlm" | "inspector"
+    source: str = "vlm"                   # "vlm" | "inspector"
     frame_id: Optional[str] = None
 
     def to_text(self) -> str:
@@ -55,13 +59,22 @@ class SceneGraph:
         name: str,
         entity_type: str = "object",
         attributes: Optional[dict[str, str]] = None,
+        first_seen: float = 0.0,
+        last_seen: float = 0.0,
     ) -> bool:
         """Add or merge an entity. Returns True if newly added."""
         if name not in self.entities:
-            self.entities[name] = Entity(name, entity_type, attributes or {})
+            self.entities[name] = Entity(
+                name, entity_type, attributes or {}, first_seen, last_seen
+            )
             return True
+        e = self.entities[name]
         if attributes:
-            self.entities[name].attributes.update(attributes)
+            e.attributes.update(attributes)
+        if first_seen and (e.first_seen == 0.0 or first_seen < e.first_seen):
+            e.first_seen = first_seen
+        if last_seen > e.last_seen:
+            e.last_seen = last_seen
         return False
 
     def add_triplet(self, triplet: Triplet) -> bool:
@@ -94,10 +107,7 @@ class SceneGraph:
                 if t.t_end >= t_start and t.t_start <= t_end]
 
     def search(self, keywords: list[str]) -> list[Triplet]:
-        """
-        Keyword search over entity names and relation labels.
-        Case-insensitive substring match.
-        """
+        """Keyword search over entity names and relation labels (case-insensitive)."""
         kws = [k.lower() for k in keywords]
         results = []
         for t in self.triplets:
@@ -108,8 +118,14 @@ class SceneGraph:
 
     # ── serialization ─────────────────────────────────────────────────────────
 
-    def to_text(self, max_triplets: int = 50) -> str:
+    def to_text(self, max_triplets: int | None = None) -> str:
         """Serialize to LLM-readable text."""
+        if max_triplets is None:
+            try:
+                from src.config import get_settings
+                max_triplets = get_settings().scene_graph.max_display_triplets
+            except Exception:
+                max_triplets = 50
         if not self.triplets:
             return "Scene graph is empty."
         lines = [f"Scene Graph ({len(self.triplets)} triplets, {len(self.entities)} entities):"]
@@ -122,7 +138,12 @@ class SceneGraph:
     def to_dict(self) -> dict:
         return {
             "entities": {
-                name: {"type": e.entity_type, "attributes": e.attributes}
+                name: {
+                    "type": e.entity_type,
+                    "attributes": e.attributes,
+                    "first_seen": e.first_seen,
+                    "last_seen": e.last_seen,
+                }
                 for name, e in self.entities.items()
             },
             "triplets": [

@@ -1,32 +1,66 @@
-model:
-  vlm:
-    name: "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
-    base_url: "http://localhost:8001/v1"
-    api_key: "token-abc"
-    max_new_tokens: 512
+# ── Backend ───────────────────────────────────────────────────────────────────
+# "dashscope" → DashScope cloud API (development / macOS)
+# "vllm"      → local vLLM server (production / GPU machine)
+backend: "dashscope"
+
+# ── Model endpoints ───────────────────────────────────────────────────────────
+models:
+  vl:
+    provider: "dashscope"
+    model_name: "qwen-vl-plus-latest"       # switch to qwen-vl-max-latest for higher quality
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
     temperature: 0.1
+    max_tokens: 2048
   llm:
-    name: "Qwen/Qwen3-8B"
-    base_url: "http://localhost:8000/v1"
-    api_key: "token-abc"
+    provider: "dashscope"
+    model_name: "qwen-plus-latest"          # switch to qwen-max-latest for reasoning
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
     temperature: 0.1
     max_tokens: 2048
 
-video:
-  max_keyframes: 32
-  default_strategy: "uniform"  # uniform | scene_change | query_aware
-  frame_cache_dir: "/tmp/video_agent_frames"
-  supported_formats: ["mp4", "avi", "mkv", "mov", "webm"]
+# ── Local vLLM overrides (active when backend = "vllm") ──────────────────────
+vllm:
+  vl:
+    base_url: "http://localhost:8001/v1"
+    model_name: "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+  llm:
+    base_url: "http://localhost:8000/v1"
+    model_name: "Qwen/Qwen3-8B"
 
+# ── Perception / keyframe extraction ─────────────────────────────────────────
+perception:
+  keyframe_strategy: "uniform"    # "uniform" | "scene_change" | "query_aware"
+  keyframe_count: 8
+  image_max_size: 1280            # resize longest edge to this before encoding
+  image_quality: 85               # JPEG quality 1–95
+  frame_tolerance_sec: 2.0        # max distance (s) to match a cached frame
+  batch_size: 4                   # frames per VLM call in build_scene_graph
+
+# ── Scene graph ───────────────────────────────────────────────────────────────
 scene_graph:
-  max_triplets_display: 50
-  dedup_temporal_tolerance: 0.5   # seconds: edges within this window are considered duplicates
+  merge_window_sec: 3.0           # merge edges with same triple within this gap (s)
+  dedup_threshold: 0.9            # reserved for embedding-based dedup (future)
+  default_relation_vocab_size: 50
+  confidence_threshold: 0.75      # drop edges below this confidence
+  max_display_triplets: 50        # to_text() truncation
+  timestamp_tolerance: 0.5        # get_frame_by_timestamp default tolerance (s)
 
+# ── Retrieval ─────────────────────────────────────────────────────────────────
+retrieval:
+  top_k: 10
+  min_score: 0.5
+  fallback_entity_count: 4        # entities returned when no keyword match
+  embedding_dim: 384
+  embedding_model: "all-MiniLM-L6-v2"
+
+# ── Agent ─────────────────────────────────────────────────────────────────────
 agent:
   max_iterations: 10
   verbose: true
   return_intermediate_steps: true
+  use_mock: false
 
+# ── Mock mode (used when no API key is available) ─────────────────────────────
 mock:
-  enabled: true
-  video_duration: 120.0           # seconds, used when no real video is provided
+  enabled: false
+  video_duration: 120.0

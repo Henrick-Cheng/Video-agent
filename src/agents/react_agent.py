@@ -14,7 +14,6 @@ Invocation:
 
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, Any
 
 from langchain.agents import create_agent
@@ -30,20 +29,18 @@ if TYPE_CHECKING:
 # ── System prompt ─────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """\
-You are an expert video analysis assistant. Answer questions about video content
-accurately and efficiently using the tools available.
+你是专业的视频内容分析助手。请使用所提供的工具，准确高效地回答关于视频内容的问题。
 
-You have access to a temporal scene graph as structured working memory.
-It stores facts as triplets: (subject) --[relation]--> (object) @ [t_start, t_end].
+你拥有一个时序场景图作为结构化工作记忆，存储格式为三元组：
+(subject) --[relation]--> (object) @ [t_start, t_end]
 
-Decision strategy — follow this order to minimize expensive VLM calls:
-1. If no frames have been extracted yet → call extract_keyframes first.
-2. Call build_scene_graph on the most relevant frames.
-3. Call query_scene_graph to retrieve structured facts (fast, free).
-4. Call inspect_frame ONLY when the scene graph lacks sufficient detail
-   (e.g., reading text, counting objects, fine-grained spatial reasoning).
+决策策略（按顺序执行，避免不必要的 VLM 调用）：
+1. 若尚未提取帧 → 先调用 extract_keyframes
+2. 在最相关的帧上调用 build_scene_graph 构建场景图
+3. 调用 query_scene_graph 检索结构化事实（快速、零额度）
+4. 仅当场景图无法回答时（如识别文字、精确计数、细粒度空间关系）才调用 inspect_frame
 
-When you have enough information, provide a concise, factual answer."""
+获得足够信息后，给出简洁准确的中文回答。"""
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
@@ -51,31 +48,31 @@ When you have enough information, provide a concise, factual answer."""
 def build_agent(
     session: "VideoSession",
     use_mock: bool = False,
-    max_iterations: int = 10,
-    verbose: bool = True,
+    max_iterations: int | None = None,
+    verbose: bool | None = None,
 ) -> Any:
     """
     Create a ReAct agent (CompiledStateGraph) bound to the given VideoSession.
 
     All four tools are bound to `session` via closure so they share state
-    automatically without any explicit message passing.
+    automatically without explicit message passing.
 
     Parameters
     ----------
     session        : VideoSession providing shared state across all tool calls.
-    use_mock       : If True, use a FakeListChatModel — no vLLM server required.
-    max_iterations : Hard cap on tool-call rounds (passed to recursion_limit).
-    verbose        : Unused in LangGraph mode; set debug=True in create_agent instead.
+    use_mock       : If True, use a FakeListChatModel — no model server required.
+    max_iterations : Hard cap on tool-call rounds (defaults to config value).
+    verbose        : Debug logging (defaults to config value).
 
     Returns
     -------
-    CompiledStateGraph
-        Invoke with:
-            result = agent.invoke({"messages": [("user", "your question")]})
-            answer = result["messages"][-1].content
-
-        Intermediate tool calls are in result["messages"] as ToolMessage objects.
+    CompiledStateGraph — invoke with:
+        result = agent.invoke({"messages": [("user", "question")]})
+        answer = result["messages"][-1].content
     """
+    from src.config import get_settings
+    cfg = get_settings()
+
     tools = [
         make_extract_keyframes(session),
         make_build_scene_graph(session),
@@ -89,34 +86,22 @@ def build_agent(
         llm,
         tools,
         system_prompt=SYSTEM_PROMPT,
-        debug=verbose,
+        debug=verbose if verbose is not None else cfg.agent.verbose,
     )
 
 
 # ── LLM helpers ───────────────────────────────────────────────────────────────
 
 def _get_real_llm():
-    """ChatOpenAI pointing to a local vLLM server running Qwen3-8B."""
-    from langchain_openai import ChatOpenAI
-
-    return ChatOpenAI(
-        model=os.getenv("LLM_MODEL", "Qwen/Qwen3-8B"),
-        base_url=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"),
-        api_key=os.getenv("VLLM_API_KEY", "token-abc"),
-        temperature=0.1,
-        max_tokens=2048,
-    )
+    """ChatOpenAI pointing to the active LLM endpoint (DashScope or vLLM)."""
+    from src.perception.vl_client import get_llm_client
+    return get_llm_client()
 
 
 def _get_mock_llm():
-    """
-    FakeListChatModel for testing without a running vLLM server.
-    Returns strings that LangChain treats as AI messages (no real tool calls).
-    Use the manual pipeline in examples/demo.py for full end-to-end testing.
-    """
+    """FakeListChatModel for testing without a running model server."""
     from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
     return FakeListChatModel(responses=[
-        "The video shows a person in a red jacket riding a blue bicycle "
-        "through an intersection while the traffic light is green."
+        "根据场景图分析：视频中有一名穿红色外套的人正在骑蓝色自行车穿过路口，交通灯显示绿灯。"
     ])

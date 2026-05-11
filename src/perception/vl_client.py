@@ -1,64 +1,126 @@
 """
-VLClient: OpenAI-compatible client for Qwen2.5-VL-7B-AWQ served by vLLM.
+VLClient: OpenAI-compatible client for vision-language models.
 
-Start the server with:  bash scripts/start_vllm_vl.sh
-Default endpoint:       http://localhost:8001/v1
+Supports two backends (selected via configs/default.yaml or BACKEND env var):
+  - "dashscope" → Alibaba DashScope (qwen-vl-plus/max-latest)
+  - "vllm"      → Local vLLM server (Qwen2.5-VL-7B-AWQ)
+
+Both backends use the same OpenAI SDK — only the base_url / api_key differ.
+
+Factory functions:
+    get_vl_client()   → VLClient  (vision model)
+    get_llm_client()  → ChatOpenAI (text/agent model)
 """
 
 from __future__ import annotations
 
 import base64
+import io
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Optional
 
 from openai import OpenAI
 
+logger = logging.getLogger(__name__)
+
 # ── Prompt templates ──────────────────────────────────────────────────────────
 
 _INSPECT_PROMPT = """\
-Answer the following question about this image: {question}
+请回答关于这张图片的问题：{question}
 
-After your answer, output exactly one raw JSON object (no code fences) on its own line:
-{{"entities_found": ["entity1", "entity2"], "relations_found": [{{"subject": "...", "relation": "...", "object": "..."}}]}}"""
+回答完后，在新的一行输出严格 JSON（无代码块）：
+{{"entities_found": ["实体1", "实体2"], "relations_found": [{{"subject": "...", "relation": "...", "object": "..."}}]}}"""
 
 _ENTITIES_PROMPT = """\
-List all distinct objects, people, and scenes visible in this image.
-Output exactly one raw JSON object (no code fences):
+请列出图片中所有可见的人物、物体和场景。
+输出严格 JSON（无代码块）：
 {{"entities": [{{"name": "...", "type": "person|object|scene", "attributes": {{"key": "value"}}}}]}}"""
 
 
 class VLClient:
     """
-    Thin wrapper around the vLLM OpenAI-compatible API for Qwen2.5-VL.
+    Thin wrapper around the OpenAI-compatible API for Qwen VL models.
 
-    All image inputs are passed as base64-encoded data URIs so no HTTP
-    image hosting is needed.
+    All image inputs are base64-encoded data URIs — no HTTP image hosting needed.
+    Images are auto-resized to image_max_size before encoding to control token cost.
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8001/v1",
-        api_key: str = "token-abc",
-        model: str = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ",
-        max_tokens: int = 1024,
-        temperature: float = 0.1,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+        backend: Optional[str] = None,
+        image_max_size: Optional[int] = None,
     ) -> None:
-        self.model = model
-        self.max_tokens = max_tokens
-        self.temperature = temperature
-        self._client = OpenAI(base_url=base_url, api_key=api_key)
+        from src.config import get_settings
+        cfg = get_settings()
+        ep = cfg.active_vl if backend is None else (
+            cfg.models.vl if backend == "dashscope" else
+            cfg.vllm.vl
+        )
+        resolved_key = (
+            api_key
+            or (cfg.dashscope_api_key if (backend or cfg.backend) == "dashscope"
+                else cfg.vllm_api_key)
+        )
 
-    # ── internal helpers ──────────────────────────────────────────────────────
+        self.model = model or (
+            ep.model_name if hasattr(ep, "model_name") else ep.model_name
+        )
+        self.max_tokens = max_tokens or cfg.models.vl.max_tokens
+        self.temperature = temperature if temperature is not None else cfg.models.vl.temperature
+        self._image_max_size = image_max_size or cfg.perception.image_max_size
+        self._client = OpenAI(
+            base_url=base_url or ep.base_url,
+            api_key=resolved_key or "token-abc",
+        )
+
+    # ── image encoding ────────────────────────────────────────────────────────
+
+    def _encode(self, image_path: str) -> tuple[str, str]:
+        """Return (base64_data, mime_type) resizing to image_max_size."""
+        from PIL import Image
+
+        img = Image.open(image_path)
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
+        w, h = img.size
+        if max(w, h) > self._image_max_size:
+            scale = self._image_max_size / max(w, h)
+            img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=85)
+        return base64.b64encode(buf.getvalue()).decode(), "jpeg"
+
+    # ── JSON extraction ───────────────────────────────────────────────────────
 
     @staticmethod
-    def _encode(image_path: str) -> tuple[str, str]:
-        """Return (base64_data, mime_type) for a local image file."""
-        suffix = Path(image_path).suffix.lstrip(".").lower()
-        mime = "jpeg" if suffix in ("jpg", "jpeg") else suffix
-        with open(image_path, "rb") as f:
-            return base64.b64encode(f.read()).decode(), mime
+    def _extract_json(text: str) -> Optional[dict]:
+        """Find the first {...} JSON block in arbitrary VLM output."""
+        # Try direct parse first (json_object mode returns clean JSON)
+        try:
+            return json.loads(text.strip())
+        except json.JSONDecodeError:
+            pass
+        # Extract first { ... last }
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and start < end:
+            try:
+                return json.loads(text[start:end + 1])
+            except json.JSONDecodeError:
+                pass
+        return None
+
+    # ── single-image call ─────────────────────────────────────────────────────
 
     def _call(self, image_path: str, text_prompt: str) -> str:
         b64, mime = self._encode(image_path)
@@ -79,26 +141,65 @@ class VLClient:
         )
         return response.choices[0].message.content or ""
 
-    @staticmethod
-    def _extract_json(text: str) -> Optional[dict]:
-        """Find the first {...} JSON block in arbitrary VLM output."""
-        match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}', text, re.DOTALL)
-        if not match:
-            # fallback: broader search
-            match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group())
-            except json.JSONDecodeError:
-                pass
-        return None
+    # ── multi-image call ──────────────────────────────────────────────────────
+
+    def call_multi(
+        self,
+        image_paths: list[str],
+        text_prompt: str,
+        system_prompt: str = "",
+    ) -> str:
+        """
+        Call the VLM with multiple images in a single request.
+        Uses response_format=json_object when supported; falls back to text parsing.
+
+        Args:
+            image_paths:   Ordered list of local JPEG/PNG paths.
+            text_prompt:   User-turn text (prompt placed after all images).
+            system_prompt: Optional system instruction.
+
+        Returns:
+            Raw response string (JSON string when JSON mode succeeds).
+        """
+        content: list[dict] = []
+        for path in image_paths:
+            b64, mime = self._encode(path)
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/{mime};base64,{b64}"},
+            })
+        content.append({"type": "text", "text": text_prompt})
+
+        messages: list[dict] = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": content})
+
+        kwargs: dict = dict(
+            model=self.model,
+            messages=messages,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+        )
+
+        # Try JSON object mode; fall back silently if the model doesn't support it
+        try:
+            resp = self._client.chat.completions.create(
+                **kwargs,
+                response_format={"type": "json_object"},
+            )
+        except Exception as exc:
+            logger.debug("json_object mode failed (%s), retrying without", exc)
+            resp = self._client.chat.completions.create(**kwargs)
+
+        return resp.choices[0].message.content or ""
 
     # ── public API ────────────────────────────────────────────────────────────
 
     def caption_frame(
         self,
         image_path: str,
-        prompt: str = "Describe this image in detail, including all people, objects, actions, and spatial relationships.",
+        prompt: str = "请详细描述这张图片中的所有人物、物体、动作和空间关系。",
     ) -> str:
         """Return a free-form text description of the frame."""
         return self._call(image_path, prompt)
@@ -109,8 +210,8 @@ class VLClient:
 
         Returns
         -------
-        list of {"name": str, "type": "person|object|scene", "attributes": dict}
-        Falls back to [] if VLM output cannot be parsed as JSON.
+        list of {"name": str, "type": str, "attributes": dict}
+        Falls back to [] if VLM output cannot be parsed.
         """
         raw = self._call(image_path, _ENTITIES_PROMPT)
         parsed = self._extract_json(raw)
@@ -128,16 +229,15 @@ class VLClient:
 
     def inspect(self, image_path: str, question: str) -> dict:
         """
-        Answer a specific question about a frame and extract structured entities/relations.
+        Answer a specific question and extract structured entities / relations.
 
         Returns
         -------
         {
             "answer": str,
             "entities_found": list[str],
-            "relations_found": list[{"subject": str, "relation": str, "object": str}]
+            "relations_found": list[{"subject", "relation", "object"}]
         }
-        Structured fields fall back to [] if the VLM output cannot be parsed.
         """
         prompt = _INSPECT_PROMPT.format(question=question)
         raw = self._call(image_path, prompt)
@@ -150,7 +250,6 @@ class VLClient:
                 if isinstance(r, dict)
                 and all(k in r for k in ("subject", "relation", "object"))
             ]
-            # Answer = everything before the JSON block
             try:
                 json_start = raw.index("{")
                 answer = raw[:json_start].strip()
@@ -168,3 +267,37 @@ class VLClient:
             "entities_found":  [],
             "relations_found": [],
         }
+
+
+# ── Factory functions ─────────────────────────────────────────────────────────
+
+def get_vl_client(backend: Optional[str] = None) -> VLClient:
+    """Return a VLClient configured for the active backend."""
+    return VLClient(backend=backend)
+
+
+def get_llm_client(backend: Optional[str] = None):
+    """
+    Return a LangChain ChatOpenAI instance for the LLM endpoint.
+    Used by the ReAct agent and other components that need text generation.
+    """
+    from langchain_openai import ChatOpenAI
+    from src.config import get_settings
+
+    cfg = get_settings()
+    ep = cfg.active_llm if backend is None else (
+        cfg.models.llm if (backend or cfg.backend) == "dashscope"
+        else cfg.vllm.llm
+    )
+    api_key = (
+        cfg.dashscope_api_key if (backend or cfg.backend) == "dashscope"
+        else cfg.vllm_api_key
+    )
+
+    return ChatOpenAI(
+        model=ep.model_name if hasattr(ep, "model_name") else ep.model_name,
+        base_url=ep.base_url,
+        api_key=api_key or "token-abc",
+        temperature=cfg.models.llm.temperature,
+        max_tokens=cfg.models.llm.max_tokens,
+    )

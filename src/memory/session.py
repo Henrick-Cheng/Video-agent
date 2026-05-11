@@ -45,7 +45,6 @@ class VideoSession:
     # ── frame registry ────────────────────────────────────────────────────────
 
     def register_frames(self, frames: list[FrameMeta]) -> None:
-        """Register a batch of FrameMeta objects into the session cache."""
         for f in frames:
             self.cached_frames[f.frame_id] = f
 
@@ -53,9 +52,16 @@ class VideoSession:
         return self.cached_frames.get(frame_id)
 
     def get_frame_by_timestamp(
-        self, timestamp: float, tolerance: float = 0.5
+        self, timestamp: float, tolerance: Optional[float] = None
     ) -> Optional[FrameMeta]:
         """Return the registered frame closest to `timestamp` within `tolerance` seconds."""
+        if tolerance is None:
+            try:
+                from src.config import get_settings
+                tolerance = get_settings().scene_graph.timestamp_tolerance
+            except Exception:
+                tolerance = 0.5
+
         if not self.cached_frames:
             return None
         closest = min(self.cached_frames.values(),
@@ -76,14 +82,11 @@ class VideoSession:
 
         Parameters
         ----------
-        new_nodes : list of dicts with keys: "name" (required), "type", "attributes"
+        new_nodes : list of dicts with keys: "name" (required), "type", "attributes",
+                    "first_seen", "last_seen" (optional)
         new_edges : list of dicts with keys:
                     "subject", "relation", "object" (required)
                     "t_start", "t_end", "confidence", "source" (optional)
-
-        Returns
-        -------
-        {"nodes_added": int, "edges_added": int}
         """
         nodes_added = 0
         for node in new_nodes:
@@ -91,6 +94,8 @@ class VideoSession:
                 node["name"],
                 node.get("type", "object"),
                 node.get("attributes"),
+                node.get("first_seen", 0.0),
+                node.get("last_seen", 0.0),
             )
             if added:
                 nodes_added += 1
@@ -112,33 +117,30 @@ class VideoSession:
         return {"nodes_added": nodes_added, "edges_added": edges_added}
 
     def get_subgraph(self, entities: list[str]) -> dict:
-        """
-        Extract a subgraph dict containing all triplets that involve at least
-        one of the specified entity names, plus all entities those triplets touch.
-        """
+        """Extract a subgraph dict for the given entity names."""
         relevant_triplets = self.scene_graph.get_triplets_for_entities(entities)
-        touched_entities: set[str] = set()
+        touched: set[str] = set()
         for t in relevant_triplets:
-            touched_entities.add(t.subject)
-            touched_entities.add(t.object)
+            touched.add(t.subject)
+            touched.add(t.object)
 
         sg = self.scene_graph
         return {
             "entities": {
                 name: {
-                    "type": sg.entities[name].entity_type,
+                    "type":       sg.entities[name].entity_type,
                     "attributes": sg.entities[name].attributes,
                 }
-                for name in touched_entities
+                for name in touched
                 if name in sg.entities
             },
             "triplets": [
                 {
-                    "subject": t.subject,
-                    "relation": t.relation,
-                    "object": t.object,
-                    "t_start": t.t_start,
-                    "t_end": t.t_end,
+                    "subject":    t.subject,
+                    "relation":   t.relation,
+                    "object":     t.object,
+                    "t_start":    t.t_start,
+                    "t_end":      t.t_end,
                     "confidence": t.confidence,
                 }
                 for t in relevant_triplets
