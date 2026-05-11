@@ -91,11 +91,11 @@ def build_agent(
     ]
 
     llm = _get_mock_llm() if use_mock else _get_real_llm()
-    _verbose = verbose if verbose is not None else cfg.agent.verbose
-
-    # Store max_iterations for callers who want to pass recursion_limit
     _iters = max_iterations if max_iterations is not None else cfg.agent.max_iterations
-    agent = create_agent(llm, tools, system_prompt=_SYSTEM_PROMPT, debug=_verbose)
+
+    # debug=False: LangGraph's internal [values]/[updates] log is too verbose;
+    # callers (main.py) handle trace display by inspecting result["messages"].
+    agent = create_agent(llm, tools, system_prompt=_SYSTEM_PROMPT, debug=False)
 
     # Attach resolved config so main.py / tests can read it
     agent._va_max_iterations = _iters  # type: ignore[attr-defined]

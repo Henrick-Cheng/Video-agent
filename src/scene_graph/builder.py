@@ -47,22 +47,21 @@ def _build_prompt(
     vocab_str = "、".join(relation_vocab[:50])
 
     return f"""请分析上方 {len(timestamps)} 帧视频画面（时间戳: {ts_str}）。{focus_hint}
-识别所有可见的人物（person）、物体（object）、场所（place）及其他实体（other），
-以及实体之间的关系。
+识别所有可见的实体（人物 person、物体 object、场所 place）以及实体之间的关系。
 
-【关系词表】请严格从以下词汇中选择关系标签，禁止自造词汇：
+【关系词表】只能从以下词汇中选择关系标签，禁止自造：
 {vocab_str}
 
-【输出格式】严格 JSON，schema 如下：
+【输出格式】只输出以下结构的 JSON，不要添加任何其他字段或说明：
 {{
   "entities": [
     {{
       "id": "person_1",
-      "type": "person",
-      "label": "简短中文描述（如：红衣女性）",
-      "attributes": {{"clothing": "红色外套", "action": "行走"}},
-      "first_seen": 时间戳秒数,
-      "last_seen": 时间戳秒数
+      "type": "person|object|place",
+      "label": "简短中文描述",
+      "attributes": {{"key": "value"}},
+      "first_seen": {ts_str.split(',')[0].strip().rstrip('s')},
+      "last_seen": {ts_str.split(',')[0].strip().rstrip('s')}
     }}
   ],
   "relations": [
@@ -70,41 +69,90 @@ def _build_prompt(
       "subject": "person_1",
       "relation": "骑乘",
       "object": "bicycle_1",
-      "t_start": 开始时间戳,
-      "t_end": 结束时间戳,
+      "t_start": {ts_str.split(',')[0].strip().rstrip('s')},
+      "t_end": {ts_str.split(',')[0].strip().rstrip('s')},
       "confidence": 0.85
     }}
   ]
 }}
 
-注意：
-1. 同一个实体在不同帧应使用相同 id
-2. id 格式：类型_序号，如 person_1、object_2
-3. first_seen / last_seen 填入该实体在画面中第一次/最后一次出现的时间戳
-4. confidence 表示你对该关系的确信度（0.0–1.0）
-5. 若画面中没有明显实体或关系，返回空列表"""
+规则：
+1. 同一实体在不同帧使用相同 id；id 格式：类型_序号，如 person_1
+2. confidence 为 0.0–1.0 的浮点数
+3. 若无实体或关系，对应列表填 []
+4. 只输出 JSON，不要有任何前缀或后缀文字"""
 
 
 # ── Parsing ───────────────────────────────────────────────────────────────────
 
+def _extract_json_array(text: str, key: str) -> Optional[list]:
+    """
+    Extract the first JSON array value for a given key from potentially
+    malformed JSON text, using bracket-depth matching.
+
+    Handles the case where the VLM emits duplicate keys or never closes
+    the outer object — we just grab the first occurrence of each key's array.
+    """
+    import json, re
+
+    pattern = rf'"{re.escape(key)}"\s*:\s*(\[)'
+    m = re.search(pattern, text)
+    if not m:
+        return None
+    start = m.start(1)
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == "[":
+            depth += 1
+        elif text[i] == "]":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[start : i + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
 def _parse_vlm_output(text: str) -> Optional[dict]:
-    """Parse VLM JSON output. Returns None if parsing fails."""
+    """
+    Parse VLM JSON output with three fallback levels:
+      1. Direct json.loads (clean JSON / json_object mode)
+      2. Extract first { ... last } substring
+      3. Array-level extraction for "entities" and "relations" keys
+         (handles duplicate-key / unclosed-brace hallucinations)
+    Returns None only if entities cannot be extracted at all.
+    """
     import json
 
     text = text.strip()
-    # Direct parse (response_format=json_object returns clean JSON)
+
+    # Level 1: direct parse
     try:
         return json.loads(text)
     except json.JSONDecodeError:
         pass
-    # Extract first { ... last }
+
+    # Level 2: first { … last }
     start = text.find("{")
     end = text.rfind("}")
     if start != -1 and end != -1 and start < end:
         try:
-            return json.loads(text[start:end + 1])
+            return json.loads(text[start : end + 1])
         except json.JSONDecodeError:
             pass
+
+    # Level 3: bracket-depth array extraction (tolerates duplicate keys /
+    # unclosed outer braces — a known Qwen-VL hallucination pattern)
+    entities = _extract_json_array(text, "entities")
+    if entities is not None:
+        relations = _extract_json_array(text, "relations") or []
+        logger.debug(
+            "Level-3 array extraction: %d entities, %d relations",
+            len(entities), len(relations),
+        )
+        return {"entities": entities, "relations": relations}
+
     logger.warning("Failed to parse VLM output as JSON: %s", text[:200])
     return None
 

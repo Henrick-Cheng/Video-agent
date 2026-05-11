@@ -10,7 +10,7 @@ models:
     model_name: "qwen-vl-plus-latest"       # switch to qwen-vl-max-latest for higher quality
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
     temperature: 0.1
-    max_tokens: 2048
+    max_tokens: 4096
   llm:
     provider: "dashscope"
     model_name: "qwen-plus-latest"          # switch to qwen-max-latest for reasoning
