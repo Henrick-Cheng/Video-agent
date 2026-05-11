@@ -1,0 +1,36 @@
+# ── Video processing ──────────────────────────────────────────────────────────
+opencv-python>=4.10
+Pillow>=10.0
+decord>=0.6                  # fast GPU-accelerated video decoding
+
+# ── Scene graph ───────────────────────────────────────────────────────────────
+networkx>=3.3
+
+# ── Deep learning ─────────────────────────────────────────────────────────────
+torch>=2.3
+torchvision>=0.18
+transformers>=4.45           # Qwen2.5-VL support
+accelerate>=0.34
+qwen-vl-utils>=0.0.8         # Qwen2.5-VL image processing helpers
+
+# ── Model serving ─────────────────────────────────────────────────────────────
+vllm>=0.6                    # serve Qwen3-8B + Qwen2.5-VL with OpenAI API
+
+# ── LangChain ─────────────────────────────────────────────────────────────────
+langchain>=0.3
+langchain-core>=0.3
+langchain-openai>=0.2        # ChatOpenAI → vLLM OpenAI-compatible endpoint
+langchain-community>=0.3     # FakeListLLM and other utilities
+
+# ── Vector retrieval ──────────────────────────────────────────────────────────
+faiss-cpu>=1.8               # swap to faiss-gpu if needed
+sentence-transformers>=3.0   # embedding model for scene graph retrieval
+
+# ── UI ────────────────────────────────────────────────────────────────────────
+gradio>=5.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+pydantic>=2.0
+python-dotenv>=1.0
+loguru>=0.7
+pyyaml>=6.0

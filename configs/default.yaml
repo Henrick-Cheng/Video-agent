@@ -1,0 +1,32 @@
+model:
+  vlm:
+    name: "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+    base_url: "http://localhost:8001/v1"
+    api_key: "token-abc"
+    max_new_tokens: 512
+    temperature: 0.1
+  llm:
+    name: "Qwen/Qwen3-8B"
+    base_url: "http://localhost:8000/v1"
+    api_key: "token-abc"
+    temperature: 0.1
+    max_tokens: 2048
+
+video:
+  max_keyframes: 32
+  default_strategy: "uniform"  # uniform | scene_change | query_aware
+  frame_cache_dir: "/tmp/video_agent_frames"
+  supported_formats: ["mp4", "avi", "mkv", "mov", "webm"]
+
+scene_graph:
+  max_triplets_display: 50
+  dedup_temporal_tolerance: 0.5   # seconds: edges within this window are considered duplicates
+
+agent:
+  max_iterations: 10
+  verbose: true
+  return_intermediate_steps: true
+
+mock:
+  enabled: true
+  video_duration: 120.0           # seconds, used when no real video is provided

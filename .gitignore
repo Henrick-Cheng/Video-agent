@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Model weights & large files
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.gguf
+models/weights/
+
+# Frame cache
+/tmp/video_agent_frames/
+data/frames/
+data/cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Logs
+*.log
+logs/
+
+# Secrets
+.env.local
+configs/secrets.yaml
