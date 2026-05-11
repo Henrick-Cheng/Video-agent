@@ -137,6 +137,107 @@ DASHSCOPE_API_KEY=sk-xxx pytest tests/test_scene_graph_real.py -v -s
 2. **实体语义去重**：接 sentence-transformers，cosine 相似度 > `dedup_threshold` 时合并
 3. **FAISS 检索**：实现 `query_scene_graph` 的向量检索路径，替换关键词匹配
 4. **并行批次**：`builder.build_frames()` 中用 `asyncio` 或 `ThreadPoolExecutor` 并行调用 VLM
-5. **端到端 Agent 测试**：接 DashScope qwen-plus-latest 作为 Agent brain，跑完整 ReAct 循环
+5. ~~**端到端 Agent 测试**：接 DashScope qwen-plus-latest 作为 Agent brain，跑完整 ReAct 循环~~ **第四阶段完成**
 6. **Gradio UI**：实现 `src/ui/app.py`，上传视频 → 实时问答
 7. **部署文档**：补充 `docs/deployment.md`（vLLM + GPU 环境配置）
+
+---
+
+## 第四阶段：Agent 端到端打通 + 渐进式精化验证（本次）
+**日期：** 2026-05-11
+
+### 完成内容
+
+#### 任务 1：修复 Agent 接入
+- 发现并修复 `src/agents/react_agent.py` 的根本问题：旧版代码里 `create_agent` 的调用方式与安装的 LangChain 1.2.18 不兼容
+- **关键洞察**：LangChain 1.x 已完全基于 LangGraph，`AgentExecutor` 被移除，`create_agent` 返回 `CompiledStateGraph`，调用接口改为 `agent.invoke({"messages": [("user", q)]})`
+- 写了支持 `bind_tools` 的自定义 mock（`_DirectAnswerModel`），解决 `FakeListChatModel.bind_tools` 抛 `NotImplementedError` 的问题
+- 内嵌中文双语 ReAct 系统 prompt：决策策略 + 证据引用要求
+- `max_iterations` 6 → 对应 LangGraph `recursion_limit=19`
+
+#### 任务 2：渐进式精化反馈回路
+- `frame_inspector.py` 已有 back-propagation 逻辑；本次完善返回值：新增 `nodes_added_to_graph`、`edges_added_to_graph`、`graph_size_after` 字段
+- Agent 每次 `inspect_frame` 后即可在 Observation 里看到"新增了 N 个实体"，知道场景图已更新，可立即再次 query
+
+#### 任务 3：main.py CLI 入口
+- 支持 `--question`（单次）和 `--interactive`（多轮，session 跨轮复用）
+- 自定义 trace 输出：每步打印 Action / Action Input / Observation（截断到 600 字符）
+
+#### 任务 4：修复 VLM JSON 解析器（遇到的坑）
+- **坑**：Qwen-VL-Plus 在场景图 prompt 下会输出重复的 `"relations": [], "places": [], "other": []` 段落，外层 `}` 永远不关闭，导致 `json.loads` 失败
+- **修复**：`_parse_vlm_output` 新增第三层兜底：括号深度匹配，单独提取 `entities` 和 `relations` 数组（即使外层 JSON 格式损坏也能成功）
+- **顺带优化**：简化提示词，去掉 `places`/`other` 字样；VL max_tokens 2048 → 4096
+
+### 真实端到端 trace（test1.mp4，14 秒游戏录屏）
+
+```
+Question: 视频里有哪些人物？他们在干什么？
+Session : sess_97a9b2af
+
+[Step 1]  extract_keyframes(strategy=uniform, count=16) → 16 frames
+[Step 2]  build_scene_graph(*) → 29 entities, 24 triplets
+[Step 3]  query_scene_graph("视频里有哪些人物？他们在干什么？") → found: false
+          Entities (29): 玩家 骑着骡子打鸟, 玩家 鳞鱼不是鱼, 玩家 不si的土卜鼠, ...
+[Step 4]  query_scene_graph("视频中有哪些人物角色？") → found: false
+[Step 5]  inspect_frame(t=7.5, "视频中有哪些人物？他们在干什么？")
+            nodes_added_to_graph: 4
+            edges_added_to_graph: 5
+            graph_size_after: 35 entities, 30 triplets
+
+FINAL ANSWER:
+  视频显示的是一个大逃杀游戏的准备界面，有四个角色等待比赛开始：
+  1. "不si的土卜鼠" — 蓝白条纹运动服，手持蓝色枪械
+  2. "鱿鱼不是鱼"  — 蓝白条纹运动服，紫色头发
+  3. "骑着骡子打鸟" — 黄色T恤白色裤子，手持绿色武器
+  4. "允崽"        — 白色T恤，德国国旗图案，蓝色头盔
+
+Scene graph : 35 entities, 30 triplets
+Tool calls  : 5
+```
+
+### 渐进式精化测试结果（test_progressive_refinement.py）
+
+```
+[Step 2] Initial graph: 5 entities, 4 triplets
+         focus_entities="人" → ['玩家 骑着骡子打鸟', '玩家 鳞鱼不是鱼', ...]
+[Step 3] inspect_frame(t=0.0, "描述所有可见物体和细节"):
+         nodes_added_to_graph: 5
+         edges_added_to_graph: 5
+         graph_size_after    : 10 entities, 9 triplets
+
+✓ 场景图增长: 5→10 entities, 4→9 triplets
+✓ query_scene_graph("战队") → found=True, triplets=4
+```
+
+### Token 消耗估算（一次问答）
+
+| 调用                          | token 数（估算） | 费用（估算）  |
+|------------------------------|----------------|-------------|
+| qwen-plus-latest（LLM，5轮）  | ~8000          | ~¥0.01      |
+| qwen-vl-plus-latest（VLM，4批+1）| ~40000      | ~¥0.32      |
+| **合计**                      |                | **~¥0.33**  |
+
+> 图像 token 按 1280px / 28px/patch ≈ 1500 token/帧估算。
+
+### 遇到的坑和解决方案
+
+| 坑 | 原因 | 解决 |
+|----|------|------|
+| `FakeListChatModel` 不支持 `bind_tools` | LangChain 1.x `create_agent` 内部调用 `bind_tools` | 自定义 `_DirectAnswerModel` 覆盖 `bind_tools` 返回 self |
+| VLM JSON 输出重复 `"relations": []` 无法解析 | Qwen-VL 对复杂 schema prompt 幻觉生成重复 key，外层 `}` 不关闭 | 三层解析兜底：第三层用括号深度匹配提取数组 |
+| LangGraph verbose 日志淹没输出 | `create_agent(debug=True)` 打印 `[values]`/`[updates]` | 改为 `debug=False`，main.py 自行格式化 trace |
+| `query_scene_graph` 中文关键词命中率低 | `.split()` 对中文无效（无空格），整句作为一个 token | 已知问题，暂靠 inspect_frame 兜底，FAISS 是后续解决方案 |
+
+### 已知问题 / TODO（更新）
+1. **`query_scene_graph` 中文匹配失效**：`.split()` 对中文分词无效，需要 jieba 或向量检索
+2. **实体命名不稳定**：跨批次 VLM 对同一实体命名不一致，需语义去重
+3. **`build_scene_graph` 默认 count=16**：Agent 有时会请求全部 16 帧，成本较高；可加入 adaptive sampling
+4. **FAISS 向量检索**：`query_scene_graph` 的向量路径尚未实现
+5. **并行批次**：`build_frames()` 中串行调用 VLM，16 帧约需 60-90s
+
+### 下一步建议（优先级排序）
+1. **FAISS + 中文分词**：`query_scene_graph` 换向量检索，解决关键词匹配失效
+2. **实体语义去重**：sentence-transformers cosine 相似度 > `dedup_threshold` 时合并
+3. **换真实世界视频**：生活视频效果更好，游戏 UI 截图会引入幻觉
+4. **并行 VLM 批次**：ThreadPoolExecutor 加速 build_frames
+5. **Gradio UI**：`src/ui/app.py`，上传视频 → 实时问答
