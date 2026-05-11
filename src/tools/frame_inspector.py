@@ -1,13 +1,18 @@
 """
 Tool: inspect_frame
 
-Directs the VLM to perform deep analysis of a specific video frame.
-New entities discovered here are back-propagated into the session's scene graph.
+Directs Qwen2.5-VL to perform deep analysis of a specific video frame.
+New entities and relations discovered are back-propagated into the session's scene graph.
+
+Real mode: calls VLClient → vLLM (requires scripts/start_vllm_vl.sh).
+Mock fallback: used when frame has no saved path (video not on disk).
 """
 
 from __future__ import annotations
 
 import json
+import tempfile
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from langchain_core.tools import tool
@@ -16,15 +21,50 @@ if TYPE_CHECKING:
     from src.memory.session import VideoSession
 
 
+def _extract_single_frame(session: "VideoSession", timestamp: float):
+    """
+    On-demand extraction of a single frame at `timestamp` seconds.
+    Returns a FrameMeta if the video file is accessible, else None.
+    """
+    video_path = session.video_path
+    if not Path(video_path).exists():
+        return None
+    try:
+        import decord
+        from PIL import Image
+        from src.memory.session import FrameMeta
+
+        vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
+        fps = vr.get_avg_fps()
+        idx = min(int(round(timestamp * fps)), len(vr) - 1)
+        ts = round(float(idx) / fps, 2)
+        frame_id = f"t_{ts:08.2f}"
+
+        out_dir = Path(tempfile.gettempdir()) / "video_agent" / session.session_id
+        out_dir.mkdir(parents=True, exist_ok=True)
+        path = out_dir / f"{frame_id}.jpg"
+
+        if not path.exists():
+            arr = vr[idx].asnumpy()
+            Image.fromarray(arr).save(str(path), quality=85)
+
+        meta = FrameMeta(frame_id=frame_id, timestamp=ts,
+                         path=str(path), extracted=True)
+        session.register_frames([meta])
+        return meta
+    except Exception:
+        return None
+
+
 def make_inspect_frame(session: "VideoSession"):
     """Factory that binds inspect_frame to the given VideoSession."""
 
     @tool
     def inspect_frame(timestamp: float, question: str) -> str:
         """
-        Ask the VLM to carefully examine the frame nearest to `timestamp`
-        and answer a specific question. Any new entities or relations the VLM
-        discovers are automatically merged back into the session's scene graph.
+        Ask Qwen2.5-VL to examine the frame nearest to `timestamp` and answer
+        a specific question. Newly discovered entities and relations are
+        automatically merged back into the session's scene graph.
 
         Use this only when query_scene_graph cannot answer the question — for
         example to read text, count objects, identify faces, or resolve
@@ -32,49 +72,34 @@ def make_inspect_frame(session: "VideoSession"):
 
         Args:
             timestamp: Target time in seconds (e.g. 34.5). The nearest cached
-                       frame is selected automatically. If no frame is cached
-                       near this timestamp, call extract_keyframes first.
+                       frame is selected automatically. If no frame is near
+                       this timestamp, one is extracted on demand.
             question:  Focused question for the VLM, e.g.
-                       "How many fingers is the person holding up?" or
-                       "What does the sign on the door say?"
+                       "How many people are in the scene?" or
+                       "What does the sign on the wall say?"
 
         Returns:
             JSON with keys:
-            - answer          (str)        VLM's response to the question
-            - timestamp_used  (float)      actual timestamp of the analyzed frame
-            - frame_id        (str | null) frame_id of the analyzed frame
-            - new_entities    (list[str])  entity names added to scene graph
-            - new_triplets    (list[dict]) triplets added to scene graph
+            - answer         (str)        VLM's response
+            - timestamp_used (float)      actual timestamp of the analyzed frame
+            - frame_id       (str | null) frame identifier
+            - new_entities   (list[str])  entity names added to scene graph
+            - new_triplets   (list[dict]) triplets added to scene graph
         """
-        # TODO: replace mock with real VLM inference
-        #
-        # frame_meta = session.get_frame_by_timestamp(timestamp, tolerance=2.0)
-        # if frame_meta is None:
-        #     return json.dumps({"answer": "No cached frame near this timestamp. "
-        #                                  "Call extract_keyframes first.",
-        #                        "timestamp_used": timestamp, "frame_id": None,
-        #                        "new_entities": [], "new_triplets": []})
-        #
-        # from src.perception.vlm import VLMPerception
-        # vlm = VLMPerception.get_instance(use_mock=False)
-        # answer = vlm.answer_question(frame_meta.path, question)
-        # new_triplets_raw = vlm.extract_triplets(frame_meta.path,
-        #                                         timestamp=frame_meta.timestamp)
-        # new_nodes = [{"name": t["subject"]}, {"name": t["object"]}
-        #              for t in new_triplets_raw]
-        # session.update_scene_graph(new_nodes, new_triplets_raw)
-
-        # ── MOCK ──────────────────────────────────────────────────────────────
-        frame_meta = session.get_frame_by_timestamp(timestamp, tolerance=5.0)
+        # ── 1. find or extract the frame ──────────────────────────────────────
+        frame_meta = session.get_frame_by_timestamp(timestamp, tolerance=2.0)
+        if frame_meta is None:
+            frame_meta = _extract_single_frame(session, timestamp)
 
         if frame_meta is None:
+            # no video on disk, no cached frames nearby
             if session.cached_frames:
-                # fallback to any available frame
                 frame_meta = next(iter(session.cached_frames.values()))
             else:
                 return json.dumps({
                     "answer": (
-                        "No frames are cached. Call extract_keyframes first."
+                        "No frames are cached and no video file is accessible. "
+                        "Call extract_keyframes first."
                     ),
                     "timestamp_used": timestamp,
                     "frame_id": None,
@@ -82,46 +107,63 @@ def make_inspect_frame(session: "VideoSession"):
                     "new_triplets": [],
                 })
 
-        mock_answer = (
-            f"At t={frame_meta.timestamp:.1f}s: A person wearing a red jacket "
-            f"is riding a blue bicycle through an intersection. The traffic light "
-            f"is green. A pedestrian in a dark coat is standing on the sidewalk "
-            f"to the right."
-        )
+        # ── 2. call VLM (real or mock) ────────────────────────────────────────
+        if frame_meta.path and Path(frame_meta.path).exists():
+            # real path: call Qwen2.5-VL via vLLM
+            from src.perception.vl_client import VLClient
+            import os
 
-        # back-propagate newly discovered entities into the scene graph
+            client = VLClient(
+                base_url=os.getenv("VLM_BASE_URL", "http://localhost:8001/v1"),
+                api_key=os.getenv("VLM_API_KEY", "token-abc"),
+            )
+            result = client.inspect(frame_meta.path, question)
+        else:
+            # mock fallback: frame not on disk
+            result = {
+                "answer": (
+                    f"[MOCK] At t={frame_meta.timestamp:.1f}s: A person in a red jacket "
+                    f"is riding a blue bicycle through an intersection. "
+                    f"The traffic light is green."
+                ),
+                "entities_found": ["person_A", "bicycle", "traffic_light"],
+                "relations_found": [
+                    {"subject": "person_A", "relation": "riding",   "object": "bicycle"},
+                    {"subject": "bicycle",  "relation": "crossing", "object": "intersection"},
+                ],
+            }
+
+        # ── 3. back-propagate to scene graph ──────────────────────────────────
         new_nodes = [
-            {"name": "pedestrian",   "type": "person",  "attributes": {"clothing": "dark coat"}},
-            {"name": "sidewalk",     "type": "scene",   "attributes": {}},
-            {"name": "intersection", "type": "scene",   "attributes": {}},
+            {"name": name, "type": "object", "attributes": {}}
+            for name in result["entities_found"]
         ]
         new_edges = [
             {
-                "subject": "pedestrian", "relation": "standing_on",
-                "object":  "sidewalk",
-                "t_start": frame_meta.timestamp, "t_end": frame_meta.timestamp + 2.0,
-                "confidence": 0.79, "source": "inspector",
-            },
-            {
-                "subject": "bicycle",  "relation": "crossing",
-                "object":  "intersection",
-                "t_start": frame_meta.timestamp, "t_end": frame_meta.timestamp + 4.0,
-                "confidence": 0.86, "source": "inspector",
-            },
+                "subject":    r["subject"],
+                "relation":   r["relation"],
+                "object":     r["object"],
+                "t_start":    frame_meta.timestamp,
+                "t_end":      frame_meta.timestamp + 1.0,
+                "confidence": 0.75,
+                "source":     "inspector",
+            }
+            for r in result["relations_found"]
+            if isinstance(r, dict) and all(k in r for k in ("subject", "relation", "object"))
         ]
         session.update_scene_graph(new_nodes, new_edges)
 
-        new_entity_names = [n["name"] for n in new_nodes]
         new_triplets_out = [
-            {"subject": e["subject"], "relation": e["relation"], "object": e["object"]}
-            for e in new_edges
+            {"subject": r["subject"], "relation": r["relation"], "object": r["object"]}
+            for r in result["relations_found"]
+            if isinstance(r, dict) and all(k in r for k in ("subject", "relation", "object"))
         ]
 
         return json.dumps({
-            "answer":         mock_answer,
+            "answer":         result["answer"],
             "timestamp_used": frame_meta.timestamp,
             "frame_id":       frame_meta.frame_id,
-            "new_entities":   new_entity_names,
+            "new_entities":   result["entities_found"],
             "new_triplets":   new_triplets_out,
         })
 
