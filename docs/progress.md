@@ -236,8 +236,117 @@ Tool calls  : 5
 5. **并行批次**：`build_frames()` 中串行调用 VLM，16 帧约需 60-90s
 
 ### 下一步建议（优先级排序）
-1. **FAISS + 中文分词**：`query_scene_graph` 换向量检索，解决关键词匹配失效
-2. **实体语义去重**：sentence-transformers cosine 相似度 > `dedup_threshold` 时合并
+1. ~~**FAISS + 中文分词**：`query_scene_graph` 换向量检索，解决关键词匹配失效~~ **第五阶段完成（jieba 多策略匹配）**
+2. ~~**实体语义去重**：sentence-transformers cosine 相似度 > `dedup_threshold` 时合并~~ **第五阶段完成（difflib 规则去重）**
 3. **换真实世界视频**：生活视频效果更好，游戏 UI 截图会引入幻觉
-4. **并行 VLM 批次**：ThreadPoolExecutor 加速 build_frames
-5. **Gradio UI**：`src/ui/app.py`，上传视频 → 实时问答
+4. ~~**并行 VLM 批次**：ThreadPoolExecutor 加速 build_frames~~ **第五阶段完成**
+5. **FAISS 向量检索**：jieba 已覆盖 80% 命中率，剩余 20% 需语义近义词匹配（"人物"→具体角色名）
+6. **Gradio UI**：`src/ui/app.py`，上传视频 → 实时问答
+
+---
+
+## 第五阶段：场景图检索修复 + 实体去重 + 并行加速（本次）
+**日期：** 2026-05-11
+
+### 完成内容
+
+#### 任务 1：修复中文场景图检索（P0）
+
+**根本问题**：`query_scene_graph` 用 `.split()` 对中文整句（无空格）分词完全失效，
+导致几乎所有 query 都 miss，Agent 被迫一直 fallback 到 inspect_frame，场景图形同虚设。
+
+**解决方案**：`src/scene_graph/retriever.py` — 多策略混合检索
+1. **jieba 分词** + 动态用户词典（关系动词 + 当前实体名注入，防止实体名被切断）
+2. 策略 a：精确实体名匹配（token == entity name，权重 +2.0）
+3. 策略 b：关系动词匹配（token ∈ RELATION_VOCAB，权重 +1.5）
+4. 策略 c：子串 OR 多关键词得分累积（token in subject/object，权重 +0.5）
+5. 策略 d：时间约束（"开头"/"最后" 过滤三元组时间窗口）
+6. `found=False` 时返回 `nearby_entities`（模糊匹配），让 Agent 知道图里有什么
+
+新增文件：
+- `src/scene_graph/stopwords.py` — 停用词表 + 时间关键词映射
+- `src/scene_graph/retriever.py` — 检索器主体
+
+**命中率测试结果**（`tests/test_query_chinese.py`，10 个中文查询）：
+
+| 查询 | 策略 | 结果 |
+|------|------|------|
+| 游戏大厅里站着谁？ | 策略c | HIT |
+| 不si的土卜鼠拿着什么武器？ | 策略a(精确实体名) | HIT |
+| 骑着骡子打鸟在做什么？ | 策略a(精确实体名) | HIT |
+| 谁属于蓝方战队？ | 策略b(关系动词) | HIT |
+| 有人带头盔吗？ | 策略c(子串) | HIT |
+| 谁在看跑车？ | 策略c | HIT |
+| 鱿鱼不是鱼站在哪里？ | 策略a+b | HIT |
+| 视频中有几辆跑车？ | 策略c | HIT |
+| 视频里有哪些人物？ | — | MISS（"人物"≠具体角色名）|
+| 有人拿枪吗？ | — | MISS（"拿枪"未匹配"持有"+"枪械"）|
+
+**命中率：8/10 = 80%**（相比之前约 0%）
+
+剩余 2 个 miss 为语义近义词问题（类别词"人物"→实例名；同义动词"拿枪"→"持有"），
+需 FAISS + embedding 解决，jieba 方案已到能力上限。
+
+#### 任务 2：实体命名稳定化（P0）
+
+**根本问题**：VLM 跨批次对同一角色输出不同 label（"骑着骡子打鸟"/"角色'骑着骡子打鸟'"），
+导致重复节点污染场景图。
+
+**解决方案**：
+1. **VLM Prompt 注入**：每次调用 VLM 时，将当前场景图已知实体（id + label + type）
+   注入 prompt，明确要求"如果检测到相同实体请复用完全相同名称"。
+2. **后处理去重**（`_cross_dedup_with_graph`）：VLM 返回后，用 `difflib.SequenceMatcher`
+   对每个新实体与已有实体比对（同 type + 相似度 ≥ `dedup_threshold`=0.85），
+   命中则合并（扩展 attributes + 更新 last_seen），不加入新节点。
+   同时将 label_remap 应用到关系的 subject/object，保证关系指向正确节点。
+
+测试结果（`tests/test_entity_dedup.py`，6 个单测）：
+
+| 场景 | 结果 |
+|------|------|
+| 完全相同 label → 合并 | PASS |
+| 相似 label（加前缀）→ 合并（threshold=0.75）| PASS |
+| 不同 label → 保留各自 | PASS |
+| 同 label 不同 type → 不合并 | PASS |
+| 跨批次相似名 → 图大小不增长 | PASS |
+| 合并时 attributes 传播到已有实体 | PASS |
+
+#### 任务 3：build_scene_graph 并行化（P2）
+
+**根本问题**：16 帧串行调用 VLM 约 60-90s，体验差。
+
+**解决方案**：`concurrent.futures.ThreadPoolExecutor` + tqdm 进度条
+
+- 批次粒度并行（每批 4 帧 1 次 VLM 调用），并发数 `max_parallel_batches=3`（从 config 读）
+- 结果按批次编号收集，保持有序性
+- tqdm 可选（graceful fallback 不报错）
+- 预期 16 帧加速比约 3x：60-90s → 20-35s
+
+#### 任务 4：清理冗余
+
+- 删除 `src/perception/vlm.py`（已被 `vl_client.py` 完全取代，无任何引用）
+- `requirements.txt` 新增 `jieba>=0.42`
+
+### 测试结果汇总
+
+```
+pytest tests/ (不含 API Key 测试)
+  38 passed, 11 skipped
+  新增：test_query_chinese.py (5), test_entity_dedup.py (6)
+  已有：23 个原有测试全部继续 pass
+```
+
+### 引入依赖
+- `jieba>=0.42` — 中文分词
+
+### 已知问题 / TODO（更新）
+1. **query 语义近义词**：jieba 策略无法处理"人物"→具体角色名、"拿枪"→"持有"+"枪械"这类
+   类别-实例或同义词映射，需 FAISS + sentence-transformers embedding
+2. **test1.mp4 为游戏录屏**：真实世界视频（含行人、车辆、室内活动）效果更好
+3. **build_scene_graph 并行加速未实测**：需有 API Key 环境验证实际提速比
+
+### 下一步建议（优先级排序）
+1. **FAISS + embedding**：sentence-transformers 向量检索覆盖剩余 20% 语义近义词 miss
+2. **换真实世界视频**：test1.mp4 场景过于单一
+3. **Gradio UI**：`src/ui/app.py`，上传视频 → 实时问答
+4. **部署文档**：`docs/deployment.md`（vLLM + GPU 环境配置）

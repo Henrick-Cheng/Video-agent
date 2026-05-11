@@ -28,10 +28,11 @@ env/
 *.gguf
 models/weights/
 
-# Frame cache
+# Frame cache & video files (use cloud storage or symlinks instead)
 /tmp/video_agent_frames/
 data/frames/
 data/cache/
+data/videos/
 
 # IDE
 .vscode/
