@@ -161,7 +161,7 @@ def make_inspect_frame(session: "VideoSession"):
             for r in result["relations_found"]
             if isinstance(r, dict) and all(k in r for k in ("subject", "relation", "object"))
         ]
-        session.update_scene_graph(new_nodes, new_edges)
+        stats = session.update_scene_graph(new_nodes, new_edges)
 
         new_triplets_out = [
             {"subject": r["subject"], "relation": r["relation"], "object": r["object"]}
@@ -170,11 +170,17 @@ def make_inspect_frame(session: "VideoSession"):
         ]
 
         return json.dumps({
-            "answer":         result["answer"],
-            "timestamp_used": frame_meta.timestamp,
-            "frame_id":       frame_meta.frame_id,
-            "new_entities":   result["entities_found"],
-            "new_triplets":   new_triplets_out,
+            "answer":               result["answer"],
+            "timestamp_used":       frame_meta.timestamp,
+            "frame_id":             frame_meta.frame_id,
+            "new_entities":         result["entities_found"],
+            "new_triplets":         new_triplets_out,
+            "nodes_added_to_graph": stats["nodes_added"],
+            "edges_added_to_graph": stats["edges_added"],
+            "graph_size_after":     (
+                f"{len(session.scene_graph.entities)} entities, "
+                f"{len(session.scene_graph)} triplets"
+            ),
         })
 
     return inspect_frame
