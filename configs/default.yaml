@@ -35,6 +35,7 @@ perception:
   image_quality: 85               # JPEG quality 1–95
   frame_tolerance_sec: 2.0        # max distance (s) to match a cached frame
   batch_size: 4                   # frames per VLM call in build_scene_graph
+  max_parallel_batches: 3         # concurrent VLM calls (ThreadPoolExecutor)
 
 # ── Scene graph ───────────────────────────────────────────────────────────────
 scene_graph:

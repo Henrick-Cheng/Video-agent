@@ -123,6 +123,8 @@ def make_build_scene_graph(session: "VideoSession"):
                 merge_window_sec=cfg.scene_graph.merge_window_sec,
                 confidence_threshold=cfg.scene_graph.confidence_threshold,
                 batch_size=cfg.perception.batch_size,
+                max_parallel_batches=cfg.perception.max_parallel_batches,
+                cross_dedup_threshold=cfg.scene_graph.dedup_threshold,
             )
             return json.dumps({
                 "new_triplets":  stats["new_relations"],

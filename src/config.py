@@ -63,6 +63,7 @@ class PerceptionConfig(BaseModel):
     image_quality: int = 85
     frame_tolerance_sec: float = 2.0
     batch_size: int = 4
+    max_parallel_batches: int = 3
 
 
 class SceneGraphConfig(BaseModel):

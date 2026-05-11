@@ -7,10 +7,17 @@ the session's scene graph.
 
 Entry point:
     build_frames(session, frame_ids, focus_entities, vl_client, ...)
+
+v2 improvements:
+  - Existing entities injected into VLM prompt to stabilize cross-batch naming
+  - Post-processing cross-batch dedup via difflib string similarity
+  - Parallel VLM batch calls via ThreadPoolExecutor + tqdm progress bar
 """
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
@@ -19,6 +26,7 @@ from src.scene_graph.relation_vocab import RELATION_VOCAB
 if TYPE_CHECKING:
     from src.memory.session import FrameMeta, VideoSession
     from src.perception.vl_client import VLClient
+    from src.scene_graph.graph import Entity
 
 logger = logging.getLogger(__name__)
 
@@ -33,20 +41,38 @@ _SYSTEM_PROMPT = (
 
 # ── Prompt builder ────────────────────────────────────────────────────────────
 
+def _format_existing_entities(existing: dict[str, "Entity"]) -> str:
+    """Format existing graph entities for prompt context (max 20 shown)."""
+    if not existing:
+        return ""
+    items = list(existing.items())[:20]
+    lines = [f"  - {name} ({e.entity_type})" for name, e in items]
+    extra = f"\n  ... (共 {len(existing)} 个)" if len(existing) > 20 else ""
+    return "\n".join(lines) + extra
+
+
 def _build_prompt(
     timestamps: list[float],
     focus_entities: list[str],
     relation_vocab: list[str],
+    existing_entities: dict[str, "Entity"] | None = None,
 ) -> str:
     ts_str = ", ".join(f"{t:.1f}s" for t in timestamps)
     focus_hint = (
         f"\n【重点关注】以下实体: {', '.join(focus_entities)}\n"
         if focus_entities else ""
     )
-    # Show full vocab; take up to 50 terms
     vocab_str = "、".join(relation_vocab[:50])
 
-    return f"""请分析上方 {len(timestamps)} 帧视频画面（时间戳: {ts_str}）。{focus_hint}
+    existing_hint = ""
+    if existing_entities:
+        existing_hint = (
+            f"\n【已知实体】以下实体已在本视频中发现，如果检测到相同或高度相似的实体，"
+            f"请在 label 字段中直接复用完全相同的名称，不要重新命名：\n"
+            f"{_format_existing_entities(existing_entities)}\n"
+        )
+
+    return f"""请分析上方 {len(timestamps)} 帧视频画面（时间戳: {ts_str}）。{focus_hint}{existing_hint}
 识别所有可见的实体（人物 person、物体 object、场所 place）以及实体之间的关系。
 
 【关系词表】只能从以下词汇中选择关系标签，禁止自造：
@@ -93,7 +119,8 @@ def _extract_json_array(text: str, key: str) -> Optional[list]:
     Handles the case where the VLM emits duplicate keys or never closes
     the outer object — we just grab the first occurrence of each key's array.
     """
-    import json, re
+    import json
+    import re
 
     pattern = rf'"{re.escape(key)}"\s*:\s*(\[)'
     m = re.search(pattern, text)
@@ -108,7 +135,7 @@ def _extract_json_array(text: str, key: str) -> Optional[list]:
             depth -= 1
             if depth == 0:
                 try:
-                    return json.loads(text[start : i + 1])
+                    return json.loads(text[start: i + 1])
                 except json.JSONDecodeError:
                     return None
     return None
@@ -138,7 +165,7 @@ def _parse_vlm_output(text: str) -> Optional[dict]:
     end = text.rfind("}")
     if start != -1 and end != -1 and start < end:
         try:
-            return json.loads(text[start : end + 1])
+            return json.loads(text[start: end + 1])
         except json.JSONDecodeError:
             pass
 
@@ -161,7 +188,7 @@ def _parse_vlm_output(text: str) -> Optional[dict]:
 
 def _dedup_entities(entities: list[dict]) -> tuple[list[dict], dict[str, str]]:
     """
-    Deduplicate entities by (label, type). Merges attributes.
+    Deduplicate entities by (label, type) within a single batch. Merges attributes.
 
     Returns
     -------
@@ -202,6 +229,61 @@ def _dedup_entities(entities: list[dict]) -> tuple[list[dict], dict[str, str]]:
     return list(canonical.values()), id_remap
 
 
+# ── Cross-batch entity deduplication against existing graph ───────────────────
+
+def _cross_dedup_with_graph(
+    new_entities: list[dict],
+    existing: dict[str, "Entity"],
+    threshold: float = 0.85,
+) -> tuple[list[dict], dict[str, str]]:
+    """
+    Merge new entities into existing graph entities when their labels are
+    sufficiently similar (SequenceMatcher ratio ≥ threshold, same type).
+
+    Returns
+    -------
+    (truly_new, label_remap)
+        truly_new  — new entities that do NOT match any existing entity
+        label_remap — maps new entity label → existing canonical label
+                      (for relation subject/object remapping)
+    """
+    truly_new: list[dict] = []
+    label_remap: dict[str, str] = {}
+
+    for ent in new_entities:
+        new_label = ent.get("label", "")
+        new_type = ent.get("type", "object")
+        merged = False
+
+        for existing_name, existing_ent in existing.items():
+            if existing_ent.entity_type != new_type:
+                continue
+            ratio = SequenceMatcher(
+                None, new_label.lower(), existing_name.lower()
+            ).ratio()
+            if ratio >= threshold:
+                label_remap[new_label] = existing_name
+                # Update existing entity's time range if new info is wider
+                fs = ent.get("first_seen") or 0.0
+                ls = ent.get("last_seen") or 0.0
+                if fs and (existing_ent.first_seen == 0.0 or fs < existing_ent.first_seen):
+                    existing_ent.first_seen = fs
+                if ls > existing_ent.last_seen:
+                    existing_ent.last_seen = ls
+                existing_ent.attributes.update(ent.get("attributes") or {})
+                merged = True
+                logger.debug(
+                    "Cross-batch merge: '%s' → '%s' (ratio=%.2f)",
+                    new_label, existing_name, ratio,
+                )
+                break
+
+        if not merged:
+            truly_new.append(ent)
+
+    return truly_new, label_remap
+
+
 # ── Relation merging ──────────────────────────────────────────────────────────
 
 def _merge_relations(
@@ -228,7 +310,6 @@ def _merge_relations(
         found = False
         for ex in merged:
             if (ex["subject"], ex["relation"], ex["object"]) == key:
-                # gap between the two windows
                 gap = max(t0, ex["t_start"]) - min(t1, ex["t_end"])
                 if gap <= merge_window_sec:
                     ex["t_start"] = min(ex["t_start"], t0)
@@ -255,6 +336,7 @@ def _call_vlm_batch(
     vl_client: "VLClient",
     frames: list["FrameMeta"],
     focus_entities: list[str],
+    existing_entities: dict[str, "Entity"] | None = None,
     max_retries: int = 2,
 ) -> Optional[dict]:
     """
@@ -265,7 +347,7 @@ def _call_vlm_batch(
         return None
 
     timestamps = [f.timestamp for f in frames]
-    prompt = _build_prompt(timestamps, focus_entities, RELATION_VOCAB)
+    prompt = _build_prompt(timestamps, focus_entities, RELATION_VOCAB, existing_entities)
 
     for attempt in range(max_retries):
         try:
@@ -290,15 +372,19 @@ def build_frames(
     merge_window_sec: float = 3.0,
     confidence_threshold: float = 0.75,
     batch_size: int = 4,
+    max_parallel_batches: int = 3,
+    cross_dedup_threshold: float = 0.85,
 ) -> dict:
     """
     Build / update the scene graph from a list of frame IDs.
 
     1. Fetch frames from session cache; skip missing paths.
     2. Split into batches of `batch_size` frames sorted by timestamp.
-    3. For each batch, call VLM, parse response, deduplicate entities & merge relations.
-    4. Filter by confidence threshold.
-    5. Merge results into session.scene_graph.
+    3. Call VLM on all batches in parallel (up to `max_parallel_batches` threads).
+    4. For each batch: parse response, deduplicate entities, merge relations.
+    5. Cross-batch dedup against existing graph entities (difflib similarity).
+    6. Filter by confidence threshold.
+    7. Merge results into session.scene_graph.
 
     Returns
     -------
@@ -311,6 +397,12 @@ def build_frames(
         "batches_fail":  int         batches that failed
     }
     """
+    try:
+        from tqdm import tqdm as _tqdm
+        _has_tqdm = True
+    except ImportError:
+        _has_tqdm = False
+
     # Resolve and sort frames
     frames = [session.get_frame(fid) for fid in frame_ids]
     frames = [
@@ -330,14 +422,52 @@ def build_frames(
 
     frames.sort(key=lambda f: f.timestamp)
 
-    # Collect across batches
+    # Snapshot existing graph entities for prompt context + cross-dedup
+    existing_entities = dict(session.scene_graph.entities)
+
+    # Split into batches
+    batches = [frames[i: i + batch_size] for i in range(0, len(frames), batch_size)]
+    n_batches = len(batches)
+
     all_entities: list[dict] = []
     all_relations: list[dict] = []
     batches_ok = batches_fail = 0
 
-    for i in range(0, len(frames), batch_size):
-        batch = frames[i: i + batch_size]
-        parsed = _call_vlm_batch(vl_client, batch, focus_entities)
+    # ── Parallel VLM calls ────────────────────────────────────────────────────
+    results: list[Optional[dict]] = [None] * n_batches
+
+    with ThreadPoolExecutor(max_workers=max_parallel_batches) as executor:
+        future_to_idx = {
+            executor.submit(
+                _call_vlm_batch,
+                vl_client,
+                batch,
+                focus_entities,
+                existing_entities,
+            ): idx
+            for idx, batch in enumerate(batches)
+        }
+
+        if _has_tqdm:
+            from tqdm import tqdm
+            pbar = tqdm(total=n_batches, desc="Building scene graph", unit="batch")
+        else:
+            pbar = None
+
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            try:
+                results[idx] = future.result()
+            except Exception as exc:
+                logger.warning("Batch %d raised exception: %s", idx, exc)
+                results[idx] = None
+            if pbar:
+                pbar.update(1)
+
+        if pbar:
+            pbar.close()
+
+    for parsed in results:
         if parsed is None:
             batches_fail += 1
             continue
@@ -355,7 +485,7 @@ def build_frames(
             "batches_fail":  batches_fail,
         }
 
-    # Deduplicate entities
+    # ── Within-batch entity deduplication ─────────────────────────────────────
     unique_entities, id_remap = _dedup_entities(all_entities)
 
     # Remap relation subject/object IDs
@@ -363,24 +493,35 @@ def build_frames(
         rel["subject"] = id_remap.get(rel.get("subject", ""), rel.get("subject", ""))
         rel["object"] = id_remap.get(rel.get("object", ""), rel.get("object", ""))
 
-    # Apply focus filter (post-processing guard in addition to prompt hint)
+    # ── Cross-batch dedup against existing graph ──────────────────────────────
+    truly_new, label_remap = _cross_dedup_with_graph(
+        unique_entities, existing_entities, threshold=cross_dedup_threshold
+    )
+
+    # Apply label remap to relations (subject/object may now point to existing names)
+    for rel in all_relations:
+        rel["subject"] = label_remap.get(rel["subject"], rel["subject"])
+        rel["object"] = label_remap.get(rel["object"], rel["object"])
+
+    # Replace unique_entities with only the truly new ones
+    unique_entities = truly_new
+
+    # ── Focus filter ──────────────────────────────────────────────────────────
     if focus_entities:
         focus_lower = {f.lower() for f in focus_entities}
         relevant_ids = {
             e["id"] for e in unique_entities
             if any(f in e["label"].lower() for f in focus_lower)
         }
-        if relevant_ids:  # only filter if focus produces any results
+        if relevant_ids:
             unique_entities = [e for e in unique_entities if e["id"] in relevant_ids]
             all_relations = [
                 r for r in all_relations
                 if r.get("subject") in relevant_ids or r.get("object") in relevant_ids
             ]
 
-    # Merge relations across batches
+    # ── Merge and filter relations ─────────────────────────────────────────────
     merged_relations = _merge_relations(all_relations, merge_window_sec)
-
-    # Confidence threshold
     merged_relations = [
         r for r in merged_relations
         if r.get("confidence", 1.0) >= confidence_threshold
