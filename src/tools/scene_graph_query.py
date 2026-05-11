@@ -1,8 +1,8 @@
 """
 Tool: query_scene_graph
 
-Retrieves relevant triplets from the session's scene graph.
-This is a cheap structured lookup — prefer it over inspect_frame.
+Retrieves relevant triplets from the session's scene graph using a
+multi-strategy Chinese retriever (jieba + exact/relation/substring matching).
 """
 
 from __future__ import annotations
@@ -34,52 +34,32 @@ def make_query_scene_graph(session: "VideoSession"):
 
         Returns:
             JSON with keys:
-            - triplets       (list[dict])  matched triplets (up to top_k)
-            - entity_summary (str)         all known entities
-            - found          (bool)        False if graph is empty
+            - triplets        (list[dict])  matched triplets, sorted by score
+            - entity_summary  (str)         all known entities
+            - found           (bool)        True if any triplets matched
+            - matched_tokens  (list[str])   query tokens that produced hits
+            - nearby_entities (list[str])   close-match entities when found=False
         """
         from src.config import get_settings
+        from src.scene_graph.retriever import retrieve_triplets
+
         cfg = get_settings()
 
-        # TODO: replace naive keyword match with FAISS vector retrieval
         if len(session.scene_graph) == 0:
             return json.dumps({
                 "triplets": [],
                 "entity_summary": "Scene graph is empty. Call build_scene_graph first.",
                 "found": False,
-            })
+                "matched_tokens": [],
+                "nearby_entities": [],
+            }, ensure_ascii=False)
 
-        words = set(question.lower().split())
-        matched_entities = [
-            name for name in session.scene_graph.entities
-            if any(kw in name.lower() for kw in words)
-        ]
-        if not matched_entities:
-            matched_entities = list(session.scene_graph.entities.keys())[
-                :cfg.retrieval.fallback_entity_count
-            ]
-
-        relevant = session.scene_graph.get_triplets_for_entities(matched_entities)
-
-        triplets_out = [
-            {
-                "subject":    t.subject,
-                "relation":   t.relation,
-                "object":     t.object,
-                "t_start":    t.t_start,
-                "t_end":      t.t_end,
-                "confidence": t.confidence,
-            }
-            for t in relevant[:cfg.retrieval.top_k]
-        ]
-
-        entity_names = list(session.scene_graph.entities.keys())
-        entity_summary = f"Entities ({len(entity_names)}): {', '.join(entity_names)}"
-
-        return json.dumps({
-            "triplets":       triplets_out,
-            "entity_summary": entity_summary,
-            "found":          bool(triplets_out),
-        })
+        result = retrieve_triplets(
+            question=question,
+            graph=session.scene_graph,
+            top_k=cfg.retrieval.top_k,
+            min_score=cfg.retrieval.min_score,
+        )
+        return json.dumps(result, ensure_ascii=False)
 
     return query_scene_graph
