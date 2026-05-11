@@ -30,22 +30,37 @@ def _extract_single_frame(session: "VideoSession", timestamp: float):
     if not Path(video_path).exists():
         return None
     try:
-        import decord
         from PIL import Image
         from src.memory.session import FrameMeta
 
-        vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
-        fps = vr.get_avg_fps()
-        idx = min(int(round(timestamp * fps)), len(vr) - 1)
+        # try decord first, fall back to cv2
+        try:
+            import decord
+            vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
+            fps = vr.get_avg_fps()
+            total = len(vr)
+            idx = min(int(round(timestamp * fps)), total - 1)
+            arr = vr[idx].asnumpy()
+        except ImportError:
+            import cv2
+            import numpy as np
+            cap = cv2.VideoCapture(video_path)
+            fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+            total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            idx = min(int(round(timestamp * fps)), total - 1)
+            cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+            ret, frame = cap.read()
+            cap.release()
+            if not ret:
+                return None
+            arr = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
         ts = round(float(idx) / fps, 2)
         frame_id = f"t_{ts:08.2f}"
-
         out_dir = Path(tempfile.gettempdir()) / "video_agent" / session.session_id
         out_dir.mkdir(parents=True, exist_ok=True)
         path = out_dir / f"{frame_id}.jpg"
-
         if not path.exists():
-            arr = vr[idx].asnumpy()
             Image.fromarray(arr).save(str(path), quality=85)
 
         meta = FrameMeta(frame_id=frame_id, timestamp=ts,

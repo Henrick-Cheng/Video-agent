@@ -2,7 +2,9 @@
 Tool: extract_keyframes
 
 Extracts keyframes from a video on demand and registers them in VideoSession.
-Real implementation uses decord (uniform/query_aware) and PySceneDetect (scene_change).
+Video backend: tries decord first, falls back to OpenCV (cv2) if decord is
+unavailable (e.g. Python 3.13 / macOS where no decord wheel exists).
+Scene-change detection uses PySceneDetect when installed.
 Falls back gracefully to mock when video path doesn't exist.
 """
 
@@ -29,23 +31,60 @@ def _frame_dir(session: "VideoSession") -> Path:
     return d
 
 
-def _save_frames(indices: list[int], vr, fps: float, out_dir: Path) -> list:
-    """Batch-decode and JPEG-save frames; return list of FrameMeta."""
+def _open_video(video_path: str):
+    """
+    Return (reader, fps, total_frames) using decord if available, else OpenCV.
+    The reader object supports _save_frames() via duck-typed get_batch / seek.
+    """
+    try:
+        import decord
+        vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
+        return ("decord", vr, vr.get_avg_fps(), len(vr))
+    except ImportError:
+        import cv2
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        return ("cv2", cap, fps, total)
+
+
+def _save_frames(backend: str, reader, indices: list[int],
+                 fps: float, out_dir: Path) -> list:
+    """Decode and JPEG-save frames; return list of FrameMeta."""
     import numpy as np
     from PIL import Image
     from src.memory.session import FrameMeta
 
     unique = sorted(set(int(i) for i in indices))
-    arrays = vr.get_batch(unique).asnumpy()
     metas = []
-    for idx, arr in zip(unique, arrays):
-        ts = round(float(idx) / fps, 2)
-        frame_id = f"t_{ts:08.2f}"
-        path = out_dir / f"{frame_id}.jpg"
-        if not path.exists():
-            Image.fromarray(arr).save(str(path), quality=85)
-        metas.append(FrameMeta(frame_id=frame_id, timestamp=ts,
-                               path=str(path), extracted=True))
+
+    if backend == "decord":
+        arrays = reader.get_batch(unique).asnumpy()
+        for idx, arr in zip(unique, arrays):
+            ts = round(float(idx) / fps, 2)
+            frame_id = f"t_{ts:08.2f}"
+            path = out_dir / f"{frame_id}.jpg"
+            if not path.exists():
+                Image.fromarray(arr).save(str(path), quality=85)
+            metas.append(FrameMeta(frame_id=frame_id, timestamp=ts,
+                                   path=str(path), extracted=True))
+    else:  # cv2
+        import cv2
+        for idx in unique:
+            reader.set(cv2.CAP_PROP_POS_FRAMES, idx)
+            ret, frame = reader.read()
+            if not ret:
+                continue
+            arr = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            ts = round(float(idx) / fps, 2)
+            frame_id = f"t_{ts:08.2f}"
+            path = out_dir / f"{frame_id}.jpg"
+            if not path.exists():
+                Image.fromarray(arr).save(str(path), quality=85)
+            metas.append(FrameMeta(frame_id=frame_id, timestamp=ts,
+                                   path=str(path), extracted=True))
+        reader.release()
+
     return metas
 
 
@@ -111,12 +150,7 @@ def make_extract_keyframes(session: "VideoSession"):
 
         # ── real path ─────────────────────────────────────────────────────────
         if Path(video_path).exists():
-            import decord
-            import numpy as np
-
-            vr = decord.VideoReader(video_path, ctx=decord.cpu(0))
-            fps = vr.get_avg_fps()
-            total = len(vr)
+            backend, reader, fps, total = _open_video(video_path)
             out_dir = _frame_dir(session)
 
             if strategy == "uniform" or strategy == "query_aware":
@@ -127,7 +161,7 @@ def make_extract_keyframes(session: "VideoSession"):
             else:
                 raise ValueError(f"Unknown strategy: {strategy!r}")
 
-            frame_metas = _save_frames(indices, vr, fps, out_dir)
+            frame_metas = _save_frames(backend, reader, indices, fps, out_dir)
             session.register_frames(frame_metas)
 
             return json.dumps({
