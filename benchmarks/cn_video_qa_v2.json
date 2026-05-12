@@ -1,0 +1,202 @@
+[
+  {
+    "id": "v2_obj_01",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中一共出现了哪几种不同的锅具？请全部列举。",
+    "reference_answer": "视频中出现了三种锅具：平底锅（用于焯水）、炒锅（用于炒糖色和翻炒猪肉）、砂锅（用于最后的慢炖）。",
+    "category": "物体识别",
+    "key_facts": ["平底锅", "炒锅", "砂锅", "三种"]
+  },
+  {
+    "id": "v2_obj_02",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中放入砂锅的香料有哪些？",
+    "reference_answer": "放入砂锅的香料有：八角、香叶（月桂叶）和干辣椒，这三种香料是从一个小碗中一起加入的。",
+    "category": "物体识别",
+    "key_facts": ["八角", "香叶", "干辣椒"]
+  },
+  {
+    "id": "v2_obj_03",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中炒糖色使用的是哪种糖？",
+    "reference_answer": "炒糖色使用的是冰糖（rock sugar），在炒锅中加热至融化形成糖浆。",
+    "category": "物体识别",
+    "key_facts": ["冰糖"]
+  },
+  {
+    "id": "v2_obj_04",
+    "video": "data/videos/cooking.mp4",
+    "question": "五花肉焯水时锅里除了肉还放了什么？",
+    "reference_answer": "焯水时除了五花肉，还放入了姜片和葱段，用于去除猪肉的腥味。",
+    "category": "物体识别",
+    "key_facts": ["姜", "葱"]
+  },
+  {
+    "id": "v2_obj_05",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中最后出锅时在红烧肉上撒了什么？",
+    "reference_answer": "最后出锅时在红烧肉上撒了葱花作为装饰。",
+    "category": "物体识别",
+    "key_facts": ["葱花"]
+  },
+  {
+    "id": "v2_attr_01",
+    "video": "data/videos/cooking.mp4",
+    "question": "慢炖阶段使用的是什么火候？",
+    "reference_answer": "慢炖阶段使用小火，盖上砂锅锅盖进行长时间炖制。",
+    "category": "实体属性",
+    "key_facts": ["小火", "砂锅"]
+  },
+  {
+    "id": "v2_attr_02",
+    "video": "data/videos/cooking.mp4",
+    "question": "五花肉在切块之前是什么状态？对它做了什么处理？",
+    "reference_answer": "五花肉先整块放入平底锅焯水（加姜葱去腥），焯水后取出再切成小块。",
+    "category": "实体属性",
+    "key_facts": ["焯水", "整块", "切块"]
+  },
+  {
+    "id": "v2_attr_03",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中加入砂锅的香料是如何放置的？是逐一加入还是一次性放入？",
+    "reference_answer": "香料（八角、香叶、干辣椒）预先放在一个小碗里，一次性倒入砂锅。",
+    "category": "实体属性",
+    "key_facts": ["小碗", "一次性", "预先"]
+  },
+  {
+    "id": "v2_attr_04",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频最后用什么展示了红烧肉的成品质感？",
+    "reference_answer": "视频最后用筷子夹起一块红烧肉做特写，展示其软烂、酱汁浓郁的质感。",
+    "category": "实体属性",
+    "key_facts": ["筷子", "特写", "软烂"]
+  },
+  {
+    "id": "v2_attr_05",
+    "video": "data/videos/cooking.mp4",
+    "question": "炒糖色时使用的是什么火候？",
+    "reference_answer": "炒糖色时使用中火，将冰糖加热至融化并形成焦糖色。",
+    "category": "实体属性",
+    "key_facts": ["中火", "冰糖"]
+  },
+  {
+    "id": "v2_rel_01",
+    "video": "data/videos/cooking.mp4",
+    "question": "五花肉从开始到做成红烧肉，依次经过了哪几种锅具？按顺序说。",
+    "reference_answer": "五花肉依次经过：①平底锅（焯水去腥）→ ②炒锅（炒糖色后翻炒上色）→ ③砂锅（加香料慢炖至软烂）。",
+    "category": "关系推理",
+    "key_facts": ["平底锅", "炒锅", "砂锅", "顺序正确"]
+  },
+  {
+    "id": "v2_rel_02",
+    "video": "data/videos/cooking.mp4",
+    "question": "冰糖在这道菜中起什么作用？它是在哪个步骤中使用的？",
+    "reference_answer": "冰糖用于炒糖色，在炒锅阶段将冰糖融化形成焦糖，给五花肉上色。这是红烧肉颜色红亮的关键步骤。",
+    "category": "关系推理",
+    "key_facts": ["炒糖色", "上色", "炒锅"]
+  },
+  {
+    "id": "v2_rel_03",
+    "video": "data/videos/cooking.mp4",
+    "question": "葱在这个视频中有几种不同用途？分别是什么？",
+    "reference_answer": "葱在视频中有三种用途：①焯水时加葱段去腥；②转入砂锅慢炖时加入增香；③最后出锅时撒葱花装饰。",
+    "category": "关系推理",
+    "key_facts": ["焯水去腥", "慢炖增香", "葱花装饰", "三种用途"]
+  },
+  {
+    "id": "v2_rel_04",
+    "video": "data/videos/cooking.mp4",
+    "question": "酱油是在哪个阶段、用哪种锅加入的？",
+    "reference_answer": "酱油是在翻炒阶段，在炒锅中将五花肉块翻炒至表面微焦后加入，同时加入水。",
+    "category": "关系推理",
+    "key_facts": ["炒锅", "翻炒", "酱油"]
+  },
+  {
+    "id": "v2_rel_05",
+    "video": "data/videos/cooking.mp4",
+    "question": "哪些食材是在同一时间一起加入砂锅的？",
+    "reference_answer": "八角、香叶和干辣椒这三种香料是从一个小碗中一起加入砂锅的；葱是在香料之前单独加入的。",
+    "category": "关系推理",
+    "key_facts": ["八角", "香叶", "干辣椒", "同时加入"]
+  },
+  {
+    "id": "v2_temp_01",
+    "video": "data/videos/cooking.mp4",
+    "question": "炒糖色是在放入猪肉块之前还是之后进行的？",
+    "reference_answer": "炒糖色在放入猪肉块之前进行。先将冰糖在炒锅中融化炒成焦糖，再将切好的五花肉块放入炒锅翻炒上色。",
+    "category": "时序推理",
+    "key_facts": ["炒糖色在先", "猪肉后放入"]
+  },
+  {
+    "id": "v2_temp_02",
+    "video": "data/videos/cooking.mp4",
+    "question": "香料（八角、香叶）是在五花肉转入砂锅之前还是之后加入的？",
+    "reference_answer": "香料是在五花肉转入砂锅之后才加入的。先把葱加入砂锅，再加入装有八角、香叶、干辣椒的小碗中的香料。",
+    "category": "时序推理",
+    "key_facts": ["转入砂锅之后", "先转锅再加香料"]
+  },
+  {
+    "id": "v2_temp_03",
+    "video": "data/videos/cooking.mp4",
+    "question": "五花肉是先焯水还是先切块？",
+    "reference_answer": "先焯水，后切块。整块五花肉先在平底锅中焯水去腥，取出后再切成小块。",
+    "category": "时序推理",
+    "key_facts": ["先焯水", "再切块"]
+  },
+  {
+    "id": "v2_temp_04",
+    "video": "data/videos/cooking.mp4",
+    "question": "葱花是在什么时候加入的？是烹饪过程中途还是最后？",
+    "reference_answer": "葱花是在最后出锅时加入的，作为装饰撒在成品红烧肉上，是整个烹饪过程的最后一步。",
+    "category": "时序推理",
+    "key_facts": ["最后", "出锅", "装饰"]
+  },
+  {
+    "id": "v2_temp_05",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中焯水步骤和炒糖色步骤，哪个先发生？中间经历了什么步骤？",
+    "reference_answer": "焯水在先，炒糖色在后。中间经历了切块步骤——将焯水后的五花肉取出切成块状，然后才进行炒糖色。",
+    "category": "时序推理",
+    "key_facts": ["焯水在先", "炒糖色在后", "中间切块"]
+  },
+  {
+    "id": "v2_count_01",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中五花肉经历了几个主要的烹饪阶段？请列举。",
+    "reference_answer": "五花肉经历了四个主要阶段：①焯水（去腥）→ ②切块 → ③炒制上色（炒锅）→ ④慢炖（砂锅）。",
+    "category": "计数/出现",
+    "key_facts": ["四个阶段", "焯水", "切块", "炒制", "慢炖"]
+  },
+  {
+    "id": "v2_count_02",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中放入的干香料（不含葱和姜）共有几种？",
+    "reference_answer": "干香料共有三种：八角、香叶（月桂叶）、干辣椒。",
+    "category": "计数/出现",
+    "key_facts": ["三种", "八角", "香叶", "干辣椒"]
+  },
+  {
+    "id": "v2_count_03",
+    "video": "data/videos/cooking.mp4",
+    "question": "葱在整个烹饪过程中被加入了几次？分别在什么时候？",
+    "reference_answer": "葱共被加入三次：第一次焯水时（去腥）、第二次转入砂锅时（增香）、第三次出锅时（撒葱花装饰）。",
+    "category": "计数/出现",
+    "key_facts": ["三次", "焯水", "砂锅", "出锅"]
+  },
+  {
+    "id": "v2_count_04",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中出现了几种液体调料（不含清水）？",
+    "reference_answer": "液体调料共有两种：酱油和料酒。",
+    "category": "计数/出现",
+    "key_facts": ["两种", "酱油", "料酒"]
+  },
+  {
+    "id": "v2_count_05",
+    "video": "data/videos/cooking.mp4",
+    "question": "视频中总共使用了几种不同的烹饪工具（包括锅具和刀具）？",
+    "reference_answer": "共使用了约六种烹饪工具：平底锅、炒锅、砂锅、砧板、菜刀、汤勺（筷子用于夹取和搅拌）。",
+    "category": "计数/出现",
+    "key_facts": ["平底锅", "炒锅", "砂锅", "砧板", "菜刀"]
+  }
+]

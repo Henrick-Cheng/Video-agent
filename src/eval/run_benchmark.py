@@ -113,7 +113,7 @@ def _answer_agent(session, question: str) -> tuple[str, int, _TrialStats]:
     from src.agents.react_agent import build_agent
 
     agent = build_agent(session)
-    rl = getattr(agent, "_va_max_iterations", 6) * 3 + 1
+    rl = getattr(agent, "_va_max_iterations", 6) * 5 + 10
 
     # Inject graph status so agent skips rebuild and goes directly to query/inspect
     n_e = len(session.scene_graph.entities)
