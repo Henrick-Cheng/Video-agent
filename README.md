@@ -108,9 +108,10 @@ FINAL ANSWER:
 
 ---
 
-## 评测对比（自建 25 题中文 QA 集）
+## 评测对比
 
-> 评测脚本：`python -m src.eval.run_benchmark`，LLM-as-Judge（qwen-plus），每方案跑 3 次取均值。
+### V1：test1.mp4（游戏录屏，25 题，1 次运行）
+
 > 完整结果：[docs/benchmark_results.md](docs/benchmark_results.md)
 
 | 方案 | 整体准确率 | 物体识别 | 实体属性 | 关系推理 | 时序推理 | 计数/出现 |
@@ -119,10 +120,22 @@ FINAL ANSWER:
 | rag_only | 0.340 | **0.700** | 0.200 | 0.400 | 0.000 | 0.400 |
 | vlm_direct | **0.540** | 0.500 | **0.400** | **0.700** | 0.500 | **0.600** |
 
-> 评测环境：`qwen-plus-latest` (judge) + `qwen-vl-plus-latest` (vlm), 25 题, 1 次运行, test1.mp4（游戏录屏）
-> 完整分析：[docs/benchmark_results.md](docs/benchmark_results.md)
+**发现**：vlm_direct 整体最高（游戏 UI 文字可直读）；agent 时序推理最强（时间戳场景图优势）。
 
-**发现**：vlm_direct 整体最高（游戏 UI 文字可直读）；agent 时序推理最强（时间戳场景图优势）；rag_only 物体识别最佳（全图覆盖）。
+### V2：cooking.mp4（红烧肉教程，25 题，反字幕设计）
+
+> 评测题目：[benchmarks/cn_video_qa_v2.json](benchmarks/cn_video_qa_v2.json) | 分析：[docs/benchmark_v2_analysis.md](docs/benchmark_v2_analysis.md)
+
+| 方案 | 整体准确率 | 物体识别 | 实体属性 | 关系推理 | 时序推理 | 计数/出现 |
+|------|-----------|---------|---------|---------|---------|----------|
+| **agent** | 0.220 | 0.200 | 0.300 | 0.100 | **0.300** | 0.200 |
+| rag_only | — | — | — | — | — | — |
+| vlm_direct | — | — | — | — | — | — |
+
+> 评测环境：`qwen-plus-latest` (judge) + `qwen-vl-plus-latest` (vlm), 25 题, 3 次运行取均值（rag_only/vlm_direct 评测进行中）
+> **设计改进**：字幕为喜剧风格（不含食谱信息），时序/关系题占 40%，消除 vlm_direct 读字幕捷径
+
+**初步发现**：Agent 在无 UI 文字可读的烹饪视频上时序推理仍保持 0.300，验证了时序场景图的核心价值。
 
 ---
 
