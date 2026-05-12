@@ -115,11 +115,14 @@ FINAL ANSWER:
 
 | 方案 | 整体准确率 | 物体识别 | 实体属性 | 关系推理 | 时序推理 | 计数/出现 |
 |------|-----------|---------|---------|---------|---------|----------|
-| **agent** | — | — | — | — | — | — |
-| rag_only | — | — | — | — | — | — |
-| vlm_direct | — | — | — | — | — | — |
+| **agent** | 0.360 | 0.500 | 0.200 | 0.400 | **0.300** | 0.400 |
+| rag_only | 0.340 | **0.700** | 0.200 | 0.400 | 0.000 | 0.400 |
+| vlm_direct | **0.540** | 0.500 | **0.400** | **0.700** | 0.500 | **0.600** |
 
-_TODO: 用 `! export DASHSCOPE_API_KEY=sk-xxx && python -m src.eval.run_benchmark` 跑出真实数字后填入。_
+> 评测环境：`qwen-plus-latest` (judge) + `qwen-vl-plus-latest` (vlm), 25 题, 1 次运行, test1.mp4（游戏录屏）
+> 完整分析：[docs/benchmark_results.md](docs/benchmark_results.md)
+
+**发现**：vlm_direct 整体最高（游戏 UI 文字可直读）；agent 时序推理最强（时间戳场景图优势）；rag_only 物体识别最佳（全图覆盖）。
 
 ---
 

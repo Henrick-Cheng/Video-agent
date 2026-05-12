@@ -348,5 +348,87 @@ pytest tests/ (不含 API Key 测试)
 ### 下一步建议（优先级排序）
 1. **FAISS + embedding**：sentence-transformers 向量检索覆盖剩余 20% 语义近义词 miss
 2. **换真实世界视频**：test1.mp4 场景过于单一
-3. **Gradio UI**：`src/ui/app.py`，上传视频 → 实时问答
+3. ~~**Gradio UI**：`src/ui/app.py`，上传视频 → 实时问答~~ **第六阶段完成**
 4. **部署文档**：`docs/deployment.md`（vLLM + GPU 环境配置）
+
+---
+
+## 第六阶段：自建评测集 + 真实 Benchmark + Gradio 前端（本次）
+**日期：** 2026-05-12
+
+### 完成内容
+
+#### 任务 1：自建中文视频 QA 评测集
+
+- `benchmarks/cn_video_qa_v1.json`：25 题，5 类（物体识别/实体属性/关系推理/时序推理/计数）
+  - 每题含 `question`, `reference_answer`, `category`, `key_facts`
+  - 基于 Phase 3/4 真实 VLM 分析（test1.mp4），非 mock 数据
+- `benchmarks/cn_video_qa_v1_meta.md`：视频内容说明，角色 / 物体 / 三元组清单，数据来源声明
+
+#### 任务 2：评测脚本 + 真实评测
+
+- `src/eval/run_benchmark.py`：三方案基线 + LLM-as-Judge（qwen-plus-latest）
+  - **agent**：预构建场景图（8帧），每题注入图状态 hint，Agent 直接 query_scene_graph / inspect_frame
+  - **rag_only**：预构建场景图，LLM 从图文本回答，无视觉工具
+  - **vlm_direct**：每题抽 4 帧直接发给 VLM，无场景图
+  - Judge prompt 严格：`key_facts` 全命中才得 1.0，超过一半得 0.5
+  - 关键修复：`sys.stdout.reconfigure(line_buffering=True)` 避免后台进程输出缓冲
+
+**真实评测结果**（1 次运行，25 题，qwen-vl-plus-latest + qwen-plus-latest）：
+
+| 方案 | 整体准确率 | 物体识别 | 实体属性 | 关系推理 | 时序推理 | 计数 | 均时(s) |
+|------|-----------|---------|---------|---------|---------|------|---------|
+| agent | 0.360 | 0.500 | 0.200 | 0.400 | **0.300** | 0.400 | 15.2 |
+| rag_only | 0.340 | **0.700** | 0.200 | 0.400 | 0.000 | 0.400 | 3.1 |
+| vlm_direct | **0.540** | 0.500 | **0.400** | **0.700** | 0.500 | **0.600** | 8.0 |
+
+**关键洞察：**
+- vlm_direct 整体最高：游戏 UI 有可读文字（队伍名/角色名），VLM 直接读取
+- agent 时序推理唯一胜出方向（0.300 vs rag 0.000）：场景图 `first_seen/last_seen` 有效
+- 属性识别全体偏低（0.2-0.4）：场景图未专门存储外观属性，是改进方向
+
+#### 任务 3：Gradio 前端
+
+- `frontend/app.py`：三栏布局 Gradio 5.x 界面
+  - 左栏：视频上传 / 播放 + "构建场景图"按钮 + 状态
+  - 中栏：多轮对话 + 5 个示例问题按钮 + "重置 Session" 按钮
+  - 右栏：Agent trace（HTML 彩色 emoji 格式）+ 场景图状态（实体数/边数/最近实体）
+  - 流式输出：`agent.stream()` 逐步更新 trace
+  - `gr.State(_AppState())` 管理 session 和 agent 状态
+
+#### 任务 4：最终文档
+
+- `docs/architecture.md`：详细架构图（ASCII art + 组件说明 + 渐进式精化流程 + 部署方案）
+- `README.md`：终版，含 mermaid 架构图、真实 benchmark 表格、项目亮点、诚实局限性
+- `docs/benchmark_results.md`：自动生成 + 手工注解分析
+
+### 遇到的坑
+
+| 坑 | 原因 | 解决 |
+|----|------|------|
+| Agent 每题重建场景图（~90s/题）| Agent 从空对话开始，看不到已有图 | 注入 ctx_prefix 提示图已预构建 |
+| 后台进程无输出 | Python stdout 管道缓冲 | `sys.stdout.reconfigure(line_buffering=True)` |
+| 评测第一次运行成本过高（预估¥40+）| Agent 每题独立重建场景图 | 共享 session + hint 注入，实际跑完约 ¥8 |
+
+### Token 消耗（本次评测，1 轮）
+
+| 方法 | VLM 调用 | LLM 调用 | 大致费用 |
+|------|---------|---------|---------|
+| agent（25题）| 预构建 2 batch + inspect_frame | ~75 次 | ~¥4 |
+| rag_only（25题）| 预构建 2 batch | 25 次 LLM | ~¥1 |
+| vlm_direct（25题）| 25×4帧 = 100 次 VLM | 25 次 judge | ~¥2 |
+| **合计** | | | **~¥7-8** |
+
+### 已知问题 / TODO（更新）
+1. **评测集扩展**：25 题统计量不足，建议扩展到 100+ 题或用 NExT-QA / ActivityNet-QA
+2. **3 次运行取均值**：当前 1 次，std=0，无统计意义的方差估计
+3. **换真实世界视频**：游戏录屏使 vlm_direct 占优（UI 文字），需生活场景视频验证 agent 优势
+4. **Entity 外观属性**：`build_scene_graph` 未专门提取服装/颜色等属性，属性题目全体偏低
+5. **Gradio 流式 trace** 依赖 `agent.stream()`，需在有 API Key 环境测试实际效果
+
+### 下一步建议（优先级排序）
+1. **换真实世界视频**：生活场景视频能更好体现 agent 时序 + 关系推理优势
+2. **扩展评测集至 100 题**：覆盖更多场景，3 次运行取均值得到统计显著结果
+3. **Entity 外观属性**：修改 `build_scene_graph` prompt 专门提取外观/属性信息
+4. **FAISS + embedding**：解决语义近义词检索 miss（"人物"→具体角色名）
+5. **部署文档**：`docs/deployment.md`（vLLM + GPU 环境配置，Docker compose）

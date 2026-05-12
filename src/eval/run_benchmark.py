@@ -28,6 +28,9 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+
+# Force line-buffered stdout so progress prints appear immediately in background runs
+sys.stdout.reconfigure(line_buffering=True)  # type: ignore[attr-defined]
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -106,23 +109,30 @@ def _prebuild_graph(session, frame_count: int = 8) -> _TrialStats:
 
 
 def _answer_agent(session, question: str) -> tuple[str, int, _TrialStats]:
-    """Answer using full ReAct agent. Returns (answer, tool_calls, stats)."""
+    """Answer using full ReAct agent (scene graph already pre-built)."""
     from src.agents.react_agent import build_agent
-    from src.config import get_settings
 
-    cfg = get_settings()
     agent = build_agent(session)
     rl = getattr(agent, "_va_max_iterations", 6) * 3 + 1
 
+    # Inject graph status so agent skips rebuild and goes directly to query/inspect
+    n_e = len(session.scene_graph.entities)
+    n_t = len(session.scene_graph)
+    n_f = len(session.cached_frames)
+    ctx_prefix = (
+        f"[场景图已预构建：{n_e} 个实体，{n_t} 条三元组，{n_f} 帧已缓存。"
+        f"请直接使用 query_scene_graph 检索，必要时用 inspect_frame 补充，"
+        f"无需再调用 extract_keyframes 或 build_scene_graph。]\n\n"
+    )
+
     result = agent.invoke(
-        {"messages": [("user", question)]},
+        {"messages": [("user", ctx_prefix + question)]},
         config={"recursion_limit": rl},
     )
     msgs = result.get("messages", [])
     answer = msgs[-1].content if msgs else ""
     tool_calls = sum(1 for m in msgs if getattr(m, "type", "") == "tool")
 
-    # Estimate tokens from message lengths (API usage not easily available in LangGraph)
     stats = _TrialStats()
     total_chars = sum(len(str(getattr(m, "content", ""))) for m in msgs)
     stats.prompt_tokens = int(total_chars / 3)
