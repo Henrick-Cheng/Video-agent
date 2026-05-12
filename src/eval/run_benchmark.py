@@ -314,7 +314,8 @@ def _std(vals: list[float]) -> float:
 
 def _aggregate(all_trials: list[list[dict]]) -> dict:
     """Aggregate multiple trial result lists into mean/std stats."""
-    categories = ["object", "attribute", "relation", "temporal", "count"]
+    # Derive categories from data (supports both English and Chinese category names)
+    categories = list(dict.fromkeys(r["category"] for trial in all_trials for r in trial))
     n = len(all_trials)
 
     # Overall accuracy per trial
@@ -391,9 +392,10 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
     sep = "|----------|" + "---------|" * len(results_by_method)
     lines += [header, sep]
 
-    categories = ["object", "attribute", "relation", "temporal", "count"]
+    first_agg = next(iter(results_by_method.values()))
+    categories = list(first_agg["by_category"].keys())
     for cat in categories:
-        label = _CAT_LABELS[cat]
+        label = _CAT_LABELS.get(cat, cat)
         vals = []
         for agg in results_by_method.values():
             c = agg["by_category"][cat]
@@ -495,8 +497,9 @@ def main() -> None:
         print(f" {method:>15}", end="")
     print()
     print("─" * (16 + 16 * len(methods)))
-    for cat in ["object", "attribute", "relation", "temporal", "count"]:
-        label = _CAT_LABELS[cat]
+    first_agg = next(iter(results_by_method.values()))
+    for cat in first_agg["by_category"]:
+        label = _CAT_LABELS.get(cat, cat)
         print(f"{label:<16}", end="")
         for method in methods:
             c = results_by_method[method]["by_category"][cat]
