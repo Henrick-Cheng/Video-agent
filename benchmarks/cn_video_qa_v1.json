@@ -1,0 +1,202 @@
+[
+  {
+    "id": "obj_01",
+    "video": "data/videos/test1.mp4",
+    "question": "视频里有哪些非人物的主要物体或装置？",
+    "reference_answer": "视频中有机械战士模型、跑车和游戏界面面板",
+    "category": "object",
+    "key_facts": ["机械战士模型", "跑车", "界面"]
+  },
+  {
+    "id": "obj_02",
+    "video": "data/videos/test1.mp4",
+    "question": "视频中出现的车辆是什么类型？",
+    "reference_answer": "视频中有一辆跑车，停放在游戏大厅/准备区",
+    "category": "object",
+    "key_facts": ["跑车", "一辆"]
+  },
+  {
+    "id": "obj_03",
+    "video": "data/videos/test1.mp4",
+    "question": "视频里有没有武器？如果有，请描述",
+    "reference_answer": "有，不si的土卜鼠手持蓝色枪械，骑着骡子打鸟手持绿色武器",
+    "category": "object",
+    "key_facts": ["蓝色枪械", "绿色武器"]
+  },
+  {
+    "id": "obj_04",
+    "video": "data/videos/test1.mp4",
+    "question": "视频的主要场景或地点是什么？",
+    "reference_answer": "主要场景是游戏大厅/准备区（大逃杀游戏的等待大厅）",
+    "category": "object",
+    "key_facts": ["游戏大厅", "准备区"]
+  },
+  {
+    "id": "obj_05",
+    "video": "data/videos/test1.mp4",
+    "question": "游戏大厅/准备区里除了角色还摆放了哪些物体？",
+    "reference_answer": "游戏大厅里有机械战士模型和一辆跑车",
+    "category": "object",
+    "key_facts": ["机械战士模型", "跑车"]
+  },
+  {
+    "id": "attr_01",
+    "video": "data/videos/test1.mp4",
+    "question": "骑着骡子打鸟穿什么颜色的上衣和裤子？",
+    "reference_answer": "黄色T恤和白色裤子",
+    "category": "attribute",
+    "key_facts": ["黄色", "白色裤子"]
+  },
+  {
+    "id": "attr_02",
+    "video": "data/videos/test1.mp4",
+    "question": "不si的土卜鼠手里拿着什么武器？是什么颜色？",
+    "reference_answer": "手持蓝色枪械",
+    "category": "attribute",
+    "key_facts": ["枪械", "蓝色"]
+  },
+  {
+    "id": "attr_03",
+    "video": "data/videos/test1.mp4",
+    "question": "允崽的T恤上有什么特别的图案？",
+    "reference_answer": "白色T恤上有德国国旗图案",
+    "category": "attribute",
+    "key_facts": ["德国国旗"]
+  },
+  {
+    "id": "attr_04",
+    "video": "data/videos/test1.mp4",
+    "question": "哪个角色有紫色头发？这个角色穿什么？",
+    "reference_answer": "鱿鱼不是鱼有紫色头发，穿着蓝白条纹运动服",
+    "category": "attribute",
+    "key_facts": ["鱿鱼不是鱼", "紫色头发"]
+  },
+  {
+    "id": "attr_05",
+    "video": "data/videos/test1.mp4",
+    "question": "允崽戴什么颜色的头盔？",
+    "reference_answer": "蓝色头盔",
+    "category": "attribute",
+    "key_facts": ["蓝色", "头盔"]
+  },
+  {
+    "id": "rel_01",
+    "video": "data/videos/test1.mp4",
+    "question": "骑着骡子打鸟属于哪个战队？",
+    "reference_answer": "属于Continuelcoin战队",
+    "category": "relation",
+    "key_facts": ["Continuelcoin"]
+  },
+  {
+    "id": "rel_02",
+    "video": "data/videos/test1.mp4",
+    "question": "哪些角色在游戏大厅/准备区里等待？",
+    "reference_answer": "鱿鱼不是鱼、不si的土卜鼠和允崽站在游戏大厅/准备区",
+    "category": "relation",
+    "key_facts": ["鱿鱼不是鱼", "不si的土卜鼠", "允崽", "大厅"]
+  },
+  {
+    "id": "rel_03",
+    "video": "data/videos/test1.mp4",
+    "question": "跑车停放在哪个场景里？",
+    "reference_answer": "跑车停在游戏大厅/准备区",
+    "category": "relation",
+    "key_facts": ["游戏大厅", "停"]
+  },
+  {
+    "id": "rel_04",
+    "video": "data/videos/test1.mp4",
+    "question": "不si的土卜鼠和鱿鱼不是鱼的服装有什么共同点？",
+    "reference_answer": "两人都穿蓝白条纹运动服",
+    "category": "relation",
+    "key_facts": ["蓝白条纹", "运动服"]
+  },
+  {
+    "id": "rel_05",
+    "video": "data/videos/test1.mp4",
+    "question": "机械战士模型位于哪个场景？",
+    "reference_answer": "机械战士模型位于游戏大厅/准备区",
+    "category": "relation",
+    "key_facts": ["游戏大厅", "机械战士"]
+  },
+  {
+    "id": "temp_01",
+    "video": "data/videos/test1.mp4",
+    "question": "视频一开始最先出现的是什么画面？",
+    "reference_answer": "视频开始时显示的是游戏界面面板/战队档案界面",
+    "category": "temporal",
+    "key_facts": ["界面", "战队"]
+  },
+  {
+    "id": "temp_02",
+    "video": "data/videos/test1.mp4",
+    "question": "骑着骡子打鸟出现在视频的哪个时间段（前半段还是后半段）？",
+    "reference_answer": "骑着骡子打鸟出现在视频前半段（约0–5秒）",
+    "category": "temporal",
+    "key_facts": ["前半段", "骑着骡子打鸟"]
+  },
+  {
+    "id": "temp_03",
+    "video": "data/videos/test1.mp4",
+    "question": "游戏大厅中的多个角色大约在视频多少秒后出现？",
+    "reference_answer": "大约在视频9–10秒后，多个角色同时出现在游戏大厅",
+    "category": "temporal",
+    "key_facts": ["9", "后半段"]
+  },
+  {
+    "id": "temp_04",
+    "video": "data/videos/test1.mp4",
+    "question": "视频结束前（最后几秒）画面中有哪些角色？",
+    "reference_answer": "视频最后显示鱿鱼不是鱼、不si的土卜鼠和允崽在游戏大厅等待",
+    "category": "temporal",
+    "key_facts": ["鱿鱼不是鱼", "不si的土卜鼠", "允崽"]
+  },
+  {
+    "id": "temp_05",
+    "video": "data/videos/test1.mp4",
+    "question": "视频经历了怎样的场景变化？",
+    "reference_answer": "视频从战队档案界面切换到游戏大厅，角色从单人展示变为多人同屏等待",
+    "category": "temporal",
+    "key_facts": ["切换", "大厅", "多人"]
+  },
+  {
+    "id": "count_01",
+    "video": "data/videos/test1.mp4",
+    "question": "视频中一共出现了几个可见的游戏角色？",
+    "reference_answer": "4个角色：骑着骡子打鸟、鱿鱼不是鱼、不si的土卜鼠、允崽",
+    "category": "count",
+    "key_facts": ["4", "四个"]
+  },
+  {
+    "id": "count_02",
+    "video": "data/videos/test1.mp4",
+    "question": "视频里出现了几辆跑车？",
+    "reference_answer": "1辆跑车",
+    "category": "count",
+    "key_facts": ["1", "一辆"]
+  },
+  {
+    "id": "count_03",
+    "video": "data/videos/test1.mp4",
+    "question": "游戏大厅中同时出现的角色有几个？",
+    "reference_answer": "3个角色同时出现在游戏大厅：鱿鱼不是鱼、不si的土卜鼠、允崽",
+    "category": "count",
+    "key_facts": ["3", "三个"]
+  },
+  {
+    "id": "count_04",
+    "video": "data/videos/test1.mp4",
+    "question": "有几个角色穿蓝白条纹运动服？",
+    "reference_answer": "2个角色穿蓝白条纹运动服：鱿鱼不是鱼和不si的土卜鼠",
+    "category": "count",
+    "key_facts": ["2", "两个"]
+  },
+  {
+    "id": "count_05",
+    "video": "data/videos/test1.mp4",
+    "question": "视频里手持武器的角色有几个？",
+    "reference_answer": "2个：不si的土卜鼠（蓝色枪械）和骑着骡子打鸟（绿色武器）",
+    "category": "count",
+    "key_facts": ["2", "两个"]
+  }
+]
