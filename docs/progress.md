@@ -508,8 +508,69 @@ Phase 6 发现 vlm_direct 以 0.540 大幅领先，但根本原因是 test1.mp4�
 
 ### 下一步建议（优先级排序）
 
-1. **优化 `build_scene_graph` 针对动作类视频**：prompt 增加"烹饪动作、食材转移、容器变化、火候"专项提取；预期场景图实体 11→30+，agent 整体准确率 0.313→0.40+
-2. **增加预构建帧数（8→16）**：202s 视频每帧覆盖 ~25s，炒糖色/加香料等短暂关键步骤容易遗漏
-3. **扩展评测集至 100 题**：当前 25 题每题权重 4%，统计显著性不足
-4. **FAISS + embedding 检索**：替代 jieba 规则匹配，解决"焯水"≠"预处理"等语义近义词 miss
-5. **vlm_direct_no_subtitle 变体**：黑化帧底部 1/4 后发 VLM，进一步对照字幕对结果的影响（cooking.mp4 字幕虽不含食谱信息，但仍可作为对照）
+1. ~~**增加预构建帧数（8→16）**~~ **第八阶段完成**
+2. ~~**agent 方差降低（temperature=0）**~~ **第八阶段完成**
+3. **运行 final benchmark**：网络条件好时执行（见第八阶段）
+4. **优化 `build_scene_graph` 针对动作类视频**：prompt 增加"烹饪动作、食材转移、容器变化、火候"专项提取；预期场景图实体 20→30+
+5. **扩展评测集至 100 题**：当前 25 题每题权重 4%，统计显著性不足
+6. **FAISS + embedding 检索**：替代 jieba 规则匹配，解决"焯水"≠"预处理"等语义近义词 miss
+7. **vlm_direct_no_subtitle 变体**：黑化帧底部 1/4 后发 VLM，进一步对照字幕对结果的影响
+
+---
+
+## 第八阶段：降方差 + 帧数提升（final benchmark 准备）
+**日期：** 2026-05-16
+
+### 完成内容
+
+#### 任务 1：降低 agent/rag_only 方差
+
+- `configs/default.yaml`：`models.llm.temperature` 0.1 → **0.0**（确定性解码，消除 LLM 随机性）
+- `src/eval/run_benchmark.py`：`_answer_rag_only` 中 `temperature=0.1` 硬编码改为读 `cfg.models.llm.temperature`
+- VLM temperature 维持 0.1（build_scene_graph / inspect_frame 需要一定多样性）
+
+#### 任务 2：预构建帧数 8 → 16
+
+- `configs/default.yaml`：`perception.keyframe_count` 8 → **16**
+- `src/eval/run_benchmark.py`：`run_trial` 中 `frame_count=8` 硬编码改为读 `cfg.perception.keyframe_count`
+- `frontend/app.py`：`on_build_graph` 中 `count=8` 硬编码改为读 cfg
+
+**效果验证**（sanity check，cooking.mp4）：
+
+| 指标 | 改动前 | 改动后 |
+|------|--------|--------|
+| 预构建实体数 | 11 | **20–25**（目标 20+ 达到） |
+| 单题答案质量 | — | 正确，含时间戳证据链（t=65s 糖色，t=95s 猪肉）|
+
+#### 任务 3：修复 GraphRecursionError 崩溃
+
+- **现象**：首次 benchmark 运行中 agent Run 3 Q16（时序推理题）触发 `GraphRecursionError`（recursion_limit=40），进程崩溃，已完成的两轮数据全部丢失
+- **修复**：`_answer_agent` 中 `agent.invoke` 外加 try-except，捕获所有异常后返回空答案（judge 得 0 分），不再崩溃整个进程
+- **根因**：时序推理题需要大量 inspect_frame 调用（Q16 Run3 超过 40 步），烹饪视频比游戏录屏需要更多迭代
+
+### 遇到的坑
+
+| 坑 | 原因 | 解决 |
+|----|------|------|
+| GraphRecursionError 导致整轮数据丢失 | `agent.invoke` 未捕获异常，直接抛出到进程 | try-except 包裹，异常时返回空答案 |
+| DashScope ping 延迟 ~530ms | 网络质量较差（深夜） | 暂停 benchmark，等网络好时重跑 |
+
+### Final Benchmark 待运行
+
+配置已就绪，等网络条件好时执行：
+
+```bash
+cd ~/Video\ Agent
+nohup python3 -m src.eval.run_benchmark \
+    --video data/videos/cooking.mp4 \
+    --benchmark benchmarks/cn_video_qa_v2.json \
+    --runs 3 \
+    --output docs/benchmark_final.md \
+    > /tmp/benchmark_final.log 2>&1 &
+```
+
+### 已知问题 / TODO（更新）
+
+1. **final benchmark 尚未完成**：网络延迟 ~530ms 导致终止，待重跑
+2. **agent 方差来源**：LLM temperature=0 后，方差主要来自 VLM（temperature=0.1）构建出的场景图内容不同（Run1: 20 实体，Run2: 25 实体，Run3: 21 实体）；若需进一步降方差，可将 VLM temperature 也调为 0
+3. **计数类全体偏低**：精确计数需要场景图完整覆盖，当前仍是瓶颈
