@@ -160,7 +160,8 @@ def on_build_graph(state: _AppState):
     kf_tool = make_extract_keyframes(state.session)
     sg_tool = make_build_scene_graph(state.session)
 
-    kf_result = json.loads(kf_tool.invoke({"strategy": "uniform", "count": 8}))
+    from src.config import get_settings as _gs
+    kf_result = json.loads(kf_tool.invoke({"strategy": "uniform", "count": _gs().perception.keyframe_count}))
     n_frames = len(kf_result.get("frame_ids", []))
     yield state, f"⏳ 已提取 {n_frames} 帧，正在构建场景图...", _graph_status_html(state.session)
 

@@ -15,7 +15,7 @@ models:
     provider: "dashscope"
     model_name: "qwen-plus-latest"          # switch to qwen-max-latest for reasoning
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    temperature: 0.1
+    temperature: 0.0
     max_tokens: 2048
 
 # ── Local vLLM overrides (active when backend = "vllm") ──────────────────────
@@ -30,7 +30,7 @@ vllm:
 # ── Perception / keyframe extraction ─────────────────────────────────────────
 perception:
   keyframe_strategy: "uniform"    # "uniform" | "scene_change" | "query_aware"
-  keyframe_count: 8
+  keyframe_count: 16
   image_max_size: 1280            # resize longest edge to this before encoding
   image_quality: 85               # JPEG quality 1–95
   frame_tolerance_sec: 2.0        # max distance (s) to match a cached frame

@@ -125,11 +125,17 @@ def _answer_agent(session, question: str) -> tuple[str, int, _TrialStats]:
         f"无需再调用 extract_keyframes 或 build_scene_graph。]\n\n"
     )
 
-    result = agent.invoke(
-        {"messages": [("user", ctx_prefix + question)]},
-        config={"recursion_limit": rl},
-    )
-    msgs = result.get("messages", [])
+    try:
+        result = agent.invoke(
+            {"messages": [("user", ctx_prefix + question)]},
+            config={"recursion_limit": rl},
+        )
+        msgs = result.get("messages", [])
+    except Exception as exc:
+        # GraphRecursionError or other agent failure — score as empty answer
+        print(f"         [WARN] agent.invoke failed: {exc}")
+        msgs = []
+
     answer = msgs[-1].content if msgs else ""
     tool_calls = sum(1 for m in msgs if getattr(m, "type", "") == "tool")
 
@@ -169,7 +175,7 @@ def _answer_rag_only(session, question: str) -> tuple[str, int, _TrialStats]:
             model=cfg.active_llm.model_name,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=512,
-            temperature=0.1,
+            temperature=cfg.models.llm.temperature,
         )
         stats.add(resp.usage)
         answer = resp.choices[0].message.content or ""
@@ -261,7 +267,8 @@ def run_trial(
     session = _build_session(video_path)
 
     print(f"  [prebuild] extracting frames & building graph...")
-    _prebuild_graph(session, frame_count=8)
+    from src.config import get_settings as _get_settings
+    _prebuild_graph(session, frame_count=_get_settings().perception.keyframe_count)
     n_entities = len(session.scene_graph.entities)
     n_triplets = len(session.scene_graph)
     print(f"  [prebuild] graph: {n_entities} entities, {n_triplets} triplets")
