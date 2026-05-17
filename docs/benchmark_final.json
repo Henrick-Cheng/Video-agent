@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "video": "data/videos/cooking.mp4",
+    "runs": 3
+  },
+  "results": {
+    "agent": {
+      "overall_mean": 0.313,
+      "overall_std": 0.019,
+      "by_category": {
+        "物体识别": {
+          "mean": 0.367,
+          "std": 0.125
+        },
+        "实体属性": {
+          "mean": 0.333,
+          "std": 0.125
+        },
+        "关系推理": {
+          "mean": 0.267,
+          "std": 0.047
+        },
+        "时序推理": {
+          "mean": 0.467,
+          "std": 0.17
+        },
+        "计数/出现": {
+          "mean": 0.133,
+          "std": 0.047
+        }
+      },
+      "avg_tool_calls": 3.6,
+      "avg_time_sec": 36.8,
+      "avg_tokens_per_q": 1383
+    },
+    "rag_only": {
+      "overall_mean": 0.04,
+      "overall_std": 0.033,
+      "by_category": {
+        "物体识别": {
+          "mean": 0.067,
+          "std": 0.047
+        },
+        "实体属性": {
+          "mean": 0.033,
+          "std": 0.047
+        },
+        "关系推理": {
+          "mean": 0.067,
+          "std": 0.047
+        },
+        "时序推理": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "计数/出现": {
+          "mean": 0.033,
+          "std": 0.047
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 4.5,
+      "avg_tokens_per_q": 1235
+    },
+    "vlm_direct": {
+      "overall_mean": 0.373,
+      "overall_std": 0.009,
+      "by_category": {
+        "物体识别": {
+          "mean": 0.6,
+          "std": 0.0
+        },
+        "实体属性": {
+          "mean": 0.5,
+          "std": 0.0
+        },
+        "关系推理": {
+          "mean": 0.267,
+          "std": 0.047
+        },
+        "时序推理": {
+          "mean": 0.5,
+          "std": 0.0
+        },
+        "计数/出现": {
+          "mean": 0.0,
+          "std": 0.0
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 30.1,
+      "avg_tokens_per_q": 6039
+    }
+  }
+}

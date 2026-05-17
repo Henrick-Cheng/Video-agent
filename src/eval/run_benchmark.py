@@ -185,24 +185,64 @@ def _answer_rag_only(session, question: str) -> tuple[str, int, _TrialStats]:
     return answer, 0, stats
 
 
+# Number of frames vlm_direct sends to the VLM. Fixed and deliberately
+# independent of perception.keyframe_count: this baseline must NOT inherit the
+# agent's prebuild frame count, or a config change meant for the agent silently
+# alters the baseline's inputs and invalidates cross-run comparisons.
+_VLM_DIRECT_FRAME_COUNT = 4
+# Oversample factor for vlm_direct extraction. We extract more uniform frames
+# than needed, then pick _VLM_DIRECT_FRAME_COUNT evenly-spaced *valid* ones.
+# This guards against the OpenCV last-frame read failure (cv2 routinely reports
+# more frames than it can decode), which would otherwise silently drop the
+# final frame and front-load the sample — missing the end of the video.
+_VLM_DIRECT_OVERSAMPLE = 8
+
+
 def _answer_vlm_direct(session, question: str) -> tuple[str, int, _TrialStats]:
-    """Send sampled frames + question directly to VLM."""
+    """Send sampled frames + question directly to VLM.
+
+    Extracts its own uniform frames at a fixed count rather than reusing the
+    pre-built scene-graph frames in session.cached_frames — otherwise
+    perception.keyframe_count leaks into this baseline (e.g. 8→16 changed which
+    4 frames it saw), making Phase-to-Phase comparisons invalid.
+
+    Oversamples then sub-selects so the 4 frames reliably span the whole video
+    even when OpenCV fails to decode the final frame index.
+    """
+    import numpy as np
     from src.perception.vl_client import get_vl_client
+    from src.tools.keyframe import make_extract_keyframes
     from src.config import get_settings
 
     cfg = get_settings()
     stats = _TrialStats()
 
-    # Use cached frames (already extracted during prebuild; take up to 4 evenly)
-    frames = list(session.cached_frames.values())
-    if not frames:
-        return "[ERROR] no frames in session", 0, stats
+    # Independent uniform extraction — decoupled from the prebuilt graph.
+    kf_tool = make_extract_keyframes(session)
+    try:
+        kf_result = json.loads(kf_tool.invoke(
+            {"strategy": "uniform", "count": _VLM_DIRECT_OVERSAMPLE}
+        ))
+        frame_ids = kf_result["frame_ids"]
+    except Exception as e:
+        return f"[ERROR] keyframe extraction failed: {e}", 0, stats
 
-    step = max(1, len(frames) // 4)
-    selected = [f for f in frames[::step] if f.path and Path(f.path).exists()][:4]
+    valid = [
+        fm for fid in frame_ids
+        if (fm := session.cached_frames.get(fid))
+        and fm.path and Path(fm.path).exists()
+    ]
 
-    if not selected:
+    if not valid:
         return "[ERROR] no valid frame files", 0, stats
+
+    # Pick _VLM_DIRECT_FRAME_COUNT evenly-spaced frames spanning the full video.
+    valid.sort(key=lambda f: f.timestamp)
+    if len(valid) > _VLM_DIRECT_FRAME_COUNT:
+        picks = np.linspace(0, len(valid) - 1, _VLM_DIRECT_FRAME_COUNT, dtype=int)
+        selected = [valid[i] for i in dict.fromkeys(int(p) for p in picks)]
+    else:
+        selected = valid
 
     vl = get_vl_client()
     prompt = f"请根据这些视频帧回答问题：{question}\n\n请给出简洁准确的回答（2–4句）。"
@@ -212,8 +252,8 @@ def _answer_vlm_direct(session, question: str) -> tuple[str, int, _TrialStats]:
     except Exception as e:
         answer = f"[ERROR] {e}"
 
-    # Estimate: 4 frames × ~1500 img tokens + text
-    stats.prompt_tokens = 4 * 1500 + len(prompt) // 3
+    # Estimate: N frames × ~1500 img tokens + text
+    stats.prompt_tokens = len(selected) * 1500 + len(prompt) // 3
     stats.completion_tokens = len(answer) // 3
     stats.api_calls = 1
 
@@ -418,8 +458,6 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         "- **vlm_direct**: Samples 4 frames, sends raw frames + question directly to VLM",
         "- Judge: `qwen-plus-latest` LLM-as-Judge, scores 0 / 0.5 / 1 against `key_facts`",
         f"- Each method ran {n_runs} independent trials; mean ± std reported",
-        "",
-        "_TODO: Replace placeholder results with real benchmark run once API key is available._",
     ]
     return "\n".join(lines)
 
