@@ -197,11 +197,13 @@ python main.py --video data/videos/cooking.mp4 --question "..." --backend vllm
 
 ## Roadmap
 
-1. **长视频 benchmark** — AGQA Charades(~30s 短视频)未能拉开 Pareto, 下一步接 ActivityNet-QA / Video-MME(平均 3 分钟+), 让 vlm_direct 4 帧固定采样的覆盖率短板充分暴露,Agent「按需 inspect」的优势才能真正显现。
-2. **时序窗口精度优化** — AGQA sequencing 类输给 vlm 0.07(`merge_window_sec=3.0` 在 30s 视频上精度不够);优先尝试缩小 merge window 或新增按时间轴组织的事件序列工具。
-3. **语义检索** — 用 FAISS + sentence-transformers embedding 替代 jieba 规则匹配,解决「焯水 ≠ 预处理」「人物 ≠ 具体角色名」这类近义词 / 类别-实例 miss。
-4. **多 Agent 协作** — 拆分为「规划 Agent + 感知 Agent」,规划者分解问题、感知者负责取证,提升复杂多跳问题的成功率。
-5. **动作类视频建图优化** — `build_scene_graph` prompt 增加「烹饪动作 → 食材转移 → 容器变化 → 火候」专项提取,提升 cooking 上的 dense perception。
+按性价比排序(数据已经指明痛点的先做)。完整的 P0/P1/P2 分层与「下一步建议」见 [`docs/progress.md`](docs/progress.md) Phase 11 末尾。
+
+1. **时序窗口精度优化**(P0) — AGQA sequencing 输 vlm 0.07,`merge_window_sec=3.0` 在 30s 视频精度不够;先把 window 调到 1.0 重跑,无论涨跌都是有效数据点。
+2. **`build_scene_graph` 鲁棒性 + 动作类专项 prompt**(P0) — 单视频极差 7.5×(03PRW 0.095 vs 00607 0.714)+ cooking dense perception 输给 vlm;先审最差视频实际抽出了什么,再写「动作 → 食材 → 容器」专项 prompt。
+3. **跨数据集 / 长视频 benchmark**(P1) — 接第二个公开数据集证普适性,接 ActivityNet-QA / Video-MME(3 分钟+)让 Pareto 真正分离——AGQA Charades 是 vlm 的舒适区。
+4. **语义检索**(P1) — FAISS + sentence-transformers 替代 jieba,解决「焯水 ≠ 预处理」「人物 ≠ 具体角色名」近义词 / 类别-实例 miss;同时升级关系词表和实体去重。
+5. **多 Agent 协作**(P2,长期) — 拆分为「规划 Agent + 感知 Agent」,提升复杂多跳问题的成功率。
 
 ---
 

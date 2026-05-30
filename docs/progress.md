@@ -832,16 +832,49 @@ AGQA 官方 repo / 下载只提供 **HDF5 视觉特征，不含原始视频**；
 | 本机 `python` 不存在 | 仅装了 `python3` | 命令统一用 `python3` |
 | 后台启动 `nohup ... &` 让 Bash 包装器立刻退出 | Python 进程脱离工具追踪，跑完无完成通知 | 杀掉脱离进程，改用 `run_in_background=true` 让工具直接跟踪 Python 进程 |
 
-### 已知问题 / TODO（更新）
+### 已知问题 / TODO（2026-05-31 综合重排，跨 Phase 9-11 整合）
 
-1. **sequencing 类别 agent 输给 vlm 0.07**（0.381 vs 0.452）：`merge_window_sec=3.0` 在 30s 短视频上时间精度不足；可调小窗口、或专门加「事件时间线」工具支持精确顺序查询。**这是优先级最高的可改进项**。
-2. **agent 单视频极差 7.5×**（03PRW=0.095 → 00607=0.714）：场景图质量在不同视频内容上的鲁棒性不足；需要观察 `build_scene_graph` 在最差视频上抽出了什么，定向优化 prompt。
-3. **Charades ~30s 短视频抹掉 agent 的 amortize 优势**：每视频 7 题 × 一次建图 vs vlm 7 次 4 图，agent 这次也只便宜 4.4×。**真正的 Pareto 分离**需要长视频 + 多题数据集（如 ActivityNet-QA / EgoSchema / Video-MME，平均 3 分钟以上）来证明。
-4. **可选客观评分**：AGQA 答案是客观单词 / before-after / yes-no，加 `--scoring exact`（归一化精确匹配）能彻底消除 Judge 方差，作为 LLM-Judge 的对照。
+> 在 Phase 11 跑完 AGQA、写完 README + interview_pitch 之后，把 Phase 9 / Phase 10 残留的 TODO 与 Phase 11 新冒出的项放一起，按当前真实痛点重新分层。下面四层是"在仓库当前状态下、要不要做、做了能不能看到 benchmark 数字动"的判断。
 
-### 下一步建议（优先级排序）
+#### P0 — 数据已指明，修一个看数字立即变化
 
-1. **归因 sequencing 失分**：抽 agent 答错的 sequencing 题，看是 query 检索没找到、还是时间窗精度不够；据此决定是改 retriever 还是改 `merge_window_sec`。
-2. **接入第二个公开数据集**（用户提到的另一个）：复用本期搭好的多视频框架 + 翻译流水线，零基础设施成本。
-3. **长视频 benchmark**（ActivityNet-QA / Video-MME）：把 Pareto 前沿真正拉开——AGQA Charades 是 vlm 的舒适区，长视频是 agent 的舒适区。
-4. **更新 README + 写面试叙事**：本次的**反转故事**（睡前预测 vlm 赢 → 实测 agent 赢，且是 duration 类别的结构化时间窗优势）很有说服力，应正式落到 README 与对外材料。
+1. **`merge_window_sec` 时序精度优化** —— AGQA sequencing 类输 vlm 0.07（0.381 vs 0.452）；Phase 9 就提过"first_seen/last_seen 不够紧凑"，Phase 11 实锤是 3.0s 在 ~30s 视频上太粗。**第一步**：把 `merge_window_sec` 从 3.0 改到 1.0，单跑一次 AGQA，看 sequencing 是否上升。无论涨跌都是有效数据点。
+2. **`build_scene_graph` 对视频内容鲁棒性差** —— Phase 11 看到 03PRW=0.095 vs 00607=0.714，**单视频极差 7.5×**。这条**之前没进任何 TODO 列表**，是 Phase 11 后才暴露的新洞察。**第一步**：肉眼审 03PRW 实际抽出的三元组，定位是空场景、抽帧偏置、还是 VLM 不识别该场景类型。
+3. **`build_scene_graph` prompt 没针对动作类视频优化** —— Phase 10 #1 下一步建议遗留，Phase 11 未碰；cooking 物体识别 / 实体属性输 vlm（0.367/0.333 vs 0.600/0.500）就是该限制。**第一步**：写「烹饪动作 → 食材转移 → 容器变化 → 火候」专项提取 prompt，跑 cooking 看实体数 22-27 → 40+ 能否兑现。
+
+#### P1 — 架构能力扩展，工程量中等
+
+4. **FAISS + sentence-transformers 替代 jieba 多策略检索** —— Phase 9 #5、Roadmap #3 遗留；当前字面匹配「焯水 ≠ 预处理」「人物 ≠ 具体角色名」miss。同时影响 agent 和 rag_only 路径。
+5. **关系词表用 embedding 取代固定 50 词** —— 已知局限性表一直挂着；长尾关系动词被检索漏掉。和 #4 工程上属于同一类。
+6. **实体去重换语义相似度** —— `difflib.SequenceMatcher ≥ 0.85` 是字面相似；写一个对比实验（70 题、字面 vs embedding 去重），看实体合并率与最终 QA 分数的差异。
+7. **接入第二个公开数据集**（用户已确认手里有一个待用） —— 多视频框架 + 翻译流水线全可复用，**零基础设施成本**；增强结论普适性，面试叙事更硬。
+8. **长视频 benchmark**（ActivityNet-QA / EgoSchema / Video-MME，平均 3 分钟+） —— Roadmap #1；让 vlm_direct 4 帧固定采样的覆盖率短板充分暴露，Agent 「按需 inspect」的优势才能真正显现。这是把 Pareto 真正拉开的关键。
+
+#### P2 — 工程化 / 可观测性，跟数字关系小但项目质量提升
+
+9. **`inspect_frame` 触发率埋点** —— 当前没 instrumentation；70 题里 inspect 被调过几次未知，渐进式精化到底是主力还是装饰，没数据说话。加一行计数 / 日志即可。
+10. **关键超参 sensitivity ablation** —— `batch_size` / `merge_window_sec` / `dedup_threshold` / `confidence_threshold` / `keyframe_count` 都是经验值，没有系统跑过 grid。一次跑 ~10 个配置 × AGQA。
+11. **场景图持久化** —— 当前 session 内存里，跨会话不复用；加 SQLite 持久化能让同一个视频的多轮提问省一次建图成本。
+12. **GitHub Actions CI** —— 当前没接，`pytest` 全靠本地；加上至少能保证 PR 不打破现有 38 passed。
+13. **多 Agent 协作（规划 + 感知）** —— Roadmap #4 遗留；大改动且价值不确定，建议放在 P0 / P1 都解完之后再评估。
+
+#### P3 — Phase 11 之后重新校准的旧 TODO（部分已失效）
+
+| 原 TODO 来源 | 重新校准后的判断 |
+|------|------|
+| Phase 9 #2 "rag_only 倒退" | AGQA 上 0.186（没崩），cooking 上 0.040（崩）；**问题局限于 cooking 长视频 + 图大噪音多**，不是普遍现象。优先级降。 |
+| Phase 10 #1 "场景图实体 22-27 偏少" | AGQA 上 11-16 实体反而打赢了 → **数量不是核心，时间维度精度才是**。被 P0 #1 取代。 |
+| Phase 9 #3 "计数类绝对值低 0.133" | AGQA 启发式分类没单独 counting 类（混在 binary / open 中），数据点不足以判断是否仍痛。暂缓，等 P1 #7 第二个数据集进来再看。 |
+| Phase 11 "可选客观评分"（`--scoring exact`） | LLM-Judge 当前方差已 ±0.015（很小），客观评分主要作为方差排除的对照实验。**没那么紧迫**，可作为 #10 ablation 的一部分顺手做。 |
+
+### 下一步建议（按性价比排序）
+
+| 顺序 | 做什么 | 工程量 | 预期产出 |
+|------|--------|--------|----------|
+| 1 | **P0 #1**：把 `merge_window_sec` 从 3.0 调到 1.0，重跑 AGQA | ~30 分钟代码 + ~¥5 重跑 | 一个明确数据点：sequencing 涨 / 跌 / 平 |
+| 2 | **P0 #2**：审 03PRW 视频上 `build_scene_graph` 的产出 | ~30 分钟无成本 | 一个具体的「建图为什么在某些视频崩」的故障样本，喂给 #3 |
+| 3 | **P0 #3**：动作类专项 prompt，重跑 cooking | ~1 小时代码 + ~¥3 重跑 | cooking 物体识别 / 实体属性可能涨 0.05-0.15 |
+| 4 | **P1 #7 或 #8 二选一**：第二个公开数据集 _或_ 长视频 benchmark | ~半天接数据 + ~¥20-40 跑分 | 跨数据集证据 / Pareto 真正分离 |
+| 5 | **P1 #4-#6**：embedding 检索 / 去重一起做，写对照 ablation | ~1-2 天 | 检索 miss 大幅减少 + 实体合并更稳健 |
+
+> 我的判断：**P0 三条都是低风险、高确定性产出**，做完才知道项目下一步的瓶颈到底在哪。在不清楚瓶颈前直接上 P1 的大改动（FAISS / 长视频）有点像凭信念优化。**先 P0 跑完拿到三个数据点**，再做 P1 的选择题。
