@@ -714,3 +714,160 @@ Phase 8 配置就绪（temperature=0.0，keyframe=16，GraphRecursionError 修�
 1. **优化 `build_scene_graph` 动作类提取 prompt**：针对「烹饪动作 → 食材转移 → 容器变化 → 火候」专项提取，把场景图实体数提到 40+，提升 Agent 准确率上限。
 2. **扩展评测集至 100+ 题**：获得统计显著的对比结论。
 3. **更能体现 Agent 优势的评测区间**：更长视频 / 单视频多问题，让 vlm_direct 的线性 token 成本充分暴露。
+
+---
+
+## 第十一阶段：迁移到公开数据集 AGQA（本次，含真实跑分）
+**日期：** 2026-05-30
+**分支：** `feat/agqa-benchmark`（不动 main 的 Phase 10 干净状态）
+
+### 背景
+
+Phase 10 的 TODO #2 明确指出评测集的硬伤——**单视频 + 自制 25 题**，单类别仅 5 题，分类结论不具统计显著性，且「自己出题评自己」说服力弱。本阶段把评测集从自制 `cooking.mp4` 换成**公开数据集 AGQA**（Action Genome QA），并把评测框架从「单视频」改造成「多视频」。
+
+选 AGQA 的理由是它与本项目**主题高度契合**：AGQA 的题目本身就是**从 Charades 视频的时空场景图（Action Genome 标注）自动生成的**，正好测试本项目核心能力（时序 / 关系 / 组合推理）。这也顺带落地了 Phase 10 下一步建议 #3——AGQA 每个视频带多道题，Agent「一次建图、多题复用」的成本优势能被充分暴露（vlm_direct 每题都付全额 token）。
+
+### 已锁定的决定
+
+| 项 | 决定 |
+|----|------|
+| 数据集 | AGQA 2.0 balanced（题目）+ Charades 480p（视频） |
+| 语言 | 英文 QA → LLM 一次性翻译成中文（带磁盘缓存），系统零修改 |
+| 规模 | 小：~10 视频 / 50–80 题，按视频 + 类别均衡抽样 |
+| 评分 | 保持开放式 + LLM-Judge（AGQA 答案为开放词汇 / 二元，翻译后精确匹配脆弱，Judge 更稳） |
+| 类别轴 | 用 AGQA 原生语义类型（object-rel / exists / sequencing / duration / superlative / rel-act …），替换旧的 5 类轴 |
+
+### 完成内容
+
+#### 任务 1：分支与依赖
+- 从干净 main 切 `feat/agqa-benchmark`。
+- `requirements.txt` 新增 `pandas>=2.0`（解析 AGQA 大 CSV）；翻译复用现有 DashScope LLM 客户端，不引入新的 LLM 依赖。
+
+#### 任务 2：新增 `src/eval/build_agqa_benchmark.py`（AGQA CSV → 中文 benchmark JSON）
+- **列名容错检测**：AGQA CSV 列名跨版本不固定，用候选名列表（大小写不敏感）自动检测 `question / answer / video_id / category / id`，每次运行打印实际列名与映射；缺关键列时报错并提示如何修改候选名。
+- **分块读取**：`pandas` `chunksize=50000` 流式读取，应对 balanced 拆分的多 GB CSV，攒够视频即早停，内存安全。
+- **均衡抽样**：默认抽 10 视频 × 每视频 ~7 题，视频内按类别 round-robin，避免某一类别淹没。
+- **本地视频感知**：若 `data/videos/charades/` 已有 mp4，则只在已下载的视频里抽样；否则抽样后打印「待下载视频清单」，用户只需下载这几个即可（规避 ~16GB 全量解压）。
+- **翻译（带缓存）**：英文 question + answer → 简体中文，调用现有 `cfg.active_llm`（qwen-plus）；结果缓存到 `benchmarks/agqa_translation_cache.json`（按源文本 key），重跑零成本；yes/no 走 `是 / 否` 确定性短路。
+- **`--dry-run`**：跳过翻译（英文直通），零 API 成本，用于校验解析 / 抽样 / schema。
+- 输出 `benchmarks/agqa_zh_small.json`，schema 沿用项目格式 `{id, video, question, reference_answer, category, key_facts}`，附带 `_source` 溯源块（运行器忽略）。
+
+#### 任务 3：`run_benchmark.py` 多视频改造
+- 核心改动集中在 `run_trial`：按每题的 `video` 字段**分组**，对每个视频建一次 `VideoSession` 并（仅 agent / rag_only）预建一次场景图复用，**vlm_direct 跳过预建**（自行抽帧、省一次建图成本）；逐视频结果拼接成一个 trial。
+- 因为拼接后仍是「逐题结果的扁平列表」，`_aggregate`（已按数据自动推断类别）**无需改动**——爆炸半径极小。
+- 缺失视频文件的分组**跳过并告警**，不再静默退化成 mock，保证不拿 mock 数据冒充真实评测。
+- `--video` 改为**可选 fallback**（仅给缺 `video` 字段的题用）；新增「按 video 分组、video_label」逻辑。
+- 报告新增 **Per-Video Accuracy** 表（method × video），单视频时自动隐藏。
+- **向后兼容**：旧的 `cn_video_qa_v2.json` 每题都带同一 `video`，分组后归为一组 → 行为与改造前完全一致。
+
+### 验证状态（诚实）
+
+**离线已验证（无需数据 / API）：**
+
+| 验证项 | 方法 | 结果 |
+|--------|------|------|
+| builder 解析 / 抽样 / schema | 合成 AGQA 形态 CSV + `--dry-run` | 列检测、按视频+类别均衡抽样、下载清单、输出 schema 均正确 |
+| runner 编译 | `py_compile` | OK |
+| 多视频聚合 / per-video 报告 | 喂合成 trial 给 `_aggregate` / `_per_video_lines` / `_build_report` | 表格正确、AGQA 类别透传 |
+| 向后兼容 | 检查 `cn_video_qa_v2.json` schema | 每题带 video、单视频归一组，行为不变 |
+| 回归 | `pytest` | 38 passed / 12 skipped，与 Phase 10 持平，无回归 |
+
+**端到端真实跑分已完成**（10 视频 × 7 题 × 3 run = 210 道判分），结果见下节。前置数据已就位：AGQA CSV (`data/agqa/csvs/balanced/Test_frameqa_question-balanced.csv`) + Charades 480p 选择性解压的 10 个 mp4 (`data/videos/charades/<id>.mp4`)。Charades 旧 `ai2-website` 桶已失效返回 403，新地址 `https://ai2-public-datasets.s3-us-west-2.amazonaws.com/charades/Charades_v1_480.zip`（~16GB）。
+
+### 实测结果（2026-05-30，3 run × 70 题 × 10 视频）
+
+报告：`docs/benchmark_agqa.md`。
+
+#### 总览（最重要的发现：agent 翻盘）
+
+| 方法 | 准确率 (mean ± std) | Avg Tool Calls | Avg Time (s) | Est. Tokens/Q |
+|------|---------------------|----------------|--------------|---------------|
+| **agent** | **0.364 ± 0.015** | 4.5 | 24.4 | **1,368** |
+| rag_only | 0.186 ± 0.031 | — | 4.0 | 838 |
+| vlm_direct | 0.326 ± 0.007 | — | 4.5 | 6,041 |
+
+**与 cooking.mp4 (Phase 10) 对比 —— 方向反转：**
+
+| 数据集 | agent | vlm_direct | 谁赢 |
+|--------|-------|-----------|------|
+| cooking.mp4 (Phase 10) | 0.313 | **0.373** | vlm 赢 0.060 |
+| **AGQA Charades (本次)** | **0.364** | 0.326 | **agent 赢 0.038** |
+
+**agent 在 AGQA 上双赢**：准确率 +11.7% 相对、tokens/Q **便宜 4.4×**。唯一劣势是速度慢 5.4×（多步 ReAct 循环），但**对 amortize 场景影响越来越小**（见类别分析）。
+
+#### 类别分解（agent 强在哪、vlm 强在哪）
+
+| 类别 | agent | rag_only | vlm_direct | 谁赢 / 倍数 |
+|------|-------|----------|-----------|------------|
+| **duration**（时长）| **0.318 ± 0.064** | 0.061 ± 0.043 | 0.152 ± 0.021 | **agent 2.1×** |
+| **binary**（二元判断）| **0.514 ± 0.111** | 0.431 ± 0.098 | 0.444 ± 0.010 | agent 略胜 |
+| sequencing（先后顺序）| 0.381 ± 0.135 | 0.048 ± 0.034 | **0.452 ± 0.034** | vlm 赢 |
+| open（开放问答）| 0.206 ± 0.068 | 0.063 ± 0.022 | 0.198 ± 0.011 | 持平 |
+
+**关键解释**：
+1. **duration 是 agent 的杀手锏**：场景图的三元组天然带 `t_start / t_end`，"做哪件事时间最长"靠时间差直接答；vlm_direct 看 4 张静态帧根本读不出"时长"。**这是 Phase 10 下一步建议里"更紧凑的时序表达"问题的反例 —— AGQA 的 duration 题让结构化时间窗的优势充分暴露**。
+2. **binary 也涨**：场景图的 exists 判定（实体在不在图里）比 vlm 看 4 帧覆盖率更高、误判更少。
+3. **sequencing 输给 vlm**：4 帧时序排列 vlm 直接读，agent 的 `merge_window_sec=3.0` 在 30s 短视频上时间精度不足。**这与 Phase 9 cooking 的现象一致**（vlm_direct 在时序上反领先），说明这是 **vlm 的稳定结构性优势**，不是数据集偶然。
+4. **rag_only 在 AGQA 上从 cooking 的 0.040 升到 0.186（4.7×）**：场景图质量在短视频上更稳，纯检索路径不再崩塌——但和 agent 比仍差近 2×，证明**「主动 inspect 补帧」是 agent 真正的增量**。
+
+#### 单视频分解（每个视频的方差暴露 agent 的脆性）
+
+| 视频 | agent | rag_only | vlm_direct |
+|------|-------|----------|------------|
+| 00607 | **0.714** | 0.524 | **0.714** |
+| 07BSH | 0.429 | 0.476 | 0.429 |
+| 06LBQ | **0.524** | 0.000 | 0.333 |
+| 07QNG | **0.405** | 0.000 | 0.262 |
+| 02DPI | **0.381** | 0.000 | 0.143 |
+| 02SKC | 0.286 | 0.095 | **0.571** |
+| 00T1E | 0.286 | 0.333 | 0.286 |
+| 01THT | 0.286 | 0.143 | 0.286 |
+| 015XE | 0.238 | 0.286 | 0.167 |
+| 03PRW | 0.095 | 0.000 | 0.071 |
+
+- **agent 跨视频极差 0.095 → 0.714（7.5×）**，比 vlm（0.071 → 0.714，10×）甚至 rag（0.0 → 0.524）波动都更大；说明 agent 性能**强依赖场景图质量**，而场景图质量对视频内容差异敏感。03PRW 三方案都垮（最难视频），00607 三方案都赢（最易）。
+- **多视频聚合的统计学意义**：单视频 7 题方差大无法成结论；10 视频聚合后 std 压到 ±0.015（agent），这是单视频 cooking benchmark 永远拿不到的稳定性。
+
+### 与睡前预测的诚实复盘
+
+睡前我基于「Charades 视频太短 → 场景图稀疏 → agent 会输」的逻辑，给用户的预期是 **agent 会在 AGQA 上输给 vlm_direct，仅靠成本说话**。**实测打脸：agent 准确率反而赢了**。复盘：
+
+| 预测错的原因 | 数据真相 |
+|------------|---------|
+| 假设场景图太稀疏 | 16 帧建出的图 ~12 实体 / 12 三元组，**对 AGQA 模板化问题已足够** |
+| 假设组合式长问让 agent 误读 | agent 多步 ReAct（avg 4.5 工具）反而能**逐步分解**，比 vlm 一次性看图更稳 |
+| 忽略 duration 类别的时间窗优势 | 这正是结构化 `t_start/t_end` **唯一无可替代**的赛道 |
+
+**教训**：脱离实测的「结构性劣势」叙事是危险的——这次的反转和 Phase 10 那次 vlm_direct 翻盘是**同一种诚实**：实测优先。
+
+### 前置条件（数据获取，已完成）
+
+AGQA 官方 repo / 下载只提供 **HDF5 视觉特征，不含原始视频**；本系统靠 decord/cv2 抽帧，故 Charades 视频需单独下载。`build_agqa_benchmark.py --dry-run` 先打印抽中的 video_id 清单，据此用 `unzip -j ... "*<id>.mp4" ...` 只抽 10 个视频规避 ~16GB 全量解压。
+
+### 遇到的坑
+
+| 坑 | 原因 | 解决 |
+|----|------|------|
+| AGQA repo 只给特征不给视频 | AGQA / 该 repo 分发 HDF5 特征，视频版权归 Charades | 单独下 Charades 480p；脚本先出 video_id 清单按需下载 |
+| Charades 旧 S3 桶失效（403） | `ai2-website.s3.amazonaws.com` 已废弃 | 换 `ai2-public-datasets.s3-us-west-2`；本仓库文档同步更正 |
+| AGQA balanced CSV 可能多 GB | balanced 子集 3.9M QA | `pandas` 分块读取 + 攒够视频早停 |
+| balanced CSV 没有 category 列 | reasoning-type 在 JSON hierarchies 里，不在 CSV | 启发式分类器 `_infer_category(question, answer)` 推断 binary/duration/counting/sequencing/open |
+| 翻译 v1 漏子句 + 词义错 | prompt 太弱，无视频语境；如 "While holding a blanket" 整句被吞、"vacuum"→「真空」 | prompt v2：强制保留每个子句 + 日常动作义；缓存加 `_PROMPT_VERSION` 自动失效旧条目 |
+| 翻译 v2 答案与问题不一致 | 答案脱离问题单独翻，"bag" 在 vacuum 语境被译成「集尘袋」、问题里却是「袋子」 | prompt v3：答案翻译带上问题作为 context 消歧；cache 版本号 +1 |
+| CSV 列名不确定 | 跨版本列名不固定（实际列：`Unnamed: 0, key, question, answer, vid_id, gif_name, description`）| 候选名容错检测 + 运行时打印实际列名 |
+| 本机 `python` 不存在 | 仅装了 `python3` | 命令统一用 `python3` |
+| 后台启动 `nohup ... &` 让 Bash 包装器立刻退出 | Python 进程脱离工具追踪，跑完无完成通知 | 杀掉脱离进程，改用 `run_in_background=true` 让工具直接跟踪 Python 进程 |
+
+### 已知问题 / TODO（更新）
+
+1. **sequencing 类别 agent 输给 vlm 0.07**（0.381 vs 0.452）：`merge_window_sec=3.0` 在 30s 短视频上时间精度不足；可调小窗口、或专门加「事件时间线」工具支持精确顺序查询。**这是优先级最高的可改进项**。
+2. **agent 单视频极差 7.5×**（03PRW=0.095 → 00607=0.714）：场景图质量在不同视频内容上的鲁棒性不足；需要观察 `build_scene_graph` 在最差视频上抽出了什么，定向优化 prompt。
+3. **Charades ~30s 短视频抹掉 agent 的 amortize 优势**：每视频 7 题 × 一次建图 vs vlm 7 次 4 图，agent 这次也只便宜 4.4×。**真正的 Pareto 分离**需要长视频 + 多题数据集（如 ActivityNet-QA / EgoSchema / Video-MME，平均 3 分钟以上）来证明。
+4. **可选客观评分**：AGQA 答案是客观单词 / before-after / yes-no，加 `--scoring exact`（归一化精确匹配）能彻底消除 Judge 方差，作为 LLM-Judge 的对照。
+
+### 下一步建议（优先级排序）
+
+1. **归因 sequencing 失分**：抽 agent 答错的 sequencing 题，看是 query 检索没找到、还是时间窗精度不够；据此决定是改 retriever 还是改 `merge_window_sec`。
+2. **接入第二个公开数据集**（用户提到的另一个）：复用本期搭好的多视频框架 + 翻译流水线，零基础设施成本。
+3. **长视频 benchmark**（ActivityNet-QA / Video-MME）：把 Pareto 前沿真正拉开——AGQA Charades 是 vlm 的舒适区，长视频是 agent 的舒适区。
+4. **更新 README + 写面试叙事**：本次的**反转故事**（睡前预测 vlm 赢 → 实测 agent 赢，且是 duration 类别的结构化时间窗优势）很有说服力，应正式落到 README 与对外材料。

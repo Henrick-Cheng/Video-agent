@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "video": "10 videos",
+    "videos": [
+      "data/videos/charades/00607.mp4",
+      "data/videos/charades/00T1E.mp4",
+      "data/videos/charades/015XE.mp4",
+      "data/videos/charades/01THT.mp4",
+      "data/videos/charades/02DPI.mp4",
+      "data/videos/charades/02SKC.mp4",
+      "data/videos/charades/03PRW.mp4",
+      "data/videos/charades/06LBQ.mp4",
+      "data/videos/charades/07BSH.mp4",
+      "data/videos/charades/07QNG.mp4"
+    ],
+    "runs": 3
+  },
+  "results": {
+    "agent": {
+      "overall_mean": 0.364,
+      "overall_std": 0.015,
+      "by_category": {
+        "open": {
+          "mean": 0.206,
+          "std": 0.068
+        },
+        "duration": {
+          "mean": 0.318,
+          "std": 0.064
+        },
+        "binary": {
+          "mean": 0.514,
+          "std": 0.111
+        },
+        "sequencing": {
+          "mean": 0.381,
+          "std": 0.135
+        }
+      },
+      "avg_tool_calls": 4.5,
+      "avg_time_sec": 24.4,
+      "avg_tokens_per_q": 1368
+    },
+    "rag_only": {
+      "overall_mean": 0.186,
+      "overall_std": 0.031,
+      "by_category": {
+        "open": {
+          "mean": 0.063,
+          "std": 0.022
+        },
+        "duration": {
+          "mean": 0.061,
+          "std": 0.043
+        },
+        "binary": {
+          "mean": 0.431,
+          "std": 0.098
+        },
+        "sequencing": {
+          "mean": 0.048,
+          "std": 0.034
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 4.0,
+      "avg_tokens_per_q": 838
+    },
+    "vlm_direct": {
+      "overall_mean": 0.326,
+      "overall_std": 0.007,
+      "by_category": {
+        "open": {
+          "mean": 0.198,
+          "std": 0.011
+        },
+        "duration": {
+          "mean": 0.152,
+          "std": 0.021
+        },
+        "binary": {
+          "mean": 0.444,
+          "std": 0.01
+        },
+        "sequencing": {
+          "mean": 0.452,
+          "std": 0.034
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 4.5,
+      "avg_tokens_per_q": 6041
+    }
+  }
+}
