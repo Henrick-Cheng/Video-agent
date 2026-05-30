@@ -33,6 +33,7 @@ models/weights/
 data/frames/
 data/cache/
 data/videos/
+data/agqa/
 
 # IDE
 .vscode/

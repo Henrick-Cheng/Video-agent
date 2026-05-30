@@ -300,48 +300,73 @@ def _judge(question: str, reference: str, key_facts: list[str],
 
 def run_trial(
     method: str,
-    video_path: str,
+    video_path: Optional[str],
     questions: list[dict],
 ) -> list[dict]:
-    """Run all questions for one method in one trial. Returns per-question results."""
-    session = _build_session(video_path)
+    """Run all questions for one method in one trial. Returns per-question results.
 
-    print(f"  [prebuild] extracting frames & building graph...")
+    Questions are grouped by their per-question ``video`` field (falling back to
+    ``video_path`` when a question omits it). For each video we build one
+    VideoSession and — for methods that read the scene graph (agent / rag_only) —
+    pre-build the graph once and reuse it across that video's questions.
+    vlm_direct extracts its own frames per question, so it skips the prebuild.
+    """
     from src.config import get_settings as _get_settings
-    _prebuild_graph(session, frame_count=_get_settings().perception.keyframe_count)
-    n_entities = len(session.scene_graph.entities)
-    n_triplets = len(session.scene_graph)
-    print(f"  [prebuild] graph: {n_entities} entities, {n_triplets} triplets")
 
-    results = []
-    for i, qa in enumerate(questions):
-        q = qa["question"]
-        print(f"  Q{i+1:02d} [{qa['category']}] {q[:40]}...")
-        t0 = time.time()
+    # Group questions by video, preserving first-seen order.
+    groups: dict[str, list[dict]] = {}
+    for qa in questions:
+        v = qa.get("video") or video_path
+        if not v:
+            raise ValueError(
+                f"question {qa.get('id')!r} has no 'video' field and no --video fallback"
+            )
+        groups.setdefault(v, []).append(qa)
 
-        if method == "agent":
-            answer, tool_calls, stats = _answer_agent(session, q)
-        elif method == "rag_only":
-            answer, tool_calls, stats = _answer_rag_only(session, q)
-        elif method == "vlm_direct":
-            answer, tool_calls, stats = _answer_vlm_direct(session, q)
-        else:
-            raise ValueError(f"Unknown method: {method}")
+    needs_graph = method in ("agent", "rag_only")
+    results: list[dict] = []
 
-        elapsed = time.time() - t0
-        score = _judge(q, qa["reference_answer"], qa["key_facts"], answer)
-        print(f"         score={score} time={elapsed:.1f}s tools={tool_calls}")
+    for v, qas in groups.items():
+        if not Path(v).exists():
+            print(f"  [skip] video file not found — skipping {len(qas)} question(s): {v}")
+            continue
 
-        results.append({
-            "id": qa["id"],
-            "category": qa["category"],
-            "question": q,
-            "answer": answer,
-            "score": score,
-            "tool_calls": tool_calls,
-            "time_sec": round(elapsed, 2),
-            "tokens": stats.total_tokens,
-        })
+        session = _build_session(v)
+        if needs_graph:
+            print(f"  [prebuild] {Path(v).name}: extracting frames & building graph...")
+            _prebuild_graph(session, frame_count=_get_settings().perception.keyframe_count)
+            print(f"  [prebuild] graph: {len(session.scene_graph.entities)} entities, "
+                  f"{len(session.scene_graph)} triplets")
+
+        for i, qa in enumerate(qas):
+            q = qa["question"]
+            print(f"  Q{i+1:02d} [{qa['category']}] {q[:40]}...")
+            t0 = time.time()
+
+            if method == "agent":
+                answer, tool_calls, stats = _answer_agent(session, q)
+            elif method == "rag_only":
+                answer, tool_calls, stats = _answer_rag_only(session, q)
+            elif method == "vlm_direct":
+                answer, tool_calls, stats = _answer_vlm_direct(session, q)
+            else:
+                raise ValueError(f"Unknown method: {method}")
+
+            elapsed = time.time() - t0
+            score = _judge(q, qa["reference_answer"], qa["key_facts"], answer)
+            print(f"         score={score} time={elapsed:.1f}s tools={tool_calls}")
+
+            results.append({
+                "id": qa["id"],
+                "video": v,
+                "category": qa["category"],
+                "question": q,
+                "answer": answer,
+                "score": score,
+                "tool_calls": tool_calls,
+                "time_sec": round(elapsed, 2),
+                "tokens": stats.total_tokens,
+            })
 
     return results
 
@@ -413,8 +438,36 @@ _CAT_LABELS = {
 }
 
 
+def _per_video_lines(raw_by_method: dict[str, list[list[dict]]]) -> list[str]:
+    """Markdown table of per-video accuracy (method × video). Empty if ≤1 video."""
+    methods = list(raw_by_method.keys())
+    videos: list[str] = []
+    for trials in raw_by_method.values():
+        for trial in trials:
+            for r in trial:
+                if r["video"] not in videos:
+                    videos.append(r["video"])
+    if len(videos) <= 1:
+        return []
+
+    lines = [
+        "", "## Per-Video Accuracy", "",
+        "| Video | " + " | ".join(methods) + " |",
+        "|-------|" + "------|" * len(methods),
+    ]
+    for v in videos:
+        cells = []
+        for m in methods:
+            scores = [r["score"] for trial in raw_by_method[m]
+                      for r in trial if r["video"] == v]
+            cells.append(f"{sum(scores) / len(scores):.3f}" if scores else "—")
+        lines.append(f"| {Path(v).name} | " + " | ".join(cells) + " |")
+    return lines
+
+
 def _build_report(results_by_method: dict[str, dict], n_runs: int,
-                  video_path: str, bench_path: str) -> str:
+                  video_path: str, bench_path: str,
+                  raw_by_method: Optional[dict[str, list[list[dict]]]] = None) -> str:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
     lines = [
         "# Benchmark Results",
@@ -449,6 +502,9 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
             vals.append(f"{c['mean']:.3f}±{c['std']:.3f}")
         lines.append(f"| {label} | " + " | ".join(vals) + " |")
 
+    if raw_by_method:
+        lines += _per_video_lines(raw_by_method)
+
     lines += [
         "",
         "## Notes",
@@ -466,7 +522,11 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Video QA benchmark runner")
-    parser.add_argument("--video", default="data/videos/test1.mp4")
+    parser.add_argument(
+        "--video", default=None,
+        help="Fallback video path for questions that omit a 'video' field. "
+             "Multi-video benchmarks carry per-question 'video' and don't need this.",
+    )
     parser.add_argument("--benchmark", default="benchmarks/cn_video_qa_v1.json")
     parser.add_argument("--methods", default="agent,rag_only,vlm_direct")
     parser.add_argument("--runs", type=int, default=3)
@@ -497,12 +557,22 @@ def main() -> None:
         questions = [q for q in questions if q["category"] in cats]
         print(f"Filtered to categories {cats}: {len(questions)} questions")
 
+    # Resolve the set of videos referenced by the benchmark (per-question
+    # 'video' field, falling back to --video). Drives single- vs multi-video mode.
+    unique_videos = sorted({(q.get("video") or args.video) for q in questions})
+    if any(v is None for v in unique_videos):
+        print("ERROR: some questions have no 'video' field and --video was not set")
+        sys.exit(1)
+    video_label = unique_videos[0] if len(unique_videos) == 1 \
+        else f"{len(unique_videos)} videos"
+
     methods = [m.strip() for m in args.methods.split(",")]
     results_by_method: dict[str, dict] = {}
+    raw_by_method: dict[str, list[list[dict]]] = {}
 
     print(f"\n{'='*60}")
     print(f"  Video QA Benchmark")
-    print(f"  Video    : {args.video}")
+    print(f"  Video(s) : {video_label}")
     print(f"  Questions: {len(questions)}")
     print(f"  Methods  : {methods}")
     print(f"  Runs     : {args.runs}")
@@ -523,6 +593,7 @@ def main() -> None:
 
         agg = _aggregate(all_trials)
         results_by_method[method] = agg
+        raw_by_method[method] = all_trials
 
         print(f"\n  {method} summary: {agg['overall_mean']:.3f} ± {agg['overall_std']:.3f}")
 
@@ -552,7 +623,8 @@ def main() -> None:
         print()
 
     # ── Write markdown report ─────────────────────────────────────────────────
-    report = _build_report(results_by_method, args.runs, args.video, args.benchmark)
+    report = _build_report(results_by_method, args.runs, video_label,
+                           args.benchmark, raw_by_method)
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(report, encoding="utf-8")
@@ -562,7 +634,8 @@ def main() -> None:
     # Also dump raw JSON for later analysis
     raw_out = out_path.with_suffix(".json")
     raw_out.write_text(
-        json.dumps({"meta": {"video": args.video, "runs": args.runs},
+        json.dumps({"meta": {"video": video_label, "videos": unique_videos,
+                             "runs": args.runs},
                     "results": results_by_method}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
