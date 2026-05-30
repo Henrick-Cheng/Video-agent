@@ -209,15 +209,6 @@ Tool calls  : 5
 ✓ query_scene_graph("战队") → found=True, triplets=4
 ```
 
-### Token 消耗估算（一次问答）
-
-| 调用                          | token 数（估算） | 费用（估算）  |
-|------------------------------|----------------|-------------|
-| qwen-plus-latest（LLM，5轮）  | ~8000          | ~¥0.01      |
-| qwen-vl-plus-latest（VLM，4批+1）| ~40000      | ~¥0.32      |
-| **合计**                      |                | **~¥0.33**  |
-
-> 图像 token 按 1280px / 28px/patch ≈ 1500 token/帧估算。
 
 ### 遇到的坑和解决方案
 
@@ -410,14 +401,6 @@ pytest tests/ (不含 API Key 测试)
 | 后台进程无输出 | Python stdout 管道缓冲 | `sys.stdout.reconfigure(line_buffering=True)` |
 | 评测第一次运行成本过高（预估¥40+）| Agent 每题独立重建场景图 | 共享 session + hint 注入，实际跑完约 ¥8 |
 
-### Token 消耗（本次评测，1 轮）
-
-| 方法 | VLM 调用 | LLM 调用 | 大致费用 |
-|------|---------|---------|---------|
-| agent（25题）| 预构建 2 batch + inspect_frame | ~75 次 | ~¥4 |
-| rag_only（25题）| 预构建 2 batch | 25 次 LLM | ~¥1 |
-| vlm_direct（25题）| 25×4帧 = 100 次 VLM | 25 次 judge | ~¥2 |
-| **合计** | | | **~¥7-8** |
 
 ### 已知问题 / TODO（更新）
 1. **评测集扩展**：25 题统计量不足，建议扩展到 100+ 题或用 NExT-QA / ActivityNet-QA
@@ -489,15 +472,6 @@ Phase 6 发现 vlm_direct 以 0.540 大幅领先，但根本原因是 test1.mp4�
 | main() 同样有硬编码分类 | 报告打印循环用 `["object",...]` | 同步修复为动态取 first_agg 的 keys |
 | agent GraphRecursionError | 烹饪题更复杂，旧公式 `×3+1=19` 不够 | 改为 `×5+10=40` |
 
-### Token 消耗（本次评测，3 runs each）
-
-| 方法 | runs | 大致费用 |
-|------|------|---------|
-| VLM 内容分析（3 batch × 4 帧）| 1 次 | ~¥0.5 |
-| agent（25题 × 3 runs，含 2 次失败重跑）| ~5 runs equiv | ~¥12 |
-| rag_only（25题 × 3 runs）| 3 runs | ~¥1.5 |
-| vlm_direct（25题 × 3 runs）| 3 runs | ~¥7 |
-| **合计（本阶段）** | | **~¥21** |
 
 ### 已知问题 / TODO（更新）
 
