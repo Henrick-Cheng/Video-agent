@@ -33,9 +33,10 @@ logger = logging.getLogger(__name__)
 # ── System prompt ─────────────────────────────────────────────────────────────
 
 _SYSTEM_PROMPT = (
-    "你是专业的视频内容理解专家。请仔细分析给定的视频帧序列，"
-    "识别所有实体和实体间关系，以指定 JSON 格式输出场景图。"
-    "只输出 JSON，不要添加任何解释文字。"
+    "You are an expert in video content understanding. Carefully analyze the "
+    "given sequence of video frames, identify all entities and the relations "
+    "between them, and output a scene graph in the specified JSON format. "
+    "Output only JSON, with no explanatory text."
 )
 
 
@@ -47,7 +48,7 @@ def _format_existing_entities(existing: dict[str, "Entity"]) -> str:
         return ""
     items = list(existing.items())[:20]
     lines = [f"  - {name} ({e.entity_type})" for name, e in items]
-    extra = f"\n  ... (共 {len(existing)} 个)" if len(existing) > 20 else ""
+    extra = f"\n  ... ({len(existing)} total)" if len(existing) > 20 else ""
     return "\n".join(lines) + extra
 
 
@@ -59,32 +60,33 @@ def _build_prompt(
 ) -> str:
     ts_str = ", ".join(f"{t:.1f}s" for t in timestamps)
     focus_hint = (
-        f"\n【重点关注】以下实体: {', '.join(focus_entities)}\n"
+        f"\n[Focus] Pay special attention to these entities: {', '.join(focus_entities)}\n"
         if focus_entities else ""
     )
-    vocab_str = "、".join(relation_vocab[:50])
+    vocab_str = ", ".join(relation_vocab[:50])
 
     existing_hint = ""
     if existing_entities:
         existing_hint = (
-            f"\n【已知实体】以下实体已在本视频中发现，如果检测到相同或高度相似的实体，"
-            f"请在 label 字段中直接复用完全相同的名称，不要重新命名：\n"
+            f"\n[Known entities] The following entities have already been found in "
+            f"this video. If you detect the same or a highly similar entity, reuse "
+            f"the exact same name in the label field — do not rename it:\n"
             f"{_format_existing_entities(existing_entities)}\n"
         )
 
-    return f"""请分析上方 {len(timestamps)} 帧视频画面（时间戳: {ts_str}）。{focus_hint}{existing_hint}
-识别所有可见的实体（人物 person、物体 object、场所 place）以及实体之间的关系。
+    return f"""Analyze the {len(timestamps)} video frames above (timestamps: {ts_str}).{focus_hint}{existing_hint}
+Identify all visible entities (person, object, place) and the relations between them.
 
-【关系词表】只能从以下词汇中选择关系标签，禁止自造：
+[Relation vocabulary] Choose relation labels ONLY from the following list; do not invent new ones:
 {vocab_str}
 
-【输出格式】只输出以下结构的 JSON，不要添加任何其他字段或说明：
+[Output format] Output ONLY JSON with the following structure, no extra fields or commentary:
 {{
   "entities": [
     {{
       "id": "person_1",
       "type": "person|object|place",
-      "label": "简短中文描述",
+      "label": "short English description",
       "attributes": {{"key": "value"}},
       "first_seen": {ts_str.split(',')[0].strip().rstrip('s')},
       "last_seen": {ts_str.split(',')[0].strip().rstrip('s')}
@@ -93,7 +95,7 @@ def _build_prompt(
   "relations": [
     {{
       "subject": "person_1",
-      "relation": "骑乘",
+      "relation": "riding",
       "object": "bicycle_1",
       "t_start": {ts_str.split(',')[0].strip().rstrip('s')},
       "t_end": {ts_str.split(',')[0].strip().rstrip('s')},
@@ -102,11 +104,11 @@ def _build_prompt(
   ]
 }}
 
-规则：
-1. 同一实体在不同帧使用相同 id；id 格式：类型_序号，如 person_1
-2. confidence 为 0.0–1.0 的浮点数
-3. 若无实体或关系，对应列表填 []
-4. 只输出 JSON，不要有任何前缀或后缀文字"""
+Rules:
+1. Use the same id for the same entity across frames; id format: type_index, e.g. person_1
+2. confidence is a float in 0.0-1.0
+3. If there are no entities or relations, use an empty list []
+4. Output only JSON, with no prefix or suffix text"""
 
 
 # ── Parsing ───────────────────────────────────────────────────────────────────

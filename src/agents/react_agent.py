@@ -37,20 +37,24 @@ if TYPE_CHECKING:
 # ── System prompt ─────────────────────────────────────────────────────────────
 
 _SYSTEM_PROMPT = """\
-你是专业的视频内容分析助手。请使用所提供的工具，准确高效地回答关于视频内容的问题。
+You are a professional video content analysis assistant. Use the provided tools to \
+answer questions about the video content accurately and efficiently.
 
-你拥有一个时序场景图作为结构化工作记忆，存储格式为三元组：
+You have a temporal scene graph as structured working memory, stored as triplets:
 (subject) --[relation]--> (object) @ [t_start, t_end]
 
-【决策策略 — 严格按顺序，避免浪费 API 调用】
-1. 若尚未提取帧 → 先调用 extract_keyframes
-2. 在最相关的帧上调用 build_scene_graph 构建场景图（只处理必要帧）
-3. 调用 query_scene_graph 检索结构化事实（快速、零成本，优先使用）
-4. 仅当场景图无法回答时（如识别文字、精确计数、细粒度属性）才调用 inspect_frame
+[Decision strategy — follow strictly in order to avoid wasting API calls]
+1. If frames have not been extracted yet → call extract_keyframes first
+2. Call build_scene_graph on the most relevant frames (process only the frames you need)
+3. Call query_scene_graph to retrieve structured facts (fast, zero-cost — use it first)
+4. Only when the scene graph cannot answer (e.g. reading text, exact counting, \
+fine-grained attributes) call inspect_frame
 
-【回答原则】
-- 最终答案必须有证据：引用场景图三元组（如"(A) --[骑乘]--> (B) @ [0.0s, 3.0s]"）或具体时间戳
-- inspect_frame 会自动更新场景图；返回 nodes_added_to_graph > 0 时可再次 query_scene_graph 获取新内容"""
+[Answering principles]
+- The final answer must be evidence-backed: cite scene graph triplets \
+(e.g. "(A) --[riding]--> (B) @ [0.0s, 3.0s]") or specific timestamps
+- inspect_frame updates the scene graph automatically; when it returns \
+nodes_added_to_graph > 0 you may call query_scene_graph again to fetch the new content"""
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
@@ -60,6 +64,7 @@ def build_agent(
     use_mock: bool = False,
     max_iterations: int | None = None,
     verbose: bool | None = None,
+    system_prompt: str | None = None,
 ) -> Any:
     """
     Create a LangChain 1.x ReAct agent (CompiledStateGraph) bound to the session.
@@ -72,6 +77,9 @@ def build_agent(
     use_mock       : If True, use a mock LLM that skips all tool calls.
     max_iterations : Stored as recursion_limit for LangGraph (pass at invoke time).
     verbose        : Enable debug-level step logging in LangGraph.
+    system_prompt  : Override the default system prompt. The benchmark passes a
+                     short-answer variant so the agent emits a terse final answer
+                     (the interactive product keeps the evidence-citing default).
 
     Returns
     -------
@@ -95,7 +103,8 @@ def build_agent(
 
     # debug=False: LangGraph's internal [values]/[updates] log is too verbose;
     # callers (main.py) handle trace display by inspecting result["messages"].
-    agent = create_agent(llm, tools, system_prompt=_SYSTEM_PROMPT, debug=False)
+    agent = create_agent(llm, tools,
+                         system_prompt=system_prompt or _SYSTEM_PROMPT, debug=False)
 
     # Attach resolved config so main.py / tests can read it
     agent._va_max_iterations = _iters  # type: ignore[attr-defined]
@@ -119,8 +128,9 @@ def _get_mock_llm() -> BaseChatModel:
     """
     class _DirectAnswerModel(BaseChatModel):
         response: str = (
-            "根据场景图分析：视频中有一名穿红色外套的人正在骑蓝色自行车穿过路口，"
-            "交通灯显示绿灯。证据：(person_A) --[骑乘]--> (bicycle) @ [0.0s, 3.0s]"
+            "Based on the scene graph: a person in a red jacket is riding a blue "
+            "bicycle through an intersection, and the traffic light is green. "
+            "Evidence: (person_A) --[riding]--> (bicycle) @ [0.0s, 3.0s]"
         )
 
         def _generate(

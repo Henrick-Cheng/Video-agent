@@ -1,12 +1,12 @@
 """
-Chinese scene graph retriever with multi-strategy matching.
+English scene graph retriever with multi-strategy matching.
 
 Strategy order (first hit wins for each triplet; scores accumulate):
   a. Exact entity name match  — query token equals an entity name
   b. Relation verb match      — query token is in RELATION_VOCAB
   c. Multi-token substring OR scoring — token found inside subject/relation/object
   d. Time constraint filter   — restrict to triplets in a time window if the query
-                                 contains temporal keywords ("开头", "最后", …)
+                                 contains temporal keywords ("beginning", "last", …)
 
 Usage::
 
@@ -17,6 +17,7 @@ Usage::
 from __future__ import annotations
 
 import logging
+import re
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -24,57 +25,87 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# ── Lazy jieba import (avoids slow startup for offline tests) ─────────────────
-_jieba_ready = False
+
+# ── Lemmatizer (lazy, graceful fallback to a light suffix stemmer) ────────────
+_lemmatizer = None
+_lemmatizer_ready = False
 
 
-def _ensure_jieba() -> None:
-    global _jieba_ready
-    if _jieba_ready:
-        return
-    import jieba
-    jieba.setLogLevel(logging.WARNING)
-    _jieba_ready = True
+def _get_lemmatizer():
+    """Return an nltk WordNetLemmatizer if available, else None (offline-safe)."""
+    global _lemmatizer, _lemmatizer_ready
+    if _lemmatizer_ready:
+        return _lemmatizer
+    _lemmatizer_ready = True
+    try:
+        import nltk
+        from nltk.stem import WordNetLemmatizer
+
+        try:
+            nltk.data.find("corpora/wordnet")
+        except LookupError:
+            nltk.download("wordnet", quiet=True)
+        _lemmatizer = WordNetLemmatizer()
+    except Exception as exc:  # nltk missing or download failed → fallback stemmer
+        logger.debug("nltk lemmatizer unavailable (%s); using suffix stemmer", exc)
+        _lemmatizer = None
+    return _lemmatizer
 
 
-# ── Dynamic user-dict injection ───────────────────────────────────────────────
+def _lemmatize(token: str) -> str:
+    """Normalize a token toward its base form (verb-first, then noun)."""
+    lz = _get_lemmatizer()
+    if lz is not None:
+        verb = lz.lemmatize(token, pos="v")
+        if verb != token:
+            return verb
+        return lz.lemmatize(token, pos="n")
+    # Lightweight fallback: strip common inflectional suffixes
+    for suf in ("ing", "ed", "es", "s"):
+        if token.endswith(suf) and len(token) - len(suf) >= 3:
+            return token[: -len(suf)]
+    return token
+
+
+# ── Backward-compat no-op (English needs no jieba user dictionary) ────────────
 
 _registered_words: set[str] = set()
 
 
 def register_domain_words(words: list[str]) -> None:
-    """Add relation verbs and entity names to jieba's custom dictionary."""
-    import jieba
-    _ensure_jieba()
+    """No-op kept for API compatibility (the Chinese pipeline used jieba here)."""
     for w in words:
-        if w and w not in _registered_words:
-            jieba.add_word(w, freq=10000)
+        if w:
             _registered_words.add(w)
 
 
 # ── Tokenization ──────────────────────────────────────────────────────────────
 
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+
 def tokenize(text: str, extra_words: list[str] | None = None) -> list[str]:
     """
-    Segment *text* using jieba, remove stopwords, return meaningful tokens.
+    Tokenize *text*: lowercase, split on non-alphanumeric runs, drop stopwords,
+    and lemmatize each remaining token toward its base form.
 
-    Extra words (entity names, relation verbs) are registered into jieba's
-    user dictionary so they are not split across characters.
+    `extra_words` (entity names / relation verbs) is accepted for API
+    compatibility but not needed for English whitespace tokenization.
     """
-    import jieba
     from src.scene_graph.stopwords import STOPWORDS
 
-    _ensure_jieba()
     if extra_words:
         register_domain_words(extra_words)
 
-    raw_tokens = list(jieba.cut(text, cut_all=False))
+    raw_tokens = _TOKEN_RE.findall(text.lower())
     tokens = [
-        t.strip()
+        _lemmatize(t)
         for t in raw_tokens
-        if t.strip() and t.strip() not in STOPWORDS and len(t.strip()) > 0
+        if t and t not in STOPWORDS
     ]
-    return tokens
+    # Filter stopwords again post-lemmatization (e.g. "does" → "doe" is harmless,
+    # but a lemma may land back on a stopword) and drop empties.
+    return [t for t in tokens if t and t not in STOPWORDS]
 
 
 # ── Time window extraction ────────────────────────────────────────────────────
@@ -87,23 +118,28 @@ def _extract_time_constraint(
     Return (t_start, t_end) window if query tokens contain temporal keywords,
     else None.
 
-    "开头" → first 20 % of video; "最后" → last 20 %.
+    "beginning"/"first" → first 20 % of video; "last"/"end" → last 20 %.
+    A bare number token is treated as an explicit timestamp (seconds, or
+    minutes when a minute-unit token is also present).
     """
     from src.scene_graph.stopwords import TIME_KEYWORDS
-    import re
 
-    positions = {t: TIME_KEYWORDS[t] for t in tokens if t in TIME_KEYWORDS}
-
-    # Explicit seconds like "30秒" or "1分" in the original token list
+    # Prefix-stem match so detection survives lemmatization/stemming
+    # (e.g. "beginning" → "beginn" still matches the "begin" keyword).
+    positions: dict[str, str] = {}
     for tok in tokens:
-        m = re.match(r"(\d+)\s*秒", tok)
-        if m:
-            sec = float(m.group(1))
-            return (max(0.0, sec - 3.0), sec + 3.0)
-        m = re.match(r"(\d+)\s*分", tok)
-        if m:
-            sec = float(m.group(1)) * 60
-            return (max(0.0, sec - 5.0), sec + 5.0)
+        for kw, tag in TIME_KEYWORDS.items():
+            if tok == kw or tok.startswith(kw):
+                positions[tok] = tag
+                break
+
+    # Explicit numeric timestamp like "30" (seconds) or "2" + "minutes"
+    is_minutes = any(t in ("minute", "minutes", "min") for t in tokens)
+    for tok in tokens:
+        if tok.isdigit():
+            sec = float(tok) * (60.0 if is_minutes else 1.0)
+            pad = 5.0 if is_minutes else 3.0
+            return (max(0.0, sec - pad), sec + pad)
 
     if not positions:
         return None
@@ -163,7 +199,7 @@ def retrieve_triplets(
 
     Parameters
     ----------
-    question        : Natural-language Chinese query.
+    question        : Natural-language English query.
     graph           : The session's SceneGraph.
     top_k           : Maximum number of triplets to return.
     video_duration  : Used for time-window estimation (seconds).
@@ -196,18 +232,18 @@ def retrieve_triplets(
             "nearby_entities": [],
         }
 
-    # Register domain words so jieba doesn't split them
+    # Register domain words (no-op for English; preserved for API parity)
     extra_words = RELATION_VOCAB + entity_names
     tokens = tokenize(question, extra_words=extra_words)
 
     if not tokens:
-        tokens = [question.strip()] if question.strip() else []
+        tokens = [question.strip().lower()] if question.strip() else []
 
     query_token_set = set(tokens)
 
     # ── a. Exact entity name match ─────────────────────────────────────────────
     exact_entity_hits: set[str] = {
-        name for name in entity_names if name in query_token_set
+        name for name in entity_names if name.lower() in query_token_set
     }
 
     # ── b. Relation verb match ─────────────────────────────────────────────────

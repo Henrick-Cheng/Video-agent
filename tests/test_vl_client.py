@@ -84,7 +84,7 @@ def test_vl_client_inspect_dashscope():
 
     frame_path = _get_test_frame_path()
     client = get_vl_client()
-    result = client.inspect(frame_path, "图中有什么人物或物体？他们在做什么？")
+    result = client.inspect(frame_path, "What people or objects are in the frame? What are they doing?")
 
     print(f"\n[inspect.answer] {result['answer'][:200]}")
     print(f"[inspect.entities] {result['entities_found']}")
@@ -115,7 +115,7 @@ def test_vl_client_multi_image():
     client = get_vl_client()
     raw = client.call_multi(
         paths[:2],
-        "请描述这两帧画面中的主要内容，输出 JSON: {\"summary\": \"...\"}",
+        "Describe the main content of these two frames, output JSON: {\"summary\": \"...\"}",
     )
     print(f"\n[multi_image raw] {raw[:300]}")
     assert isinstance(raw, str)

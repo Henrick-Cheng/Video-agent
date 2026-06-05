@@ -23,9 +23,9 @@ if TYPE_CHECKING:
 
 def _mock_build(session: "VideoSession", frame_id_list: list[str], cfg) -> str:
     mock_nodes = [
-        {"name": "person_A",      "type": "person",  "attributes": {"clothing": "红色外套"}},
-        {"name": "bicycle",       "type": "object",  "attributes": {"color": "蓝色"}},
-        {"name": "traffic_light", "type": "object",  "attributes": {"state": "绿灯"}},
+        {"name": "person_A",      "type": "person",  "attributes": {"clothing": "red jacket"}},
+        {"name": "bicycle",       "type": "object",  "attributes": {"color": "blue"}},
+        {"name": "traffic_light", "type": "object",  "attributes": {"state": "green"}},
         {"name": "road",          "type": "place",   "attributes": {}},
     ]
     mock_edges = []
@@ -34,13 +34,13 @@ def _mock_build(session: "VideoSession", frame_id_list: list[str], cfg) -> str:
         ts = frame.timestamp if frame else 0.0
         window = cfg.scene_graph.merge_window_sec
         mock_edges += [
-            {"subject": "person_A", "relation": "骑乘",
+            {"subject": "person_A", "relation": "riding",
              "object": "bicycle",       "t_start": ts, "t_end": ts + window,
              "confidence": 0.92, "source": "vlm"},
-            {"subject": "bicycle",  "relation": "位于",
+            {"subject": "bicycle",  "relation": "located_at",
              "object": "road",          "t_start": ts, "t_end": ts + window,
              "confidence": 0.88, "source": "vlm"},
-            {"subject": "person_A", "relation": "靠近",
+            {"subject": "person_A", "relation": "approaching",
              "object": "traffic_light", "t_start": ts, "t_end": ts + window * 2.5,
              "confidence": 0.81, "source": "vlm"},
         ]
