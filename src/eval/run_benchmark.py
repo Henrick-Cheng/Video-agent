@@ -24,6 +24,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 import time
 from datetime import datetime
@@ -38,24 +39,36 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # ── Judge prompt ──────────────────────────────────────────────────────────────
 
 _JUDGE_PROMPT = """\
-你是严格的视频问答评测专家。请判断候选答案的质量。
+You are a strict video question-answering evaluator. Judge the quality of the candidate answer.
 
-【评分标准】
-- 1.0：候选答案包含所有关键事实，语义正确
-- 0.5：候选答案包含超过一半的关键事实，基本方向正确但有遗漏
-- 0.0：候选答案错误、无关、或关键事实命中率低于50%
+[Scoring]
+- 1.0: the candidate contains all key facts and is semantically correct
+- 0.5: the candidate contains more than half of the key facts; broadly correct but with omissions
+- 0.0: the candidate is wrong, irrelevant, or hits less than 50% of the key facts
 
-【注意】
-- 数字必须精确（"2个" vs "3个" 得0分）
-- 语义等价词可接受（"大厅" ≈ "准备区"）
-- 只输出一个数字：0、0.5 或 1，不要解释
+[Notes]
+- Numbers must be exact ("2" vs "3" scores 0)
+- Semantically equivalent words are acceptable ("hall" ≈ "lobby")
+- Output only one number: 0, 0.5, or 1 — no explanation
 
-问题: {question}
-参考答案: {reference}
-关键事实（必须命中）: {key_facts}
-候选答案: {candidate}
+Question: {question}
+Reference answer: {reference}
+Key facts (must be hit): {key_facts}
+Candidate answer: {candidate}
 
-分数（只输出 0、0.5 或 1）："""
+Score (output only 0, 0.5, or 1): """
+
+
+# ── Short-answer constraint (AGQA exact-match protocol) ───────────────────────
+# AGQA gold answers are short canonical tokens (mostly yes/no, plus short object/
+# action phrases). The postdoc's requirement: constrain every method via a system
+# prompt to emit ONLY the short answer, so strict exact-match is meaningful.
+_SHORT_ANSWER_SYS = (
+    "You are answering questions about a video. Reply with ONLY the answer itself "
+    "— a single word or a short phrase. For yes/no questions, answer exactly "
+    "'yes' or 'no'. Do NOT add any explanation, reasoning, punctuation, or extra "
+    "words."
+)
 
 
 # ── Token tracker ─────────────────────────────────────────────────────────────
@@ -108,22 +121,60 @@ def _prebuild_graph(session, frame_count: int = 8) -> _TrialStats:
     return stats
 
 
-def _answer_agent(session, question: str) -> tuple[str, int, _TrialStats]:
-    """Answer using full ReAct agent (scene graph already pre-built)."""
+# Benchmark-only agent system prompt: keep the tool-use strategy, but require a
+# SHORT final answer (the product default cites evidence, which is verbose and
+# defeats exact-match). This is a system message so it overrides the user turn.
+_AGENT_EVAL_SYSTEM = """\
+You are a video question-answering assistant with a pre-built temporal scene graph \
+as structured memory (triplets: (subject) --[relation]--> (object) @ [t_start, t_end]).
+
+[Decision strategy]
+1. You MUST call query_scene_graph to retrieve relevant facts before answering.
+2. If the graph is insufficient, call inspect_frame for a specific timestamp.
+3. The scene graph and frames are already built — do NOT call extract_keyframes or \
+build_scene_graph.
+4. Never answer from prior knowledge or guess; ground every answer in the retrieved \
+evidence.
+
+[Answer format — strict]
+Your FINAL message must be ONLY the answer itself: a single word or a short phrase. \
+For yes/no questions, answer exactly 'yes' or 'no'. Do NOT include any explanation, \
+reasoning, triplets, timestamps, or extra words in the final message."""
+
+
+def _answer_agent(session, question: str,
+                  short_answer: bool = True) -> tuple[str, int, _TrialStats]:
+    """Answer using full ReAct agent (scene graph already pre-built).
+
+    short_answer=True  → terse final answer (exact-match setup).
+    short_answer=False → product default system prompt (verbose, cites evidence);
+                         used for the LLM-judge comparison against the old runs.
+    """
     from src.agents.react_agent import build_agent
 
-    agent = build_agent(session)
+    # short → benchmark short-answer system prompt; verbose → product default (None)
+    agent = build_agent(session,
+                        system_prompt=_AGENT_EVAL_SYSTEM if short_answer else None)
     rl = getattr(agent, "_va_max_iterations", 6) * 5 + 10
 
     # Inject graph status so agent skips rebuild and goes directly to query/inspect
     n_e = len(session.scene_graph.entities)
     n_t = len(session.scene_graph)
     n_f = len(session.cached_frames)
-    ctx_prefix = (
-        f"[场景图已预构建：{n_e} 个实体，{n_t} 条三元组，{n_f} 帧已缓存。"
-        f"请直接使用 query_scene_graph 检索，必要时用 inspect_frame 补充，"
-        f"无需再调用 extract_keyframes 或 build_scene_graph。]\n\n"
-    )
+    if short_answer:
+        ctx_prefix = (
+            f"[The scene graph is pre-built: {n_e} entities, {n_t} triplets, "
+            f"{n_f} frames cached.]\n\n"
+        )
+    else:
+        # Verbose mode: the product system prompt lacks the prebuilt-graph hint,
+        # so spell out the anti-rebuild guidance here (matches the pre-change run).
+        ctx_prefix = (
+            f"[The scene graph is pre-built: {n_e} entities, {n_t} triplets, "
+            f"{n_f} frames cached. Use query_scene_graph to retrieve directly, and "
+            f"inspect_frame when you need more detail. Do NOT call extract_keyframes "
+            f"or build_scene_graph again.]\n\n"
+        )
 
     try:
         result = agent.invoke(
@@ -148,7 +199,8 @@ def _answer_agent(session, question: str) -> tuple[str, int, _TrialStats]:
     return answer, tool_calls, stats
 
 
-def _answer_rag_only(session, question: str) -> tuple[str, int, _TrialStats]:
+def _answer_rag_only(session, question: str,
+                     short_answer: bool = True) -> tuple[str, int, _TrialStats]:
     """LLM answers from scene graph text only."""
     from openai import OpenAI
     from src.config import get_settings
@@ -160,12 +212,25 @@ def _answer_rag_only(session, question: str) -> tuple[str, int, _TrialStats]:
     llm = get_llm_client()
     stats = _TrialStats()
 
-    prompt = (
-        f"你是视频内容分析助手。根据以下场景图信息回答问题，不要超出场景图内容。\n\n"
-        f"{graph_text}\n\n"
-        f"问题：{question}\n\n"
-        f"请给出简洁准确的回答（2–4句）："
-    )
+    if short_answer:
+        prompt = (
+            f"Answer the question based ONLY on the following scene graph information; "
+            f"do not go beyond it.\n\n{graph_text}\n\nQuestion: {question}"
+        )
+        messages = [
+            {"role": "system", "content": _SHORT_ANSWER_SYS},
+            {"role": "user", "content": prompt},
+        ]
+        max_toks = 64
+    else:
+        prompt = (
+            f"You are a video content analysis assistant. Answer the question based on "
+            f"the following scene graph information; do not go beyond it.\n\n"
+            f"{graph_text}\n\nQuestion: {question}\n\n"
+            f"Give a concise, accurate answer (2-4 sentences): "
+        )
+        messages = [{"role": "user", "content": prompt}]
+        max_toks = 512
 
     try:
         resp = OpenAI(
@@ -173,8 +238,8 @@ def _answer_rag_only(session, question: str) -> tuple[str, int, _TrialStats]:
             api_key=cfg.dashscope_api_key or "token-abc",
         ).chat.completions.create(
             model=cfg.active_llm.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
+            messages=messages,
+            max_tokens=max_toks,
             temperature=cfg.models.llm.temperature,
         )
         stats.add(resp.usage)
@@ -198,7 +263,8 @@ _VLM_DIRECT_FRAME_COUNT = 4
 _VLM_DIRECT_OVERSAMPLE = 8
 
 
-def _answer_vlm_direct(session, question: str) -> tuple[str, int, _TrialStats]:
+def _answer_vlm_direct(session, question: str,
+                       short_answer: bool = True) -> tuple[str, int, _TrialStats]:
     """Send sampled frames + question directly to VLM.
 
     Extracts its own uniform frames at a fixed count rather than reusing the
@@ -245,10 +311,17 @@ def _answer_vlm_direct(session, question: str) -> tuple[str, int, _TrialStats]:
         selected = valid
 
     vl = get_vl_client()
-    prompt = f"请根据这些视频帧回答问题：{question}\n\n请给出简洁准确的回答（2–4句）。"
-
     try:
-        answer = vl.call_multi([f.path for f in selected], prompt)
+        if short_answer:
+            prompt = f"Answer the question based on these video frames: {question}"
+            answer = vl.call_multi([f.path for f in selected], prompt,
+                                   system_prompt=_SHORT_ANSWER_SYS, json_mode=False)
+        else:
+            prompt = (
+                f"Answer the question based on these video frames: {question}\n\n"
+                f"Give a concise, accurate answer (2-4 sentences)."
+            )
+            answer = vl.call_multi([f.path for f in selected], prompt)
     except Exception as e:
         answer = f"[ERROR] {e}"
 
@@ -260,28 +333,49 @@ def _answer_vlm_direct(session, question: str) -> tuple[str, int, _TrialStats]:
     return answer, 0, stats
 
 
-# ── Judge ─────────────────────────────────────────────────────────────────────
+# ── Judges ────────────────────────────────────────────────────────────────────
 
-def _judge(question: str, reference: str, key_facts: list[str],
-           candidate: str) -> float:
-    """LLM-as-Judge: returns 0, 0.5, or 1."""
+# The set of scorers the runner knows about. Each question is scored once per
+# active scorer; results are reported side-by-side (one column each).
+SCORERS = ("llm", "exact")
+
+
+def _judge_client():
+    """
+    OpenAI-compatible client for the LLM judge.
+
+    The judge endpoint is configurable INDEPENDENTLY of the agent/VL models via
+    env vars, so the paper-grade judge can be swapped to GPT (academic norm —
+    avoids a Qwen-judging-Qwen self-preference confound) without touching the
+    pipeline. Falls back to the active DashScope LLM.
+    """
     from openai import OpenAI
     from src.config import get_settings
 
     cfg = get_settings()
+    base = os.environ.get("JUDGE_BASE_URL", cfg.active_llm.base_url)
+    key = os.environ.get("JUDGE_API_KEY") or cfg.dashscope_api_key or "token-abc"
+    return OpenAI(base_url=base, api_key=key)
+
+
+def _judge_model() -> str:
+    from src.config import get_settings
+    return os.environ.get("JUDGE_MODEL", get_settings().active_llm.model_name)
+
+
+def _judge_llm(question: str, reference: str, key_facts: list[str],
+               candidate: str) -> float:
+    """LLM-as-Judge: returns 0, 0.5, or 1 (partial credit)."""
     prompt = _JUDGE_PROMPT.format(
         question=question,
         reference=reference,
-        key_facts="、".join(key_facts),
+        key_facts=", ".join(key_facts),
         candidate=candidate,
     )
 
     try:
-        resp = OpenAI(
-            base_url=cfg.active_llm.base_url,
-            api_key=cfg.dashscope_api_key or "token-abc",
-        ).chat.completions.create(
-            model=cfg.active_llm.model_name,
+        resp = _judge_client().chat.completions.create(
+            model=_judge_model(),
             messages=[{"role": "user", "content": prompt}],
             max_tokens=16,
             temperature=0.0,
@@ -296,12 +390,119 @@ def _judge(question: str, reference: str, key_facts: list[str],
         return 0.0
 
 
+# ── Exact-match judge (AGQA paper protocol) ───────────────────────────────────
+
+_ARTICLES_RE = re.compile(r"\b(a|an|the)\b")
+_PUNCT_RE = re.compile(r"[^\w\s]")
+_WS_RE = re.compile(r"\s+")
+_YESNO_RE = re.compile(r"\b(yes|no)\b")
+
+
+def _normalize_answer(s: str) -> str:
+    """Lowercase, strip punctuation/articles, collapse whitespace."""
+    s = _PUNCT_RE.sub(" ", s.lower())
+    s = _ARTICLES_RE.sub(" ", s)
+    return _WS_RE.sub(" ", s).strip()
+
+
+def _judge_exact(candidate: str, gold: str, category: str = "") -> float:
+    """
+    Exact-match score (1.0 / 0.0), AGQA-style, adapted for free-form output.
+
+    - binary  : compare the first yes/no mentioned in the candidate to the gold.
+    - other   : relaxed containment EM — 1.0 if the normalized gold appears as a
+                contiguous substring or a full token-subset of the normalized
+                candidate (the agent answers in sentences, gold is a short token).
+
+    Note: this is "relaxed containment EM", not token-identical EM, because the
+    pipeline produces sentences rather than AGQA's canonical short answers.
+    Documented as such in the report.
+    """
+    g = _normalize_answer(gold)
+    a = _normalize_answer(candidate)
+    if not g:
+        return 0.0
+
+    if category == "binary" or g in ("yes", "no"):
+        m = _YESNO_RE.search(a)
+        pred = m.group(1) if m else ""
+        return 1.0 if pred == g else 0.0
+
+    # Strict exact match on short answers. Methods are constrained (via
+    # _SHORT_ANSWER_SYS) to emit only the answer, so normalized equality is the
+    # right test. A small length-guarded containment tolerates trivial wrappers
+    # ("the bed" → "bed") WITHOUT re-admitting the long-answer false positives
+    # (a verbose reasoning dump that merely mentions the gold word in passing).
+    if a == g:
+        return 1.0
+    if len(a.split()) <= len(g.split()) + 2 and g in a:
+        return 1.0
+    return 0.0
+
+
+# ── Short-answer extraction (fairness for exact-match) ────────────────────────
+# Single-shot baselines obey the short-answer system prompt, but the multi-turn
+# ReAct agent narrates its final turn regardless. To compare exact-match FAIRLY
+# (correctness, not verbosity), reduce any verbose answer to its canonical short
+# form before EM. The LLM judge still scores the raw answer.
+_EXTRACT_PROMPT = """\
+Extract the final answer from the response below. Output ONLY the answer as a \
+single word or short phrase (for yes/no questions, exactly 'yes' or 'no'). \
+Do not explain.
+
+Question: {question}
+Response: {response}
+
+Final short answer:"""
+
+
+def _extract_short_answer(raw: str, question: str) -> str:
+    """Reduce a (possibly verbose) answer to its canonical short form."""
+    from openai import OpenAI
+    from src.config import get_settings
+
+    if not raw or not raw.strip():
+        return ""
+    # Already short → no extraction needed (and no extra API cost).
+    if len(raw.split()) <= 6:
+        return raw.strip()
+
+    cfg = get_settings()
+    try:
+        resp = OpenAI(
+            base_url=cfg.active_llm.base_url,
+            api_key=cfg.dashscope_api_key or "token-abc",
+        ).chat.completions.create(
+            model=cfg.active_llm.model_name,
+            messages=[{"role": "user", "content":
+                       _EXTRACT_PROMPT.format(question=question, response=raw)}],
+            max_tokens=32,
+            temperature=0.0,
+        )
+        return (resp.choices[0].message.content or "").strip() or raw.strip()
+    except Exception:
+        return raw.strip()
+
+
+def _score_answer(scorer: str, qa: dict, candidate: str) -> float:
+    """Dispatch one scorer over one (question, candidate) pair."""
+    if scorer == "llm":
+        return _judge_llm(qa["question"], qa["reference_answer"],
+                          qa["key_facts"], candidate)
+    if scorer == "exact":
+        gold = (qa.get("_source") or {}).get("en_answer") or qa["reference_answer"]
+        return _judge_exact(candidate, gold, qa.get("category", ""))
+    raise ValueError(f"Unknown scorer: {scorer}")
+
+
 # ── Trial runner ──────────────────────────────────────────────────────────────
 
 def run_trial(
     method: str,
     video_path: Optional[str],
     questions: list[dict],
+    scorers: tuple[str, ...] = SCORERS,
+    short_answer: bool = True,
 ) -> list[dict]:
     """Run all questions for one method in one trial. Returns per-question results.
 
@@ -310,6 +511,9 @@ def run_trial(
     VideoSession and — for methods that read the scene graph (agent / rag_only) —
     pre-build the graph once and reuse it across that video's questions.
     vlm_direct extracts its own frames per question, so it skips the prebuild.
+
+    Each answer is scored once per active scorer in ``scorers`` (e.g. both the
+    LLM judge and exact-match), stored under ``scores[scorer]``.
     """
     from src.config import get_settings as _get_settings
 
@@ -344,17 +548,26 @@ def run_trial(
             t0 = time.time()
 
             if method == "agent":
-                answer, tool_calls, stats = _answer_agent(session, q)
+                answer, tool_calls, stats = _answer_agent(session, q, short_answer)
             elif method == "rag_only":
-                answer, tool_calls, stats = _answer_rag_only(session, q)
+                answer, tool_calls, stats = _answer_rag_only(session, q, short_answer)
             elif method == "vlm_direct":
-                answer, tool_calls, stats = _answer_vlm_direct(session, q)
+                answer, tool_calls, stats = _answer_vlm_direct(session, q, short_answer)
             else:
                 raise ValueError(f"Unknown method: {method}")
 
             elapsed = time.time() - t0
-            score = _judge(q, qa["reference_answer"], qa["key_facts"], answer)
-            print(f"         score={score} time={elapsed:.1f}s tools={tool_calls}")
+            # Exact-match scores the canonical short answer; the LLM judge scores
+            # the raw answer (it tolerates verbosity). Extraction is a no-op for
+            # already-short outputs.
+            answer_short = (_extract_short_answer(answer, q)
+                            if "exact" in scorers else answer)
+            scores = {
+                s: _score_answer(s, qa, answer_short if s == "exact" else answer)
+                for s in scorers
+            }
+            score_str = " ".join(f"{s}={scores[s]}" for s in scorers)
+            print(f"         {score_str} time={elapsed:.1f}s tools={tool_calls}")
 
             results.append({
                 "id": qa["id"],
@@ -362,7 +575,8 @@ def run_trial(
                 "category": qa["category"],
                 "question": q,
                 "answer": answer,
-                "score": score,
+                "answer_short": answer_short,
+                "scores": scores,
                 "tool_calls": tool_calls,
                 "time_sec": round(elapsed, 2),
                 "tokens": stats.total_tokens,
@@ -384,23 +598,45 @@ def _std(vals: list[float]) -> float:
     return math.sqrt(sum((v - m) ** 2 for v in vals) / len(vals))
 
 
-def _aggregate(all_trials: list[list[dict]]) -> dict:
-    """Aggregate multiple trial result lists into mean/std stats."""
-    # Derive categories from data (supports both English and Chinese category names)
-    categories = list(dict.fromkeys(r["category"] for trial in all_trials for r in trial))
-    n = len(all_trials)
+def _score_of(r: dict, scorer: str) -> float:
+    """Read one scorer's value from a result row (back-compat with old 'score')."""
+    if "scores" in r:
+        return r["scores"].get(scorer, 0.0)
+    return r.get("score", 0.0)  # legacy single-score rows
 
-    # Overall accuracy per trial
-    overall_scores = [_mean([r["score"] for r in trial]) for trial in all_trials]
+
+def _aggregate_scorer(all_trials: list[list[dict]], scorer: str,
+                      categories: list[str]) -> dict:
+    """Aggregate overall + per-category mean/std for a single scorer."""
+    overall_scores = [
+        _mean([_score_of(r, scorer) for r in trial]) for trial in all_trials
+    ]
     cat_scores: dict[str, list[float]] = {c: [] for c in categories}
     for trial in all_trials:
         by_cat: dict[str, list[float]] = {c: [] for c in categories}
         for r in trial:
-            by_cat[r["category"]].append(r["score"])
+            by_cat[r["category"]].append(_score_of(r, scorer))
         for c in categories:
             cat_scores[c].append(_mean(by_cat[c]) if by_cat[c] else 0.0)
 
-    # Tool calls (only meaningful for agent)
+    return {
+        "overall_mean": round(_mean(overall_scores), 3),
+        "overall_std":  round(_std(overall_scores), 3),
+        "by_category": {
+            c: {
+                "mean": round(_mean(cat_scores[c]), 3),
+                "std":  round(_std(cat_scores[c]), 3),
+            }
+            for c in categories
+        },
+    }
+
+
+def _aggregate(all_trials: list[list[dict]],
+               scorers: tuple[str, ...] = SCORERS) -> dict:
+    """Aggregate multiple trial result lists into per-scorer mean/std stats."""
+    categories = list(dict.fromkeys(r["category"] for trial in all_trials for r in trial))
+
     tool_calls_per_trial = [
         _mean([r["tool_calls"] for r in trial]) for trial in all_trials
     ]
@@ -412,15 +648,7 @@ def _aggregate(all_trials: list[list[dict]]) -> dict:
     ]
 
     return {
-        "overall_mean":   round(_mean(overall_scores), 3),
-        "overall_std":    round(_std(overall_scores), 3),
-        "by_category": {
-            c: {
-                "mean": round(_mean(cat_scores[c]), 3),
-                "std":  round(_std(cat_scores[c]), 3),
-            }
-            for c in categories
-        },
+        "scorers": {s: _aggregate_scorer(all_trials, s, categories) for s in scorers},
         "avg_tool_calls": round(_mean(tool_calls_per_trial), 1),
         "avg_time_sec":   round(_mean(time_per_trial), 1),
         "avg_tokens_per_q": int(_mean(tokens_per_q)),
@@ -430,15 +658,28 @@ def _aggregate(all_trials: list[list[dict]]) -> dict:
 # ── Report generation ─────────────────────────────────────────────────────────
 
 _CAT_LABELS = {
-    "object":    "物体识别",
-    "attribute": "实体属性",
-    "relation":  "关系推理",
-    "temporal":  "时序推理",
-    "count":     "计数/出现",
+    # AGQA categories
+    "binary":     "binary",
+    "duration":   "duration",
+    "sequencing": "sequencing",
+    "open":       "open",
+    # cooking-set categories (legacy)
+    "object":     "object recognition",
+    "attribute":  "entity attribute",
+    "relation":   "relation reasoning",
+    "temporal":   "temporal reasoning",
+    "count":      "counting / presence",
 }
 
 
-def _per_video_lines(raw_by_method: dict[str, list[list[dict]]]) -> list[str]:
+_SCORER_LABELS = {
+    "llm":   "LLM-judge (0/0.5/1)",
+    "exact": "exact-match",
+}
+
+
+def _per_video_lines(raw_by_method: dict[str, list[list[dict]]],
+                     scorer: str) -> list[str]:
     """Markdown table of per-video accuracy (method × video). Empty if ≤1 video."""
     methods = list(raw_by_method.keys())
     videos: list[str] = []
@@ -451,14 +692,14 @@ def _per_video_lines(raw_by_method: dict[str, list[list[dict]]]) -> list[str]:
         return []
 
     lines = [
-        "", "## Per-Video Accuracy", "",
+        "", f"## Per-Video Accuracy — {_SCORER_LABELS.get(scorer, scorer)}", "",
         "| Video | " + " | ".join(methods) + " |",
         "|-------|" + "------|" * len(methods),
     ]
     for v in videos:
         cells = []
         for m in methods:
-            scores = [r["score"] for trial in raw_by_method[m]
+            scores = [_score_of(r, scorer) for trial in raw_by_method[m]
                       for r in trial if r["video"] == v]
             cells.append(f"{sum(scores) / len(scores):.3f}" if scores else "—")
         lines.append(f"| {Path(v).name} | " + " | ".join(cells) + " |")
@@ -467,7 +708,8 @@ def _per_video_lines(raw_by_method: dict[str, list[list[dict]]]) -> list[str]:
 
 def _build_report(results_by_method: dict[str, dict], n_runs: int,
                   video_path: str, bench_path: str,
-                  raw_by_method: Optional[dict[str, list[list[dict]]]] = None) -> str:
+                  raw_by_method: Optional[dict[str, list[list[dict]]]] = None,
+                  scorers: tuple[str, ...] = SCORERS) -> str:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
     lines = [
         "# Benchmark Results",
@@ -475,35 +717,50 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         f"> Video: `{video_path}`  |  Benchmark: `{bench_path}`  "
         f"|  Runs: {n_runs}  |  Generated: {ts}",
         "",
+    ]
+
+    # ── Overall: one accuracy column per scorer ───────────────────────────────
+    scorer_cols = " | ".join(
+        f"Acc · {_SCORER_LABELS.get(s, s)}" for s in scorers
+    )
+    lines += [
         "## Overall Accuracy",
         "",
-        "| Method | Accuracy (mean ± std) | Avg Tool Calls | Avg Time (s) | Est. Tokens/Q |",
-        "|--------|----------------------|----------------|--------------|---------------|",
+        f"| Method | {scorer_cols} | Avg Tool Calls | Avg Time (s) | Est. Tokens/Q |",
+        "|--------|" + "----|" * len(scorers) + "----------------|--------------|---------------|",
     ]
     for method, agg in results_by_method.items():
-        acc = f"{agg['overall_mean']:.3f} ± {agg['overall_std']:.3f}"
+        accs = " | ".join(
+            f"{agg['scorers'][s]['overall_mean']:.3f} ± {agg['scorers'][s]['overall_std']:.3f}"
+            for s in scorers
+        )
         tc = str(agg["avg_tool_calls"]) if method == "agent" else "—"
         lines.append(
-            f"| **{method}** | {acc} | {tc} | {agg['avg_time_sec']} | {agg['avg_tokens_per_q']} |"
+            f"| **{method}** | {accs} | {tc} | {agg['avg_time_sec']} | {agg['avg_tokens_per_q']} |"
         )
 
-    lines += ["", "## Per-Category Accuracy", ""]
-    header = "| Category | " + " | ".join(results_by_method.keys()) + " |"
-    sep = "|----------|" + "---------|" * len(results_by_method)
-    lines += [header, sep]
-
+    # ── Per-category: one sub-table per scorer ────────────────────────────────
     first_agg = next(iter(results_by_method.values()))
-    categories = list(first_agg["by_category"].keys())
-    for cat in categories:
-        label = _CAT_LABELS.get(cat, cat)
-        vals = []
-        for agg in results_by_method.values():
-            c = agg["by_category"][cat]
-            vals.append(f"{c['mean']:.3f}±{c['std']:.3f}")
-        lines.append(f"| {label} | " + " | ".join(vals) + " |")
+    categories = list(first_agg["scorers"][scorers[0]]["by_category"].keys())
+    for s in scorers:
+        lines += ["", f"## Per-Category Accuracy — {_SCORER_LABELS.get(s, s)}", ""]
+        lines += [
+            "| Category | " + " | ".join(results_by_method.keys()) + " |",
+            "|----------|" + "---------|" * len(results_by_method),
+        ]
+        for cat in categories:
+            label = _CAT_LABELS.get(cat, cat)
+            vals = [
+                f"{agg['scorers'][s]['by_category'][cat]['mean']:.3f}"
+                f"±{agg['scorers'][s]['by_category'][cat]['std']:.3f}"
+                for agg in results_by_method.values()
+            ]
+            lines.append(f"| {label} | " + " | ".join(vals) + " |")
 
+    # ── Per-video: one sub-table per scorer (multi-video benchmarks only) ──────
     if raw_by_method:
-        lines += _per_video_lines(raw_by_method)
+        for s in scorers:
+            lines += _per_video_lines(raw_by_method, s)
 
     lines += [
         "",
@@ -512,9 +769,21 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         "- **agent**: Full ReAct Agent — extracts frames, builds scene graph, uses query + inspect tools",
         "- **rag_only**: Pre-builds full scene graph, then LLM answers from graph text only",
         "- **vlm_direct**: Samples 4 frames, sends raw frames + question directly to VLM",
-        "- Judge: `qwen-plus-latest` LLM-as-Judge, scores 0 / 0.5 / 1 against `key_facts`",
-        f"- Each method ran {n_runs} independent trials; mean ± std reported",
     ]
+    if "llm" in scorers:
+        lines.append(
+            f"- **LLM-judge**: `{_judge_model()}` scores 0 / 0.5 / 1 against `key_facts` "
+            "(partial credit; judge endpoint configurable via JUDGE_BASE_URL/JUDGE_MODEL/JUDGE_API_KEY)"
+        )
+    if "exact" in scorers:
+        lines.append(
+            "- **exact-match**: strict normalized EM (1/0) against `_source.en_answer`; binary uses "
+            "the first yes/no, others require normalized equality (length-guarded). Verbose answers "
+            "(e.g. the ReAct agent) are reduced to their canonical short form by a deterministic "
+            "extraction step before EM. NOTE: extraction is unreliable on open/'X or Y' questions "
+            "(see docs/em_vs_agent_analysis.md) — treat non-binary EM as a conservative reference"
+        )
+    lines.append(f"- Each method ran {n_runs} independent trials; mean ± std reported over trials")
     return "\n".join(lines)
 
 
@@ -536,7 +805,26 @@ def main() -> None:
         default="",
         help="Comma-separated categories to run (default: all)",
     )
+    parser.add_argument(
+        "--scorers", default=",".join(SCORERS),
+        help=f"Comma-separated scorers to run (default: all). Options: {', '.join(SCORERS)}. "
+             "Each answer is scored once per scorer and reported in its own column.",
+    )
+    parser.add_argument(
+        "--answer-mode", choices=["short", "verbose"], default="short",
+        help="short: constrain methods to a terse answer (exact-match setup). "
+             "verbose: product-default answers (agent cites evidence, baselines give "
+             "2-4 sentences) — use for an LLM-judge comparison against the old runs.",
+    )
     args = parser.parse_args()
+
+    short_answer = args.answer_mode == "short"
+    scorers = tuple(s.strip() for s in args.scorers.split(",") if s.strip())
+    unknown = [s for s in scorers if s not in SCORERS]
+    if unknown:
+        print(f"ERROR: unknown scorer(s) {unknown}; valid: {', '.join(SCORERS)}")
+        sys.exit(1)
+    primary = scorers[0]  # used for the one-line console summary
 
     # ── sanity checks ─────────────────────────────────────────────────────────
     from src.config import get_settings
@@ -576,6 +864,8 @@ def main() -> None:
     print(f"  Questions: {len(questions)}")
     print(f"  Methods  : {methods}")
     print(f"  Runs     : {args.runs}")
+    print(f"  Scorers  : {list(scorers)}")
+    print(f"  Ans mode : {args.answer_mode}")
     print(f"{'='*60}\n")
 
     for method in methods:
@@ -586,57 +876,75 @@ def main() -> None:
         all_trials: list[list[dict]] = []
         for run_i in range(args.runs):
             print(f"\n  Run {run_i + 1}/{args.runs}")
-            trial = run_trial(method, args.video, questions)
+            trial = run_trial(method, args.video, questions, scorers, short_answer)
             all_trials.append(trial)
-            acc = _mean([r["score"] for r in trial])
-            print(f"  → Run accuracy: {acc:.3f}")
+            acc = _mean([_score_of(r, primary) for r in trial])
+            print(f"  → Run accuracy ({primary}): {acc:.3f}")
 
-        agg = _aggregate(all_trials)
+        agg = _aggregate(all_trials, scorers)
         results_by_method[method] = agg
         raw_by_method[method] = all_trials
 
-        print(f"\n  {method} summary: {agg['overall_mean']:.3f} ± {agg['overall_std']:.3f}")
+        p = agg["scorers"][primary]
+        print(f"\n  {method} summary ({primary}): "
+              f"{p['overall_mean']:.3f} ± {p['overall_std']:.3f}")
 
     # ── Print summary table ───────────────────────────────────────────────────
     print(f"\n{'='*60}")
     print("  RESULTS SUMMARY")
     print(f"{'='*60}")
+    print(f"  (accuracy shown for scorer: {primary}; full report has all scorers)")
     print(f"\n{'Method':<15} {'Accuracy':>15} {'Time(s)':>10} {'Tokens/Q':>10}")
     print("─" * 55)
     for method, agg in results_by_method.items():
-        acc = f"{agg['overall_mean']:.3f}±{agg['overall_std']:.3f}"
+        p = agg["scorers"][primary]
+        acc = f"{p['overall_mean']:.3f}±{p['overall_std']:.3f}"
         print(f"{method:<15} {acc:>15} {agg['avg_time_sec']:>10.1f} {agg['avg_tokens_per_q']:>10}")
 
-    # Per-category breakdown
+    # Per-category breakdown (primary scorer)
     print(f"\n{'Category':<16}", end="")
     for method in methods:
         print(f" {method:>15}", end="")
     print()
     print("─" * (16 + 16 * len(methods)))
     first_agg = next(iter(results_by_method.values()))
-    for cat in first_agg["by_category"]:
+    for cat in first_agg["scorers"][primary]["by_category"]:
         label = _CAT_LABELS.get(cat, cat)
         print(f"{label:<16}", end="")
         for method in methods:
-            c = results_by_method[method]["by_category"][cat]
+            c = results_by_method[method]["scorers"][primary]["by_category"][cat]
             print(f" {c['mean']:.3f}±{c['std']:.3f}  ", end="")
         print()
 
     # ── Write markdown report ─────────────────────────────────────────────────
     report = _build_report(results_by_method, args.runs, video_label,
-                           args.benchmark, raw_by_method)
+                           args.benchmark, raw_by_method, scorers)
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(report, encoding="utf-8")
     print(f"\n  Report written to: {out_path}")
     print(f"{'='*60}\n")
 
-    # Also dump raw JSON for later analysis
+    # Also dump raw JSON for later analysis — include per-question answers and
+    # both scores so llm-vs-exact disagreements can be audited.
+    raw_dump = {
+        method: [
+            [
+                {k: r.get(k) for k in
+                 ("id", "video", "category", "question", "answer",
+                  "answer_short", "scores", "tool_calls", "tokens")}
+                for r in trial
+            ]
+            for trial in trials
+        ]
+        for method, trials in raw_by_method.items()
+    }
     raw_out = out_path.with_suffix(".json")
     raw_out.write_text(
         json.dumps({"meta": {"video": video_label, "videos": unique_videos,
-                             "runs": args.runs},
-                    "results": results_by_method}, ensure_ascii=False, indent=2),
+                             "runs": args.runs, "scorers": list(scorers)},
+                    "results": results_by_method,
+                    "raw": raw_dump}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
