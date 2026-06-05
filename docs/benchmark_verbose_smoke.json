@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "video": "2 videos",
+    "videos": [
+      "data/videos/charades/02DPI.mp4",
+      "data/videos/charades/03PRW.mp4"
+    ],
+    "runs": 1,
+    "scorers": [
+      "llm"
+    ]
+  },
+  "results": {
+    "agent": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.25,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 2.9,
+      "avg_time_sec": 19.0,
+      "avg_tokens_per_q": 2252
+    },
+    "vlm_direct": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.125,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 3.5,
+      "avg_tokens_per_q": 6122
+    }
+  },
+  "raw": {
+    "agent": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "Based on the scene graph query results, the person wearing a black shirt and shorts was leaning on (or more precisely, sitting on or lying on) a **patterned couch with a pink blanket** while holding the blanket.\n\nThe relevant triplets show:\n- \"(a person wearing a black shirt and shorts) --[lying_on]--> (a patterned couch with a pink blanket) @ [0.0s, 6.8s]\"\n- \"(a person wearing a black shirt and shorts) --[sitting_on]--> (a patterned couch with a pink blanket) @ [9.2s, 16.1s]\"\n\nSo while holding the pink blanket, the person was leaning on/sitting on/lying on a patterned couch that had the pink blanket on it.",
+          "answer_short": "Based on the scene graph query results, the person wearing a black shirt and shorts was leaning on (or more precisely, sitting on or lying on) a **patterned couch with a pink blanket** while holding the blanket.\n\nThe relevant triplets show:\n- \"(a person wearing a black shirt and shorts) --[lying_on]--> (a patterned couch with a pink blanket) @ [0.0s, 6.8s]\"\n- \"(a person wearing a black shirt and shorts) --[sitting_on]--> (a patterned couch with a pink blanket) @ [9.2s, 16.1s]\"\n\nSo while holding the pink blanket, the person was leaning on/sitting on/lying on a patterned couch that had the pink blanket on it.",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 1356
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "The scene graph doesn't contain any information about a bed or the person sitting in a bed. The only blanket-related activities shown are:\n\n- Holding a pink blanket: [0.0s, 16.1s] → duration of 16.1 seconds\n- Lying on a pink blanket: [18.5s, 25.4s] → duration of 6.9 seconds\n\nSince there's no information about the person sitting in a bed in the scene graph, we cannot compare the durations. The scene graph only contains information about the person with a blanket (holding it for 16.1 seconds and lying on it for 6.9 seconds), but no information about sitting in a bed.\n\nTherefore, based on the available scene graph data, we can only confirm the blanket-related activities, but cannot determine which activity (snuggling with blanket vs. sitting in bed) was shorter since the bed-related activity is not present in the scene graph.",
+          "answer_short": "The scene graph doesn't contain any information about a bed or the person sitting in a bed. The only blanket-related activities shown are:\n\n- Holding a pink blanket: [0.0s, 16.1s] → duration of 16.1 seconds\n- Lying on a pink blanket: [18.5s, 25.4s] → duration of 6.9 seconds\n\nSince there's no information about the person sitting in a bed in the scene graph, we cannot compare the durations. The scene graph only contains information about the person with a blanket (holding it for 16.1 seconds and lying on it for 6.9 seconds), but no information about sitting in a bed.\n\nTherefore, based on the available scene graph data, we can only confirm the blanket-related activities, but cannot determine which activity (snuggling with blanket vs. sitting in bed) was shorter since the bed-related activity is not present in the scene graph.",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 1876
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "The inspection at timestamp 2.19s reveals that:\n\n- A person is snuggling with a blanket on the couch\n- The television is located above the person (not beneath them)\n- The television is mounted on a cabinet in the background\n\nThe question asks \"was a television the first thing they went beneath?\" but the inspection shows the television is *above* the person, not beneath them. The person is beneath the television, not going beneath it.\n\nSince the scene graph and frame inspection show the television is positioned above the person (mounted on a cabinet), and there's no evidence of the person going beneath the television, the answer to the question is no.\n\nThe television was not the first thing they went beneath - in fact, they are beneath it, not going beneath it.\n\nTherefore, the answer is: No, the television was not the first thing they went beneath; it was above them.",
+          "answer_short": "The inspection at timestamp 2.19s reveals that:\n\n- A person is snuggling with a blanket on the couch\n- The television is located above the person (not beneath them)\n- The television is mounted on a cabinet in the background\n\nThe question asks \"was a television the first thing they went beneath?\" but the inspection shows the television is *above* the person, not beneath them. The person is beneath the television, not going beneath it.\n\nSince the scene graph and frame inspection show the television is positioned above the person (mounted on a cabinet), and there's no evidence of the person going beneath the television, the answer to the question is no.\n\nThe television was not the first thing they went beneath - in fact, they are beneath it, not going beneath it.\n\nTherefore, the answer is: No, the television was not the first thing they went beneath; it was above them.",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 2463
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "Let me analyze the temporal relationships more carefully. The question asks \"What was the person behind first after snuggling with the object they were covered by?\"\n\nFrom the scene graph, I can see:\n- The person was snuggling with a blanket from 2.19s to 5.19s\n- During that exact same time period (2.19s to 5.19s), the person was \"located below\" a television\n\nThe key insight is that \"located below\" suggests the person is positioned under or behind the television in the spatial arrangement. In living room contexts, when someone is \"below\" a television, it typically means the television is mounted on a wall above them or placed on a stand in front of them, and the person is seated or lying in a position where the television is in front of/above them.\n\nLooking at the other relationships:\n- The person is consistently \"watching\" the television throughout multiple time periods (0.0-6.8s, 9.2-16.1s, 18.5-25.4s)\n- The person is \"sitting_on\" or \"lying_on\" various surfaces (couch, blanket) while watching television\n\nThe most direct spatial relationship indicating what the person was behind/under is the \"located below television\" triplet, which occurs during the snuggling period itself. Since this relationship exists concurrently with the snuggling, and no other \"behind\" or \"below\" relationships are mentioned for other objects, the television is the primary object the person was positioned relative to.\n\nTherefore, the person was behind/below the television first after (and during) snuggling with the blanket.\n\nThe answer is: television",
+          "answer_short": "Let me analyze the temporal relationships more carefully. The question asks \"What was the person behind first after snuggling with the object they were covered by?\"\n\nFrom the scene graph, I can see:\n- The person was snuggling with a blanket from 2.19s to 5.19s\n- During that exact same time period (2.19s to 5.19s), the person was \"located below\" a television\n\nThe key insight is that \"located below\" suggests the person is positioned under or behind the television in the spatial arrangement. In living room contexts, when someone is \"below\" a television, it typically means the television is mounted on a wall above them or placed on a stand in front of them, and the person is seated or lying in a position where the television is in front of/above them.\n\nLooking at the other relationships:\n- The person is consistently \"watching\" the television throughout multiple time periods (0.0-6.8s, 9.2-16.1s, 18.5-25.4s)\n- The person is \"sitting_on\" or \"lying_on\" various surfaces (couch, blanket) while watching television\n\nThe most direct spatial relationship indicating what the person was behind/under is the \"located below television\" triplet, which occurs during the snuggling period itself. Since this relationship exists concurrently with the snuggling, and no other \"behind\" or \"below\" relationships are mentioned for other objects, the television is the primary object the person was positioned relative to.\n\nTherefore, the person was behind/below the television first after (and during) snuggling with the blanket.\n\nThe answer is: television",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 3332
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "Yes, they did lean on something. The inspection of the frame at timestamp 0.0 seconds revealed that \"the man wearing a red sleeveless shirt is leaning on the backrest of the couch.\"\n\nThis action is now captured in the scene graph as: (man) --[leaning on]--> (couch) @ [0.0s, 0.0s]\n\nSo the answer is yes - at least one person (the man wearing a red sleeveless shirt) leaned on the backrest of the couch.",
+          "answer_short": "Yes, they did lean on something. The inspection of the frame at timestamp 0.0 seconds revealed that \"the man wearing a red sleeveless shirt is leaning on the backrest of the couch.\"\n\nThis action is now captured in the scene graph as: (man) --[leaning on]--> (couch) @ [0.0s, 0.0s]\n\nSo the answer is yes - at least one person (the man wearing a red sleeveless shirt) leaned on the backrest of the couch.",
+          "scores": {
+            "llm": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 930
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "The scene graph shows only one food-related activity: the man holding a yellow plate with food from 0.0s to 41.2s.\n\nFor television watching, since there's no television in the scene, the closest activity would be using the laptop. The longest continuous period of laptop use is from 22.0s to 41.2s (19.2 seconds), which is shorter than the eating duration of 41.2 seconds.\n\nTherefore, the person was watching television (via laptop) for a shorter amount of time than eating food.\n\nAnswer: The person was watching television for a shorter amount of time than eating food. The eating activity lasted from 0.0s to 41.2s (41.2 seconds), while the longest continuous period of laptop use (the closest activity to watching television) was from 22.0s to 41.2s (19.2 seconds).",
+          "answer_short": "The scene graph shows only one food-related activity: the man holding a yellow plate with food from 0.0s to 41.2s.\n\nFor television watching, since there's no television in the scene, the closest activity would be using the laptop. The longest continuous period of laptop use is from 22.0s to 41.2s (19.2 seconds), which is shorter than the eating duration of 41.2 seconds.\n\nTherefore, the person was watching television (via laptop) for a shorter amount of time than eating food.\n\nAnswer: The person was watching television for a shorter amount of time than eating food. The eating activity lasted from 0.0s to 41.2s (41.2 seconds), while the longest continuous period of laptop use (the closest activity to watching television) was from 22.0s to 41.2s (19.2 seconds).",
+          "scores": {
+            "llm": 1.0
+          },
+          "tool_calls": 6,
+          "tokens": 3525
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "The scene graph query confirms that during the time when the person is holding a cup or glass (t_start: 10.99, t_end: 13.99), they are also leaning on the couch. This matches the temporal sequence described in the question: \"before putting a cup somewhere but after taking a cup from somewhere\" - the person is actively handling a cup and during this time is leaning on the couch.\n\nThe triplets show:\n- \"(person) --[holding]--> (cup or glass) @ [10.99s, 13.99s]\"\n- \"(person) --[leaning on]--> (couch) @ [10.99s, 13.99s]\"\n\nTherefore, the object they were leaning on during this cup-handling period is the couch.\n\nAnswer: The couch",
+          "answer_short": "The scene graph query confirms that during the time when the person is holding a cup or glass (t_start: 10.99, t_end: 13.99), they are also leaning on the couch. This matches the temporal sequence described in the question: \"before putting a cup somewhere but after taking a cup from somewhere\" - the person is actively handling a cup and during this time is leaning on the couch.\n\nThe triplets show:\n- \"(person) --[holding]--> (cup or glass) @ [10.99s, 13.99s]\"\n- \"(person) --[leaning on]--> (couch) @ [10.99s, 13.99s]\"\n\nTherefore, the object they were leaning on during this cup-handling period is the couch.\n\nAnswer: The couch",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 5,
+          "tokens": 2840
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "Based on the scene graph analysis, while holding a yellow plate with food, the man wearing a red sleeveless shirt was sitting on a black leather couch.\n\nThe scene graph shows multiple instances of this relationship:\n- \"(a man wearing a red sleeveless shirt) --[sitting_on]--> (a black leather couch) @ [0.0s, 8.2s]\"\n- \"(a man wearing a red sleeveless shirt) --[sitting_on]--> (a black leather couch) @ [33.0s, 41.2s]\"\n\nThese timestamps overlap with the time period when he was holding the food: \"(a man wearing a red sleeveless shirt) --[holding]--> (a yellow plate with food) @ [0.0s, 41.2s]\".\n\nTherefore, while holding food, they sat on a black leather couch.",
+          "answer_short": "Based on the scene graph analysis, while holding a yellow plate with food, the man wearing a red sleeveless shirt was sitting on a black leather couch.\n\nThe scene graph shows multiple instances of this relationship:\n- \"(a man wearing a red sleeveless shirt) --[sitting_on]--> (a black leather couch) @ [0.0s, 8.2s]\"\n- \"(a man wearing a red sleeveless shirt) --[sitting_on]--> (a black leather couch) @ [33.0s, 41.2s]\"\n\nThese timestamps overlap with the time period when he was holding the food: \"(a man wearing a red sleeveless shirt) --[holding]--> (a yellow plate with food) @ [0.0s, 41.2s]\".\n\nTherefore, while holding food, they sat on a black leather couch.",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 1700
+        }
+      ]
+    ],
+    "vlm_direct": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "{\n  \"answer\": \"The person was leaning on a patterned couch while holding a blanket. The couch appears to be in a living room setting, with a television and other furniture visible in the background.\"\n}",
+          "answer_short": "{\n  \"answer\": \"The person was leaning on a patterned couch while holding a blanket. The couch appears to be in a living room setting, with a television and other furniture visible in the background.\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6118
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "{\n  \"answer\": \"The person was snuggling with a blanket for a shorter amount of time. The video frames show the person initially lying on the couch with the blanket and then sitting up, indicating a transition from lying down to sitting.\"\n}",
+          "answer_short": "{\n  \"answer\": \"The person was snuggling with a blanket for a shorter amount of time. The video frames show the person initially lying on the couch with the blanket and then sitting up, indicating a transition from lying down to sitting.\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6141
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "{\n  \"answer\": \"No, the television was not the first thing they went beneath while snuggling with the object. Initially, they were under a pink blanket on the couch before the camera angle changed to show them still under the blanket.\"\n}",
+          "answer_short": "{\n  \"answer\": \"No, the television was not the first thing they went beneath while snuggling with the object. Initially, they were under a pink blanket on the couch before the camera angle changed to show them still under the blanket.\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6145
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "{\n  \"answer\": \"The person was first seen adjusting the pink blanket they were covered by, then they settled back into a comfortable position on the couch. After snuggling with the object, they appeared to be watching television, as indicated by the TV screen in the background. The person remained relaxed and focused on the television throughout the sequence.\"\n}",
+          "answer_short": "{\n  \"answer\": \"The person was first seen adjusting the pink blanket they were covered by, then they settled back into a comfortable position on the couch. After snuggling with the object, they appeared to be watching television, as indicated by the TV screen in the background. The person remained relaxed and focused on the television throughout the sequence.\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6182
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "{\n  \"answer\": \"Yes, in the video, the person is leaning on a couch while eating from a plate. The couch appears to be providing support as they sit and eat.\"\n}",
+          "answer_short": "{\n  \"answer\": \"Yes, in the video, the person is leaning on a couch while eating from a plate. The couch appears to be providing support as they sit and eat.\"\n}",
+          "scores": {
+            "llm": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 6099
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "{\n  \"answer\": \"The person was eating food for a shorter amount of time compared to watching television. In the first frame, the person is seen holding a plate of food, but by the second frame, they have placed the plate down and are focused on the laptop screen.\"\n}",
+          "answer_short": "{\n  \"answer\": \"The person was eating food for a shorter amount of time compared to watching television. In the first frame, the person is seen holding a plate of food, but by the second frame, they have placed the plate down and are focused on the laptop screen.\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6149
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "{\n  \"object\": \"couch\"\n}",
+          "answer_short": "{\n  \"object\": \"couch\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6074
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "{\n  \"answer\": \"They sat on a black leather couch while holding some food.\"\n}",
+          "answer_short": "{\n  \"answer\": \"They sat on a black leather couch while holding some food.\"\n}",
+          "scores": {
+            "llm": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 6073
+        }
+      ]
+    ]
+  }
+}

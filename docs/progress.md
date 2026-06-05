@@ -878,3 +878,71 @@ AGQA 官方 repo / 下载只提供 **HDF5 视觉特征，不含原始视频**；
 | 5 | **P1 #4-#6**：embedding 检索 / 去重一起做，写对照 ablation | ~1-2 天 | 检索 miss 大幅减少 + 实体合并更稳健 |
 
 > 我的判断：**P0 三条都是低风险、高确定性产出**，做完才知道项目下一步的瓶颈到底在哪。在不清楚瓶颈前直接上 P1 的大改动（FAISS / 长视频）有点像凭信念优化。**先 P0 跑完拿到三个数据点**，再做 P1 的选择题。
+
+---
+
+## 第十二阶段：全英文迁移 + 双评分（LLM-judge / exact-match）—— 进行中（2026-06）
+
+> **背景**：项目同时用于简历与硕士论文。博士后明确要求：(1) 论文用公开数据集 AGQA，(2) 管线改**英文**，(3) AGQA 评测**用 exact-match**（对标已发表 SOTA，自定义 LLM-judge 不可发表）。经核对，"中文"不是项目的认知承重墙——简历五条 bullet 无一依赖中文，中文只是查询的表层语言。故决定：**全英文，放弃"中文产品"定位**（不做跨语言实验，博士后未要求）。
+
+### 已完成
+
+| 工作 | 内容 | 状态 |
+|------|------|------|
+| **A. 语言全栈迁移** | `relation_vocab`(50 词)/`stopwords`/`retriever`(jieba→空格+词形还原)/`builder`/`vl_client`/`react_agent`/mock 全部英文化；`test_query_chinese`→`test_query_english`，其余测试中文 fixture 清理 | ✅ pytest 38 passed / 12 skipped，无回归 |
+| **B. 双评分基础设施** | `run_benchmark.py`:`_judge`→`_judge_llm`+`_judge_exact`；`--scorers llm,exact` 一次跑双列；judge endpoint 可配（`JUDGE_*` 环境变量，留口给 GPT judge） | ✅ |
+| **答案模式开关** | `--answer-mode {short,verbose}`：short=短答案约束(EM 用)；verbose=产品默认冗长引证(LLM-judge 对照用，摁住"答案格式"变量) | ✅ |
+| **数据** | 生成 `benchmarks/agqa_en_small.json`（英文原问 + 英文原答，取自 `_source.en_*`，无需重译） | ✅ |
+
+### 遇到的坑（冒烟驱动，每个都是真 bug）
+
+1. **VL 模型 403** —— `qwen-vl-plus-latest` 等 `-latest` VL 别名在本账号 access_denied，稳定名 `qwen-vl-plus` 可用（文本 `qwen-plus-latest` 不受影响）。改 `configs/default.yaml` 一行。
+2. **EM token 散点假阳** —— 词袋匹配把答案里散落的 gold 词判对；改严格归一化相等。
+3. **EM substring-on-verbose 假阳** —— 长答案里偶然/否定式带到 gold 词（"no **bed** activities" 判对 `bed`）；加长度护栏。
+4. **短答案约束压垮工具调用** / **vlm 返 JSON** —— 分别用"强制先 query"和 `json_mode=False` 修。
+5. **agent 最终答案仍冗长**（产品 prompt"引用证据"压过 eval 指令）→ 给 eval 单独 agent system prompt + 短答案抽取步骤。
+
+### 核心发现 ①：EM 与生成式 Agent 错配（详见 `docs/em_vs_agent_analysis.md`）
+
+EM 是给 AGQA 原生**封闭词表 / 判别模型**（单 token 输出）设计的；本项目是**生成式 ReAct Agent**（推理叙述）。逼短答案压垮工具、事后抽取在 open/"X or Y" 题上**不可靠**。**铁证**（03PRW duration，gold=`sitting in a bed`）：agent 原文结论是"没有 bed，是 couch"（答错），抽取器看到问题里"X or Y"两选项**挑了和 gold 一致的那个** → EM=1.0 假阳，LLM-judge=0.0 判对。结论：**binary 的 EM 可信；open/duration/sequencing 的 EM 含双向抽取噪声，只能作保守参考。** 口径建议：LLM-judge 作主指标，EM 作"对标 AGQA 协议"的保守下界 + 全程披露。**待博士后定口径，EM 全量暂不跑。**
+
+### 核心发现 ②：英文 LLM-judge 对照 —— 头条又被数据打脸（2026-06-06，verbose，70 题 × 1 轮）
+
+与 Phase 11 旧中文（3 轮）同题、同视频、同方法、同 judge、同 verbose 答案格式，**仅换管线语言**：
+
+| 方法 | 旧中文(3轮) | 英文(1轮) | |
+|------|-----------|----------|---|
+| agent | 0.364 | **0.436** | ↑ |
+| rag_only | 0.186 | **0.321** | ↑ |
+| vlm_direct | 0.326 | **0.450** | ↑ |
+
+**三方法全涨**（英文 GT 更干净 + Qwen-VL 在西方场景英文 prompt 更顺）。**但 Phase 11 头条"agent 整体反超 vlm_direct"在英文下翻车**：vlm_direct 0.450 > agent 0.436（差 0.014，窄）。vlm 涨得多，agent 过场景图瓶颈涨幅吃亏。
+
+**然而结构化故事反而更硬**——分类上 agent 赢它该赢的：
+
+| 分类 | agent | vlm_direct | |
+|------|-------|-----------|---|
+| **duration** | **0.500** | 0.318 | ✅ agent **1.6×**，t_start/t_end 优势，语言无关 |
+| **binary** | **0.625** | 0.542 | ✅ agent 胜 |
+| open | 0.333 | **0.476** | vlm 胜（dense 感知） |
+| sequencing | 0.214 | **0.357** | vlm 胜 |
+
+token：agent 2860 vs vlm 6188 ≈ **46%**（verbose 模式，约一半成本）。
+
+### 与睡前预测的诚实复盘
+
+睡前我对用户说"同一宽松指标，定性结论大概率保住"——**部分说对、部分打脸**:绝对数全涨没崩（对），但**整体排序翻转**(打脸)。这是项目第三次"预测被实测打脸"（Phase 10 vlm_direct 重测翻盘、Phase 11 短视频 agent 反胜、本次英文 vlm 又反超）。**教训仍是实测优先。**
+
+**对简历/论文的诚实改写**：
+- ❌ 不能再说"agent 在 AGQA 整体反超 vlm_direct"（英文翻车）。
+- ✅ 改说"agent 在**结构化时序推理类（duration 1.6×、binary）稳定胜出**，token 成本约直接 VLM 一半；单帧 dense 感知类（open/sequencing）不及直接 VLM"——这**完全贴合项目本来定位**，且有英文+干净 GT 撑着，比旧中文头条更经得起审稿。
+
+### 待办（Phase 12 未完）
+
+1. **英文 LLM-judge 对照补到 runs=3**（出可发表 ±std；当前 agent-vs-vlm 仅差 0.014，在噪声内，3 轮可能任一方向）。
+2. **EM 口径待博士后拍板**（保守下界 + LLM-judge 主指标 + 披露 ⟺ 纯 EM 强约束封闭词表）；定了再跑 EM 全量。
+3. **简历 benchmark bullet 按上面诚实口径改**（先重测再改，别搬旧"23% token / 整体反超"）。
+4. token 口径重建（真实 usage + 预建摊销，论文会被审稿人盯）。
+5. 中文文档（README / benchmark_agqa）暂保持中文，待整体英文化决定。
+
+> 报告产物：`docs/benchmark_en_llmjudge.md`（英文对照）、`docs/em_vs_agent_analysis.md`（EM 错配分析）、`docs/benchmark_en_smoke.json`（逐题原始记录）。代码均未 commit，工作树停在 `10aed53` 之上，`git stash -u` 可逆。
