@@ -24,6 +24,8 @@ from typing import Optional
 
 from openai import OpenAI
 
+from src.perception.usage import LEDGER
+
 logger = logging.getLogger(__name__)
 
 # ── Prompt templates ──────────────────────────────────────────────────────────
@@ -120,11 +122,20 @@ class VLClient:
                 pass
         return None
 
+    # ── API call (single funnel — records real token usage) ──────────────────
+
+    def _create(self, **kwargs) -> str:
+        """All completions go through here so every response's real usage
+        (image tokens included in prompt_tokens) lands in the global LEDGER."""
+        resp = self._client.chat.completions.create(**kwargs)
+        LEDGER.record(self.model, resp.usage)
+        return resp.choices[0].message.content or ""
+
     # ── single-image call ─────────────────────────────────────────────────────
 
     def _call(self, image_path: str, text_prompt: str) -> str:
         b64, mime = self._encode(image_path)
-        response = self._client.chat.completions.create(
+        return self._create(
             model=self.model,
             messages=[{
                 "role": "user",
@@ -139,7 +150,6 @@ class VLClient:
             max_tokens=self.max_tokens,
             temperature=self.temperature,
         )
-        return response.choices[0].message.content or ""
 
     # ── multi-image call ──────────────────────────────────────────────────────
 
@@ -187,20 +197,14 @@ class VLClient:
         )
 
         if not json_mode:
-            return (self._client.chat.completions.create(**kwargs)
-                    .choices[0].message.content or "")
+            return self._create(**kwargs)
 
         # Try JSON object mode; fall back silently if the model doesn't support it
         try:
-            resp = self._client.chat.completions.create(
-                **kwargs,
-                response_format={"type": "json_object"},
-            )
+            return self._create(**kwargs, response_format={"type": "json_object"})
         except Exception as exc:
             logger.debug("json_object mode failed (%s), retrying without", exc)
-            resp = self._client.chat.completions.create(**kwargs)
-
-        return resp.choices[0].message.content or ""
+            return self._create(**kwargs)
 
     # ── public API ────────────────────────────────────────────────────────────
 

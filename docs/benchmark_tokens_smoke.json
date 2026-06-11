@@ -1,0 +1,404 @@
+{
+  "meta": {
+    "video": "2 videos",
+    "videos": [
+      "data/videos/charades/02DPI.mp4",
+      "data/videos/charades/03PRW.mp4"
+    ],
+    "runs": 1,
+    "scorers": [
+      "llm",
+      "exact"
+    ]
+  },
+  "results": {
+    "agent": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.188,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.25,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        },
+        "exact": {
+          "overall_mean": 0.25,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 2.2,
+      "avg_time_sec": 9.3,
+      "avg_tokens_per_q": 7154,
+      "avg_prebuild_per_q": 1803,
+      "avg_total_tokens_per_q": 8957
+    },
+    "vlm_direct": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.125,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        },
+        "exact": {
+          "overall_mean": 0.125,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 2.9,
+      "avg_tokens_per_q": 639,
+      "avg_prebuild_per_q": 0,
+      "avg_total_tokens_per_q": 639
+    }
+  },
+  "raw": {
+    "agent": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "a patterned couch",
+          "answer_short": "a patterned couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3713,
+          "tokens_llm": 3713,
+          "tokens_vl": 0,
+          "prebuild_share": 1912.2
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "The scene graph doesn't contain any information about a bed, and the entity summary confirms there's no bed listed among the 20 entities. The question asks to compare \"snuggling with a blanket\" versus \"sitting in a bed\", but since there's no evidence of a bed in the scene, the person couldn't have been sitting in a bed at all.\n\nLooking at the blanket-related activities from the first query:\n- Holding a pink blanket: 2.2 to 16.1 seconds (13.9 seconds)\n- Lying on a pink blanket: 18.5 to 25.4 seconds (6.9 seconds)\n\nThe total time involving the blanket is 13.9 + 6.9 = 20.8 seconds.\n\nSince there's no bed in the scene, the time spent sitting in a bed would be zero seconds.\n\nTherefore, sitting in a bed was for a shorter amount of time (zero seconds) compared to snuggling with a blanket.\n\nno",
+          "answer_short": "sitting in a bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 6977,
+          "tokens_llm": 6977,
+          "tokens_vl": 0,
+          "prebuild_share": 1912.2
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "The inspection shows people snuggling with a pink blanket on the couch, and they are lying on the couch with cushions beneath them. The television is on an entertainment center and not something they would go beneath while snuggling.\n\nThe question asks if \"a television was the first thing they went beneath\" while snuggling with their initial object. Since they're snuggling with the blanket on the couch, and the objects beneath them would be the couch cushions (not the television), the answer should be \"no.\"\n\nThe television is positioned on furniture to the side and is not beneath them in any spatial sense. They went beneath the couch cushions first, not the television.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 9580,
+          "tokens_llm": 8733,
+          "tokens_vl": 847,
+          "prebuild_share": 1912.2
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "The person behind the one who was snuggling with the blanket was lying down or reclining on the couch. According to the frame inspection, the person behind was \"resting or relaxing.\"\n\nlying down",
+          "answer_short": "lying down",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 11412,
+          "tokens_llm": 11032,
+          "tokens_vl": 380,
+          "prebuild_share": 1912.2
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 5156,
+          "tokens_llm": 4850,
+          "tokens_vl": 306,
+          "prebuild_share": 1694.0
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "Now I can see the person is looking at or using a laptop on a coffee table during multiple time intervals: 0.0-8.2s, 13.8-16.4s, 22.0-41.2s, and 24.7-27.5s. The longest continuous interval appears to be 22.0-41.2s, which is 19.2 seconds.\n\nThe eating activity (holding a plate) occurs from 5.46-8.46s, which is 3.0 seconds.\n\nTherefore, the person was eating for a shorter amount of time than watching television (via laptop).\n\neating",
+          "answer_short": "eating",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 4,
+          "tokens": 11356,
+          "tokens_llm": 11356,
+          "tokens_vl": 0,
+          "prebuild_share": 1694.0
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "The scene graph shows that the person was leaning on an \"armrest\" during the time period from 5.46 to 8.46 seconds. This matches the timeframe between taking a cup and putting it somewhere, as the query specifically asked about the object they were leaning on during cup-handling activities.\n\nThe answer is \"armrest\".\n\narmrest",
+          "answer_short": "armrest",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3350,
+          "tokens_llm": 3350,
+          "tokens_vl": 0,
+          "prebuild_share": 1694.0
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "a black leather couch",
+          "answer_short": "a black leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5692,
+          "tokens_llm": 5692,
+          "tokens_vl": 0,
+          "prebuild_share": 1694.0
+        }
+      ]
+    ],
+    "vlm_direct": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "couch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 696,
+          "tokens_llm": 0,
+          "tokens_vl": 696,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 704,
+          "tokens_llm": 0,
+          "tokens_vl": 704,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 704,
+          "tokens_llm": 0,
+          "tokens_vl": 704,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "tv",
+          "answer_short": "tv",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 700,
+          "tokens_llm": 0,
+          "tokens_vl": 700,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 573,
+          "tokens_llm": 0,
+          "tokens_vl": 573,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "eating",
+          "answer_short": "eating",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 579,
+          "tokens_llm": 0,
+          "tokens_vl": 579,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "couch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 584,
+          "tokens_llm": 0,
+          "tokens_vl": 584,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "sofa",
+          "answer_short": "sofa",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        }
+      ]
+    ]
+  }
+}

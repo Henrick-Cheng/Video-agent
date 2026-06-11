@@ -74,26 +74,60 @@ _SHORT_ANSWER_SYS = (
 # ── Token tracker ─────────────────────────────────────────────────────────────
 
 class _TrialStats:
+    """Real measured token usage for one unit of work (a question, or a prebuild).
+
+    Every number comes from API-reported ``usage`` — the old per-method
+    estimates (chars/3 for agent, frames*1500 for vlm_direct) mixed measurement
+    methodologies across methods and carried a language bias (Phase 12
+    finding #3). Text-LLM and VL-model tokens are bucketed separately: they are
+    priced differently, and VL prompt tokens are dominated by image tokens.
+    """
+
     def __init__(self):
-        self.prompt_tokens = 0
-        self.completion_tokens = 0
+        self.llm_prompt = 0
+        self.llm_completion = 0
+        self.vl_prompt = 0
+        self.vl_completion = 0
         self.api_calls = 0
 
-    def add(self, usage):
+    def add_llm_usage(self, usage):
+        """One text-LLM response's usage (OpenAI SDK object)."""
         if usage is None:
             return
-        self.prompt_tokens += getattr(usage, "prompt_tokens", 0)
-        self.completion_tokens += getattr(usage, "completion_tokens", 0)
+        self.llm_prompt += getattr(usage, "prompt_tokens", 0) or 0
+        self.llm_completion += getattr(usage, "completion_tokens", 0) or 0
         self.api_calls += 1
+
+    def add_usage_metadata(self, um):
+        """One LangChain AIMessage.usage_metadata dict (agent model turns).
+
+        Each ReAct turn re-sends the full history, and input_tokens reflects
+        that — summing over turns gives the true cumulative billing, which the
+        old final-transcript estimate structurally undercounted.
+        """
+        if not um:
+            return
+        self.llm_prompt += um.get("input_tokens", 0)
+        self.llm_completion += um.get("output_tokens", 0)
+        self.api_calls += 1
+
+    def add_vl_delta(self, delta: dict):
+        """A LEDGER.since() delta covering this unit's VLClient calls."""
+        self.vl_prompt += delta["prompt_tokens"]
+        self.vl_completion += delta["completion_tokens"]
+        self.api_calls += delta["calls"]
+
+    @property
+    def llm_tokens(self):
+        return self.llm_prompt + self.llm_completion
+
+    @property
+    def vl_tokens(self):
+        return self.vl_prompt + self.vl_completion
 
     @property
     def total_tokens(self):
-        return self.prompt_tokens + self.completion_tokens
-
-    @property
-    def est_cost_rmb(self):
-        # qwen-plus ~0.008 yuan/1K tokens; qwen-vl-plus ~0.008 yuan/1K text tokens
-        return self.total_tokens / 1000 * 0.008
+        return self.llm_tokens + self.vl_tokens
 
 
 # ── Method implementations ────────────────────────────────────────────────────
@@ -104,13 +138,15 @@ def _build_session(video_path: str):
 
 
 def _prebuild_graph(session, frame_count: int = 8) -> _TrialStats:
-    """Extract frames and build full scene graph. Returns token stats."""
+    """Extract frames and build full scene graph. Returns real token stats
+    (the build's VL calls — including ThreadPoolExecutor workers — all land in
+    the global LEDGER via VLClient)."""
     from src.tools.keyframe import make_extract_keyframes
     from src.tools.scene_graph_builder import make_build_scene_graph
-    from src.config import get_settings
+    from src.perception.usage import LEDGER
 
-    cfg = get_settings()
     stats = _TrialStats()
+    marker = LEDGER.marker()
 
     kf_tool = make_extract_keyframes(session)
     sg_tool = make_build_scene_graph(session)
@@ -118,6 +154,8 @@ def _prebuild_graph(session, frame_count: int = 8) -> _TrialStats:
     result = json.loads(kf_tool.invoke({"strategy": "uniform", "count": frame_count}))
     frame_ids = ",".join(result["frame_ids"])
     sg_tool.invoke({"frame_ids": frame_ids, "focus_entities": ""})
+
+    stats.add_vl_delta(LEDGER.since(marker))
     return stats
 
 
@@ -176,6 +214,9 @@ def _answer_agent(session, question: str,
             f"or build_scene_graph again.]\n\n"
         )
 
+    from src.perception.usage import LEDGER
+    marker = LEDGER.marker()
+
     try:
         result = agent.invoke(
             {"messages": [("user", ctx_prefix + question)]},
@@ -191,10 +232,16 @@ def _answer_agent(session, question: str,
     tool_calls = sum(1 for m in msgs if getattr(m, "type", "") == "tool")
 
     stats = _TrialStats()
-    total_chars = sum(len(str(getattr(m, "content", ""))) for m in msgs)
-    stats.prompt_tokens = int(total_chars / 3)
-    stats.completion_tokens = int(len(answer) / 3)
-    stats.api_calls = tool_calls + 1
+    # Agent-model turns: each AIMessage carries the API-reported usage for its
+    # call (input side = full re-sent history, so the sum is true billing).
+    for m in msgs:
+        stats.add_usage_metadata(getattr(m, "usage_metadata", None))
+    # Tool-side VL calls (inspect_frame) during this invoke, from the ledger.
+    stats.add_vl_delta(LEDGER.since(marker))
+
+    if msgs and stats.llm_tokens == 0:
+        print("         [WARN] no usage_metadata on agent messages — "
+              "LLM endpoint did not report usage; agent tokens undercounted")
 
     return answer, tool_calls, stats
 
@@ -242,7 +289,7 @@ def _answer_rag_only(session, question: str,
             max_tokens=max_toks,
             temperature=cfg.models.llm.temperature,
         )
-        stats.add(resp.usage)
+        stats.add_llm_usage(resp.usage)
         answer = resp.choices[0].message.content or ""
     except Exception as e:
         answer = f"[ERROR] {e}"
@@ -310,7 +357,10 @@ def _answer_vlm_direct(session, question: str,
     else:
         selected = valid
 
+    from src.perception.usage import LEDGER
+
     vl = get_vl_client()
+    marker = LEDGER.marker()
     try:
         if short_answer:
             prompt = f"Answer the question based on these video frames: {question}"
@@ -325,10 +375,9 @@ def _answer_vlm_direct(session, question: str,
     except Exception as e:
         answer = f"[ERROR] {e}"
 
-    # Estimate: N frames × ~1500 img tokens + text
-    stats.prompt_tokens = len(selected) * 1500 + len(prompt) // 3
-    stats.completion_tokens = len(answer) // 3
-    stats.api_calls = 1
+    # Real usage from the VL call (image tokens included in prompt_tokens) —
+    # replaces the old frames*1500 estimate.
+    stats.add_vl_delta(LEDGER.since(marker))
 
     return answer, 0, stats
 
@@ -536,11 +585,18 @@ def run_trial(
             continue
 
         session = _build_session(v)
+        prebuild_share = 0.0
         if needs_graph:
             print(f"  [prebuild] {Path(v).name}: extracting frames & building graph...")
-            _prebuild_graph(session, frame_count=_get_settings().perception.keyframe_count)
+            pb = _prebuild_graph(session,
+                                 frame_count=_get_settings().perception.keyframe_count)
+            # One-time build cost amortized over this video's benchmark questions
+            # (production analogue: conversation length per video).
+            prebuild_share = pb.total_tokens / len(qas)
             print(f"  [prebuild] graph: {len(session.scene_graph.entities)} entities, "
-                  f"{len(session.scene_graph)} triplets")
+                  f"{len(session.scene_graph)} triplets, "
+                  f"{pb.total_tokens} tokens ({pb.api_calls} VL calls) "
+                  f"→ {prebuild_share:.0f}/Q amortized over {len(qas)} Qs")
 
         for i, qa in enumerate(qas):
             q = qa["question"]
@@ -567,7 +623,8 @@ def run_trial(
                 for s in scorers
             }
             score_str = " ".join(f"{s}={scores[s]}" for s in scorers)
-            print(f"         {score_str} time={elapsed:.1f}s tools={tool_calls}")
+            print(f"         {score_str} time={elapsed:.1f}s tools={tool_calls} "
+                  f"tok={stats.total_tokens}")
 
             results.append({
                 "id": qa["id"],
@@ -580,6 +637,9 @@ def run_trial(
                 "tool_calls": tool_calls,
                 "time_sec": round(elapsed, 2),
                 "tokens": stats.total_tokens,
+                "tokens_llm": stats.llm_tokens,
+                "tokens_vl": stats.vl_tokens,
+                "prebuild_share": round(prebuild_share, 1),
             })
 
     return results
@@ -646,12 +706,19 @@ def _aggregate(all_trials: list[list[dict]],
     tokens_per_q = [
         _mean([r["tokens"] for r in trial]) for trial in all_trials
     ]
+    prebuild_per_q = [
+        _mean([r.get("prebuild_share", 0.0) for r in trial]) for trial in all_trials
+    ]
 
     return {
         "scorers": {s: _aggregate_scorer(all_trials, s, categories) for s in scorers},
         "avg_tool_calls": round(_mean(tool_calls_per_trial), 1),
         "avg_time_sec":   round(_mean(time_per_trial), 1),
-        "avg_tokens_per_q": int(_mean(tokens_per_q)),
+        # Marginal answer-phase cost; prebuild share amortizes the one-time
+        # scene-graph build over each video's questions (0 for vlm_direct).
+        "avg_tokens_per_q":   int(_mean(tokens_per_q)),
+        "avg_prebuild_per_q": int(_mean(prebuild_per_q)),
+        "avg_total_tokens_per_q": int(_mean(tokens_per_q) + _mean(prebuild_per_q)),
     }
 
 
@@ -706,6 +773,48 @@ def _per_video_lines(raw_by_method: dict[str, list[list[dict]]],
     return lines
 
 
+def _break_even_lines(results_by_method: dict[str, dict],
+                      raw_by_method: Optional[dict[str, list[list[dict]]]]) -> list[str]:
+    """Token break-even of agent (prebuild + marginal) vs vlm_direct (flat per-Q).
+
+    The agent's economics are 'structure once, reuse across questions' — the
+    flat-rate comparison alone hides this, so report the crossover point.
+    """
+    if not raw_by_method or "agent" not in results_by_method \
+            or "vlm_direct" not in results_by_method:
+        return []
+
+    agent_marginal = results_by_method["agent"]["avg_tokens_per_q"]
+    vlm_per_q = results_by_method["vlm_direct"]["avg_tokens_per_q"]
+
+    # Average one-time prebuild cost per video, reconstructed from per-row
+    # amortized shares (share * n_questions of that video in that trial).
+    totals = []
+    for trial in raw_by_method["agent"]:
+        by_video: dict[str, list[float]] = {}
+        for r in trial:
+            by_video.setdefault(r["video"], []).append(r.get("prebuild_share", 0.0))
+        totals += [shares[0] * len(shares) for shares in by_video.values()]
+    prebuild_video = _mean(totals)
+    if prebuild_video <= 0:
+        return []
+
+    if vlm_per_q <= agent_marginal:
+        return [
+            f"- **Break-even vs vlm_direct**: none — agent marginal cost "
+            f"({agent_marginal} tokens/Q) ≥ vlm_direct ({vlm_per_q} tokens/Q), "
+            f"so the {int(prebuild_video)}-token prebuild never pays back at this "
+            f"question volume"
+        ]
+    k = math.ceil(prebuild_video / (vlm_per_q - agent_marginal))
+    return [
+        f"- **Break-even vs vlm_direct**: prebuild ≈ {int(prebuild_video)} "
+        f"tokens/video (one-time); marginal {agent_marginal} vs {vlm_per_q} "
+        f"tokens/Q → agent's cumulative cost drops below vlm_direct from "
+        f"~{k} questions per video onward"
+    ]
+
+
 def _build_report(results_by_method: dict[str, dict], n_runs: int,
                   video_path: str, bench_path: str,
                   raw_by_method: Optional[dict[str, list[list[dict]]]] = None,
@@ -726,8 +835,10 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
     lines += [
         "## Overall Accuracy",
         "",
-        f"| Method | {scorer_cols} | Avg Tool Calls | Avg Time (s) | Est. Tokens/Q |",
-        "|--------|" + "----|" * len(scorers) + "----------------|--------------|---------------|",
+        f"| Method | {scorer_cols} | Avg Tool Calls | Avg Time (s) "
+        f"| Tokens/Q (answer) | + Prebuild/Q | = Total/Q |",
+        "|--------|" + "----|" * len(scorers)
+        + "----------------|--------------|------|------|------|",
     ]
     for method, agg in results_by_method.items():
         accs = " | ".join(
@@ -735,8 +846,11 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
             for s in scorers
         )
         tc = str(agg["avg_tool_calls"]) if method == "agent" else "—"
+        pb = agg.get("avg_prebuild_per_q", 0)
         lines.append(
-            f"| **{method}** | {accs} | {tc} | {agg['avg_time_sec']} | {agg['avg_tokens_per_q']} |"
+            f"| **{method}** | {accs} | {tc} | {agg['avg_time_sec']} "
+            f"| {agg['avg_tokens_per_q']} | {pb if pb else '—'} "
+            f"| {agg.get('avg_total_tokens_per_q', agg['avg_tokens_per_q'])} |"
         )
 
     # ── Per-category: one sub-table per scorer ────────────────────────────────
@@ -769,7 +883,14 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         "- **agent**: Full ReAct Agent — extracts frames, builds scene graph, uses query + inspect tools",
         "- **rag_only**: Pre-builds full scene graph, then LLM answers from graph text only",
         "- **vlm_direct**: Samples 4 frames, sends raw frames + question directly to VLM",
+        "- **Token accounting**: all counts are real API-reported `usage` summed over every call "
+        "the method makes (agent: per-turn usage_metadata, so re-sent ReAct history is fully "
+        "counted; VL calls include image tokens in prompt_tokens). No estimates. "
+        "**Tokens/Q (answer)** is the marginal per-question cost; **+Prebuild/Q** amortizes the "
+        "one-time scene-graph build over that video's questions (vlm_direct has no prebuild). "
+        "Judge / short-answer-extraction calls are scoring infrastructure and are NOT counted",
     ]
+    lines += _break_even_lines(results_by_method, raw_by_method)
     if "llm" in scorers:
         lines.append(
             f"- **LLM-judge**: `{_judge_model()}` scores 0 / 0.5 / 1 against `key_facts` "
@@ -894,12 +1015,15 @@ def main() -> None:
     print("  RESULTS SUMMARY")
     print(f"{'='*60}")
     print(f"  (accuracy shown for scorer: {primary}; full report has all scorers)")
-    print(f"\n{'Method':<15} {'Accuracy':>15} {'Time(s)':>10} {'Tokens/Q':>10}")
-    print("─" * 55)
+    print(f"\n{'Method':<15} {'Accuracy':>15} {'Time(s)':>10} "
+          f"{'Tok/Q':>8} {'+Build':>8} {'=Total':>8}")
+    print("─" * 70)
     for method, agg in results_by_method.items():
         p = agg["scorers"][primary]
         acc = f"{p['overall_mean']:.3f}±{p['overall_std']:.3f}"
-        print(f"{method:<15} {acc:>15} {agg['avg_time_sec']:>10.1f} {agg['avg_tokens_per_q']:>10}")
+        print(f"{method:<15} {acc:>15} {agg['avg_time_sec']:>10.1f} "
+              f"{agg['avg_tokens_per_q']:>8} {agg['avg_prebuild_per_q']:>8} "
+              f"{agg['avg_total_tokens_per_q']:>8}")
 
     # Per-category breakdown (primary scorer)
     print(f"\n{'Category':<16}", end="")
@@ -932,7 +1056,8 @@ def main() -> None:
             [
                 {k: r.get(k) for k in
                  ("id", "video", "category", "question", "answer",
-                  "answer_short", "scores", "tool_calls", "tokens")}
+                  "answer_short", "scores", "tool_calls", "tokens",
+                  "tokens_llm", "tokens_vl", "prebuild_share")}
                 for r in trial
             ]
             for trial in trials
