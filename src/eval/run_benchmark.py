@@ -214,12 +214,22 @@ def _answer_agent(session, question: str,
             f"or build_scene_graph again.]\n\n"
         )
 
+    return _invoke_and_account(agent, ctx_prefix + question, rl)
+
+
+def _invoke_and_account(agent, user_text: str, rl: int) -> tuple[str, int, _TrialStats]:
+    """Invoke a compiled agent and collect real token usage.
+
+    Agent-model turns: each AIMessage carries the API-reported usage for its
+    call (input side = full re-sent history, so the sum is true billing).
+    Tool-side VL calls (inspect_frame) are captured via the global ledger.
+    """
     from src.perception.usage import LEDGER
     marker = LEDGER.marker()
 
     try:
         result = agent.invoke(
-            {"messages": [("user", ctx_prefix + question)]},
+            {"messages": [("user", user_text)]},
             config={"recursion_limit": rl},
         )
         msgs = result.get("messages", [])
@@ -232,11 +242,8 @@ def _answer_agent(session, question: str,
     tool_calls = sum(1 for m in msgs if getattr(m, "type", "") == "tool")
 
     stats = _TrialStats()
-    # Agent-model turns: each AIMessage carries the API-reported usage for its
-    # call (input side = full re-sent history, so the sum is true billing).
     for m in msgs:
         stats.add_usage_metadata(getattr(m, "usage_metadata", None))
-    # Tool-side VL calls (inspect_frame) during this invoke, from the ledger.
     stats.add_vl_delta(LEDGER.since(marker))
 
     if msgs and stats.llm_tokens == 0:
@@ -244,6 +251,94 @@ def _answer_agent(session, question: str,
               "LLM endpoint did not report usage; agent tokens undercounted")
 
     return answer, tool_calls, stats
+
+
+# ── Tiered agent ──────────────────────────────────────────────────────────────
+# Cost-aware variant: the scene graph (or its summary, when large) is injected
+# directly into the user context, and the model DECIDES AT RUNTIME whether that
+# suffices or whether to escalate to tools. Easy questions thus cost one LLM
+# call (~rag_only floor); hard ones pay for retrieval/inspection. The
+# escalation is the model's own choice, not a hardcoded router.
+
+# Graphs at or below this size are injected verbatim; larger graphs get an
+# entity summary and the agent must retrieve via query_scene_graph.
+_TIERED_GRAPH_FULL_THRESHOLD = 30
+
+_TIERED_SYSTEM_SHORT = """\
+You are a video question-answering assistant. The video's temporal scene graph \
+(triplets: (subject) --[relation]--> (object) @ [t_start, t_end]) is provided in \
+the user message.
+
+[Decision strategy]
+1. If the provided scene graph already contains the facts needed, answer \
+DIRECTLY without calling any tool — every tool call costs money and time.
+2. If the provided context is only a summary, or lacks the needed facts, call \
+query_scene_graph to retrieve more specific triplets.
+3. Only when the graph cannot answer (reading text, exact counting, \
+fine-grained visual attributes) call inspect_frame at a specific timestamp.
+4. The graph and frames are pre-built — never call extract_keyframes or \
+build_scene_graph.
+5. Never answer from prior knowledge; ground every answer in the graph or \
+inspected frames.
+6. IMPORTANT: the graph is built from sparse frames and may miss events. \
+Absence of a fact in the graph is NOT evidence of 'no'. If the graph does not \
+explicitly contain the fact needed, verify with inspect_frame BEFORE answering \
+— especially for yes/no questions.
+
+[Answer format — strict]
+Your FINAL message must be ONLY the answer itself: a single word or a short \
+phrase. For yes/no questions, answer exactly 'yes' or 'no'. Do NOT include any \
+explanation, reasoning, triplets, timestamps, or extra words in the final message."""
+
+_TIERED_SYSTEM_VERBOSE = """\
+You are a video question-answering assistant. The video's temporal scene graph \
+(triplets: (subject) --[relation]--> (object) @ [t_start, t_end]) is provided in \
+the user message.
+
+[Decision strategy]
+1. If the provided scene graph already contains the facts needed, answer \
+DIRECTLY without calling any tool — every tool call costs money and time.
+2. If the provided context is only a summary, or lacks the needed facts, call \
+query_scene_graph to retrieve more specific triplets.
+3. Only when the graph cannot answer (reading text, exact counting, \
+fine-grained visual attributes) call inspect_frame at a specific timestamp.
+4. The graph and frames are pre-built — never call extract_keyframes or \
+build_scene_graph.
+5. Never answer from prior knowledge; ground every answer in the graph or \
+inspected frames.
+6. IMPORTANT: the graph is built from sparse frames and may miss events. \
+Absence of a fact in the graph is NOT evidence of 'no'. If the graph does not \
+explicitly contain the fact needed, verify with inspect_frame BEFORE answering \
+— especially for yes/no questions.
+
+[Answer format]
+Give a concise, accurate answer (1-3 sentences). Mention timestamps when they \
+are relevant to the question."""
+
+
+def _tiered_context(session) -> str:
+    """Graph context injected ahead of the question for the tiered agent."""
+    g = session.scene_graph
+    if len(g) <= _TIERED_GRAPH_FULL_THRESHOLD:
+        return f"[Pre-built scene graph]\n{g.to_text(max_triplets=_TIERED_GRAPH_FULL_THRESHOLD)}\n\n"
+    entities = ", ".join(list(g.entities.keys())[:40])
+    return (
+        f"[Pre-built scene graph: {len(g.entities)} entities, {len(g)} triplets — "
+        f"too large to inline; use query_scene_graph to retrieve relevant facts.]\n"
+        f"[Known entities: {entities}]\n\n"
+    )
+
+
+def _answer_agent_tiered(session, question: str,
+                         short_answer: bool = True) -> tuple[str, int, _TrialStats]:
+    """Tiered agent: graph injected into context, tools optional, model decides."""
+    from src.agents.react_agent import build_agent
+
+    sys_prompt = _TIERED_SYSTEM_SHORT if short_answer else _TIERED_SYSTEM_VERBOSE
+    agent = build_agent(session, system_prompt=sys_prompt)
+    rl = getattr(agent, "_va_max_iterations", 6) * 5 + 10
+
+    return _invoke_and_account(agent, _tiered_context(session) + question, rl)
 
 
 def _answer_rag_only(session, question: str,
@@ -311,7 +406,8 @@ _VLM_DIRECT_OVERSAMPLE = 8
 
 
 def _answer_vlm_direct(session, question: str,
-                       short_answer: bool = True) -> tuple[str, int, _TrialStats]:
+                       short_answer: bool = True,
+                       frame_count: int | None = None) -> tuple[str, int, _TrialStats]:
     """Send sampled frames + question directly to VLM.
 
     Extracts its own uniform frames at a fixed count rather than reusing the
@@ -329,12 +425,14 @@ def _answer_vlm_direct(session, question: str,
 
     cfg = get_settings()
     stats = _TrialStats()
+    n_frames = frame_count or _VLM_DIRECT_FRAME_COUNT
+    oversample = max(2 * n_frames, _VLM_DIRECT_OVERSAMPLE)
 
     # Independent uniform extraction — decoupled from the prebuilt graph.
     kf_tool = make_extract_keyframes(session)
     try:
         kf_result = json.loads(kf_tool.invoke(
-            {"strategy": "uniform", "count": _VLM_DIRECT_OVERSAMPLE}
+            {"strategy": "uniform", "count": oversample}
         ))
         frame_ids = kf_result["frame_ids"]
     except Exception as e:
@@ -349,10 +447,10 @@ def _answer_vlm_direct(session, question: str,
     if not valid:
         return "[ERROR] no valid frame files", 0, stats
 
-    # Pick _VLM_DIRECT_FRAME_COUNT evenly-spaced frames spanning the full video.
+    # Pick n_frames evenly-spaced frames spanning the full video.
     valid.sort(key=lambda f: f.timestamp)
-    if len(valid) > _VLM_DIRECT_FRAME_COUNT:
-        picks = np.linspace(0, len(valid) - 1, _VLM_DIRECT_FRAME_COUNT, dtype=int)
+    if len(valid) > n_frames:
+        picks = np.linspace(0, len(valid) - 1, n_frames, dtype=int)
         selected = [valid[i] for i in dict.fromkeys(int(p) for p in picks)]
     else:
         selected = valid
@@ -384,9 +482,12 @@ def _answer_vlm_direct(session, question: str,
 
 # ── Judges ────────────────────────────────────────────────────────────────────
 
-# The set of scorers the runner knows about. Each question is scored once per
-# active scorer; results are reported side-by-side (one column each).
+# Default scorers (AGQA protocol). Each question is scored once per active
+# scorer; results are reported side-by-side (one column each).
 SCORERS = ("llm", "exact")
+# All scorers the runner knows about. "mmbv" replicates the official
+# MMBench-Video protocol and is opted into via --scorers mmbv.
+ALL_SCORERS = ("llm", "exact", "mmbv")
 
 
 def _judge_client():
@@ -437,6 +538,61 @@ def _judge_llm(question: str, reference: str, key_facts: list[str],
         return 0.0
     except Exception:
         return 0.0
+
+
+# ── MMBench-Video official judge (VLMEvalKit protocol) ────────────────────────
+# Replicated VERBATIM from open-compass/VLMEvalKit
+# vlmeval/dataset/utils/mmbench_video.py (the protocol used by the official
+# OpenVLM Video Leaderboard and papers reporting on MMBench-Video).
+# Official judge model is gpt-4-turbo; we run the identical prompt through the
+# configurable judge endpoint (JUDGE_BASE_URL/JUDGE_MODEL/JUDGE_API_KEY) —
+# DashScope for test runs, OpenAI for paper numbers — and disclose the model.
+
+_MMBV_SYSTEM_PROMPT = """
+As an AI assistant, your task is to evaluate a candidate answer in comparison to a given correct answer.
+The question itself, the correct 'groundtruth' answer, and the candidate answer will be provided to you.
+Your assessment should range from 0 to 3, \
+based solely on the semantic similarity between the groundtruth and the candidate answer, \
+disregarding any grammatical differences.
+A rating of 0 suggests no similarity, implying the candidate answer is entirely incorrect.
+A rating of 1 suggests low similarity, meaning the candidate answer is largely incorrect.
+A rating of 2 suggests high similarity, meaning the candidate answer is largely correct.
+Lastly, a rating of 3 indicates complete similarity, which means the candidate answer is entirely correct.
+Your response should be a single integer from 0, 1, 2, or 3.
+"""
+
+_MMBV_USER_TMPL = (
+    "Question: {}\nGroundtruth answer: {}\nCandidate answer: {}\nYour response: "
+)
+
+
+def _judge_mmbv(question: str, reference: str, candidate: str) -> float:
+    """Official MMBench-Video 0-3 semantic-similarity score.
+
+    Returns -1.0 when the judge call or integer parse fails (the official
+    FAIL convention); aggregation maps -1 → 0 ('all' variant), and the raw
+    -1 stays in the result JSON for auditability.
+    """
+    for _attempt in range(2):
+        try:
+            resp = _judge_client().chat.completions.create(
+                model=_judge_model(),
+                messages=[
+                    {"role": "system", "content": _MMBV_SYSTEM_PROMPT},
+                    {"role": "user", "content": _MMBV_USER_TMPL.format(
+                        question, reference, candidate)},
+                ],
+                max_tokens=8,
+                temperature=0.0,
+            )
+            raw = (resp.choices[0].message.content or "").strip()
+            m = re.search(r"[0-3]", raw)
+            if m:
+                return float(m.group(0))
+        except Exception:
+            continue
+    print("         [WARN] mmbv judge failed — recording -1")
+    return -1.0
 
 
 # ── Exact-match judge (AGQA paper protocol) ───────────────────────────────────
@@ -541,10 +697,33 @@ def _score_answer(scorer: str, qa: dict, candidate: str) -> float:
     if scorer == "exact":
         gold = (qa.get("_source") or {}).get("en_answer") or qa["reference_answer"]
         return _judge_exact(candidate, gold, qa.get("category", ""))
+    if scorer == "mmbv":
+        return _judge_mmbv(qa["question"], qa["reference_answer"], candidate)
     raise ValueError(f"Unknown scorer: {scorer}")
 
 
 # ── Trial runner ──────────────────────────────────────────────────────────────
+
+def _video_duration_sec(path: str) -> float:
+    import cv2
+    cap = cv2.VideoCapture(path)
+    try:
+        fps = cap.get(cv2.CAP_PROP_FPS) or 0
+        n = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+        return n / fps if fps > 0 else 0.0
+    finally:
+        cap.release()
+
+
+def _prebuild_frame_count(duration_sec: float, default: int) -> int:
+    """Duration-adaptive prebuild frame budget: one frame per ~15s, clamped to
+    [8, 24]. Keeps Charades-length clips (30-40s) at the historical 8 frames
+    (comparable with earlier runs) while giving minutes-long videos fair
+    scene-graph coverage."""
+    if duration_sec <= 0:
+        return default
+    return min(24, max(8, int(duration_sec / 15)))
+
 
 def run_trial(
     method: str,
@@ -552,6 +731,7 @@ def run_trial(
     questions: list[dict],
     scorers: tuple[str, ...] = SCORERS,
     short_answer: bool = True,
+    vlm_frames: Optional[int] = None,
 ) -> list[dict]:
     """Run all questions for one method in one trial. Returns per-question results.
 
@@ -576,7 +756,7 @@ def run_trial(
             )
         groups.setdefault(v, []).append(qa)
 
-    needs_graph = method in ("agent", "rag_only")
+    needs_graph = method in ("agent", "agent_tiered", "rag_only")
     results: list[dict] = []
 
     for v, qas in groups.items():
@@ -587,9 +767,11 @@ def run_trial(
         session = _build_session(v)
         prebuild_share = 0.0
         if needs_graph:
-            print(f"  [prebuild] {Path(v).name}: extracting frames & building graph...")
-            pb = _prebuild_graph(session,
-                                 frame_count=_get_settings().perception.keyframe_count)
+            n_pb = _prebuild_frame_count(
+                _video_duration_sec(v), _get_settings().perception.keyframe_count)
+            print(f"  [prebuild] {Path(v).name}: extracting {n_pb} frames "
+                  f"& building graph...")
+            pb = _prebuild_graph(session, frame_count=n_pb)
             # One-time build cost amortized over this video's benchmark questions
             # (production analogue: conversation length per video).
             prebuild_share = pb.total_tokens / len(qas)
@@ -605,10 +787,13 @@ def run_trial(
 
             if method == "agent":
                 answer, tool_calls, stats = _answer_agent(session, q, short_answer)
+            elif method == "agent_tiered":
+                answer, tool_calls, stats = _answer_agent_tiered(session, q, short_answer)
             elif method == "rag_only":
                 answer, tool_calls, stats = _answer_rag_only(session, q, short_answer)
             elif method == "vlm_direct":
-                answer, tool_calls, stats = _answer_vlm_direct(session, q, short_answer)
+                answer, tool_calls, stats = _answer_vlm_direct(
+                    session, q, short_answer, frame_count=vlm_frames)
             else:
                 raise ValueError(f"Unknown method: {method}")
 
@@ -661,7 +846,10 @@ def _std(vals: list[float]) -> float:
 def _score_of(r: dict, scorer: str) -> float:
     """Read one scorer's value from a result row (back-compat with old 'score')."""
     if "scores" in r:
-        return r["scores"].get(scorer, 0.0)
+        v = r["scores"].get(scorer, 0.0)
+        # mmbv: judge failures are stored as -1; official 'all' aggregation
+        # treats them as 0 (the raw -1 remains in the JSON for audit).
+        return max(v, 0.0) if scorer == "mmbv" else v
     return r.get("score", 0.0)  # legacy single-score rows
 
 
@@ -742,6 +930,7 @@ _CAT_LABELS = {
 _SCORER_LABELS = {
     "llm":   "LLM-judge (0/0.5/1)",
     "exact": "exact-match",
+    "mmbv":  "MMBench-Video official (0-3)",
 }
 
 
@@ -845,7 +1034,7 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
             f"{agg['scorers'][s]['overall_mean']:.3f} ± {agg['scorers'][s]['overall_std']:.3f}"
             for s in scorers
         )
-        tc = str(agg["avg_tool_calls"]) if method == "agent" else "—"
+        tc = str(agg["avg_tool_calls"]) if method.startswith("agent") else "—"
         pb = agg.get("avg_prebuild_per_q", 0)
         lines.append(
             f"| **{method}** | {accs} | {tc} | {agg['avg_time_sec']} "
@@ -881,8 +1070,14 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         "## Notes",
         "",
         "- **agent**: Full ReAct Agent — extracts frames, builds scene graph, uses query + inspect tools",
+        "- **agent_tiered**: Cost-aware agent — scene graph (or its summary, when >"
+        f"{_TIERED_GRAPH_FULL_THRESHOLD} triplets) injected into context; the model decides at "
+        "runtime whether to answer directly (one LLM call) or escalate to query/inspect tools",
         "- **rag_only**: Pre-builds full scene graph, then LLM answers from graph text only",
-        "- **vlm_direct**: Samples 4 frames, sends raw frames + question directly to VLM",
+        "- **vlm_direct**: Samples N frames (default 4, see --vlm-frames), sends raw frames + "
+        "question directly to VLM",
+        "- **Prebuild frame budget**: duration-adaptive — one frame per ~15s, clamped to [8, 24] "
+        "(Charades-length clips stay at the historical 8)",
         "- **Token accounting**: all counts are real API-reported `usage` summed over every call "
         "the method makes (agent: per-turn usage_metadata, so re-sent ReAct history is fully "
         "counted; VL calls include image tokens in prompt_tokens). No estimates. "
@@ -895,6 +1090,13 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         lines.append(
             f"- **LLM-judge**: `{_judge_model()}` scores 0 / 0.5 / 1 against `key_facts` "
             "(partial credit; judge endpoint configurable via JUDGE_BASE_URL/JUDGE_MODEL/JUDGE_API_KEY)"
+        )
+    if "mmbv" in scorers:
+        lines.append(
+            f"- **MMBench-Video official (0-3)**: VLMEvalKit protocol replicated verbatim "
+            f"(semantic-similarity integer 0-3, mean aggregation, judge failures → 0 per the "
+            f"official 'all' variant; raw -1 kept in JSON). Judge model: `{_judge_model()}` "
+            "(official protocol uses gpt-4-turbo; swap via JUDGE_MODEL for paper numbers)"
         )
     if "exact" in scorers:
         lines.append(
@@ -932,6 +1134,12 @@ def main() -> None:
              "Each answer is scored once per scorer and reported in its own column.",
     )
     parser.add_argument(
+        "--vlm-frames", type=int, default=None,
+        help=f"Frame count for the vlm_direct baseline (default "
+             f"{_VLM_DIRECT_FRAME_COUNT}). Long-video benchmarks should also "
+             f"report a higher budget (e.g. 8) for baseline fairness.",
+    )
+    parser.add_argument(
         "--answer-mode", choices=["short", "verbose"], default="short",
         help="short: constrain methods to a terse answer (exact-match setup). "
              "verbose: product-default answers (agent cites evidence, baselines give "
@@ -941,9 +1149,9 @@ def main() -> None:
 
     short_answer = args.answer_mode == "short"
     scorers = tuple(s.strip() for s in args.scorers.split(",") if s.strip())
-    unknown = [s for s in scorers if s not in SCORERS]
+    unknown = [s for s in scorers if s not in ALL_SCORERS]
     if unknown:
-        print(f"ERROR: unknown scorer(s) {unknown}; valid: {', '.join(SCORERS)}")
+        print(f"ERROR: unknown scorer(s) {unknown}; valid: {', '.join(ALL_SCORERS)}")
         sys.exit(1)
     primary = scorers[0]  # used for the one-line console summary
 
@@ -997,7 +1205,8 @@ def main() -> None:
         all_trials: list[list[dict]] = []
         for run_i in range(args.runs):
             print(f"\n  Run {run_i + 1}/{args.runs}")
-            trial = run_trial(method, args.video, questions, scorers, short_answer)
+            trial = run_trial(method, args.video, questions, scorers, short_answer,
+                              vlm_frames=args.vlm_frames)
             all_trials.append(trial)
             acc = _mean([_score_of(r, primary) for r in trial])
             print(f"  → Run accuracy ({primary}): {acc:.3f}")
