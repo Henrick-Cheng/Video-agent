@@ -996,3 +996,42 @@ agent **0.450**（EM 0.429）> vlm_direct 0.371（0.357）> rag_only 0.343（0.3
 6. 简历/论文叙事按"四条件舒适区"口径改写（HL 幻觉抵抗提为第一卖点）。
 
 > 报告产物：`docs/benchmark_tokens_smoke.md`（口径冒烟）、`docs/benchmark_tokens_full.md`（AGQA 70 题诊断）、`docs/benchmark_mmbv.md`（150 题标准报表）、`docs/benchmark_mmbv_analysis.md`（舒适区交叉分析）。本阶段代码与数据均已 commit。判断失误复盘：睡前预测"长视频是 agent 舒适区"——半对半错（成本边际反转对了，准确率塌缩错了），第四次被实测纠偏，教训仍是实测优先。
+
+## 第十四阶段：v2 架构重设计 —— lazy 多粒度记忆 + 置信度驱动（2026-06-12/13）
+
+**背景**：用户质疑"场景图和 agent 到底带来了什么优势"，要求先调研前沿再改设计。调研（VideoAgent ECCV'24 / Graph-VideoAgent 2501.15953 / DoraemonGPT ICML'24 / Deep Video Discovery NeurIPS'25 / Agentic VLVU 2601.18157）收敛三条共识：①无人用纯三元组当记忆，主流=多粒度索引+caption 必留+按需细看；②编排主流是置信度自评迭代（每轮小预算+轮数上限）；③DVD 原文批评 "predefined workflows applied uniformly"（与面试官质疑一字不差）。诊断 v1 两大执行错误：**三元组当答案来源（应为索引）、全量预建（应为按需）**。
+
+### v2 设计（全部落地，commit 021cb9a）
+
+- **三层 lazy 记忆**：L0 全局层（8 帧摘要 + faster-whisper 本地转写，文件缓存）；L1 segment 层（agent 探索哪段建哪段：密集 caption + 三元组）；L2 三元组索引（source=seg:<id> 溯源，检索命中连带返回所属 caption + 旁白片段）。
+- **工具**：search_memory（免费三层联合检索）/ explore_segment（自选时间窗 ≤6 帧——**建图本身成为逐题 agent 决策**）/ inspect_frame（保留）。
+- **编排**：置信度自评 1-3，<3 才探索，≤2 次/轮、≤3 轮封顶；短视频首探全片；duration 题要求完整活动区间。
+- **新指标**：frames-touched/Q（账本逐 VL 调用记图像数）；**公平基线 vlm_transcript**（同帧数+旁白入 prompt，防"赢靠模态"质疑）。
+- 调试实录：qwen-plus 会把工具调用写成纯文本（tool_calls 为空）——根因是 prompt 里的函数签名诱导模式补全；修法=去调用语法+首步强制免费检索+伪调用重试兜底。
+
+### 验证结果
+
+**AGQA 70 题门（红线 duration ≥0.45）**：通过——duration **0.682**（v1 0.500，vlm 0.136，5×），整体 0.436≈v1 0.450，总成本 **5372 vs 10287（-48%）**。open 回退 0.381→0.190：半数是 Charades 词表错位（gold=bed，VLM 如实说 couch），半数是 caption 轻小物 → 已加强制物体枚举 prompt（mmbv 验证生效）。
+
+**MMBench-Video 150 题（主考场）**：**agent_v2 总分 1.933，首次整体反超全部基线**（详见 `docs/benchmark_mmbv_v2_analysis.md`）：
+
+1. **归因干净**：ASR 模态 +0.246（vlm 1.447→transcript 1.693），架构 +0.240（同模态 1.693→1.933）——各占一半，公平性设计兑现。
+2. **舒适区边界实测 ≈90 秒**（论文主图）：agent_v2 随时长单调上升 1.54→2.02→2.27，所有基线平直；<90s 输 0.27，90s+ 赢 0.5+。"长视频假设"修正版获证实。
+3. **3.1 帧/题 打赢 8 帧/题**：帧效率 -61% 同时总分 +0.24——"有指导的感知预算"实锤（文献 headline 指标级别）；81/150 仅免费检索直答，69 题自主升级。
+4. **HL 红线守住**：2.333（≥2.2 ✓），对同模态基线 2.1×；FP-C 2.4×（多帧窗口直接受益）；CP 0.8→2.2（L0 摘要红利）；TR 回升至 1.6 但微输基线（TR 增益主要来自模态）。
+5. 成本：15505 tok/Q（v1 -28%）但仍是基线 2.1×，时延 46.6s；**成本卖点不成立，卖点=帧效率+90s+ 准确率**。
+
+### 叙事定稿（论文/面试口径）
+
+v1→v2 = "把图从答案来源降级为证据目录，把建图从预处理升级为 agent 决策，把流程从写死次序换成置信度循环"——三项修正：mmbv 总分 +62%，成本 -28%，帧效率 3.1/题，幻觉抵抗保持 2×+。对面试两问的最终回应：①agent vs workflow——建图位置、探索窗口、停机时机全部运行时决策，81/150 直答 vs 69 题升级的分布即证据；②评测严谨性——真实计费+官方协议复刻+公平基线+归因分解。
+
+### 待办（Phase 14 未完）
+
+1. gpt-4-turbo 重评缓存答案（论文 judge 口径，零推理成本）；
+2. AGQA + mmbv runs=3 出 ±std；
+3. S1 多轮指代 / S2 时序定位两个亮点实验；
+4. LVBench 切片（小时级外推验证，EgoSchema 已撤）；
+5. AGQA open 的 Charades 词表错位：考虑在 short-answer 抽取时给 gold 词表提示（需评估是否引入偏置，谨慎）；
+6. 简历/论文叙事按上面口径改写。
+
+> 报告产物：`docs/benchmark_v2_agqa.md`、`docs/benchmark_mmbv_v2.md`、`docs/benchmark_mmbv_v2_analysis.md`。本阶段全部 commit。
