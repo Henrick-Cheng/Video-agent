@@ -89,6 +89,7 @@ class _TrialStats:
         self.vl_prompt = 0
         self.vl_completion = 0
         self.api_calls = 0
+        self.frames = 0  # images sent to VL calls (frames-touched metric)
 
     def add_llm_usage(self, usage):
         """One text-LLM response's usage (OpenAI SDK object)."""
@@ -116,6 +117,7 @@ class _TrialStats:
         self.vl_prompt += delta["prompt_tokens"]
         self.vl_completion += delta["completion_tokens"]
         self.api_calls += delta["calls"]
+        self.frames += delta.get("images", 0)
 
     @property
     def llm_tokens(self):
@@ -157,6 +159,83 @@ def _prebuild_graph(session, frame_count: int = 8) -> _TrialStats:
 
     stats.add_vl_delta(LEDGER.since(marker))
     return stats
+
+
+def _prepare_l0(session) -> _TrialStats:
+    """v2 per-video init: sparse-frame global summary (1 VL call) + local ASR.
+
+    This replaces the v1 full-graph prebuild — the only upfront costs are one
+    cheap summary call and a zero-token local transcription; everything else
+    is built on demand by the agent."""
+    from src.perception.usage import LEDGER
+    from src.perception.vl_client import get_vl_client
+    from src.perception import asr
+    from src.tools.keyframe import make_extract_keyframes
+
+    stats = _TrialStats()
+    marker = LEDGER.marker()
+
+    session.duration_sec = _video_duration_sec(session.video_path)
+
+    kf = json.loads(make_extract_keyframes(session).invoke(
+        {"strategy": "uniform", "count": 8}))
+    paths = [f.path for fid in kf["frame_ids"]
+             if (f := session.cached_frames.get(fid)) and f.path]
+    if paths:
+        session.global_summary = get_vl_client().call_multi(
+            paths,
+            f"These {len(paths)} frames are uniformly sampled from a "
+            f"{session.duration_sec:.0f}-second video. Write a 3-5 sentence "
+            f"summary of what the video is about: setting, people, main "
+            f"activities and their rough order. Mention any prominent "
+            f"on-screen text. Factual only.",
+            json_mode=False,
+        ).strip()
+
+    t0 = time.time()
+    session.transcript = asr.transcribe(session.video_path)
+    asr_sec = time.time() - t0
+    print(f"  [L0] summary={'ok' if session.global_summary else 'EMPTY'}, "
+          f"asr={len(session.transcript)} lines ({asr_sec:.0f}s local)")
+
+    stats.add_vl_delta(LEDGER.since(marker))
+    return stats
+
+
+# qwen-plus occasionally emits a tool call as plain text (no tool_calls field)
+# and the run ends with e.g. `search_memory("...")` as the "answer". Detect and
+# retry once with a corrective instruction.
+_PSEUDO_CALL_RE = re.compile(r"^\s*\w+\s*\(.{0,400}\)\s*$", re.DOTALL)
+
+
+def _answer_agent_v2(session, question: str,
+                     short_answer: bool = True) -> tuple[str, int, _TrialStats]:
+    """v2: lazy memory + confidence-driven loop (see react_agent.build_agent_v2)."""
+    from src.agents.react_agent import build_agent_v2, build_l0_context
+
+    agent = build_agent_v2(session, short_answer=short_answer)
+    rl = getattr(agent, "_va_max_iterations", 6) * 5 + 10
+    user_text = build_l0_context(session) + question
+
+    answer, tool_calls, stats = _invoke_and_account(agent, user_text, rl)
+
+    if answer and _PSEUDO_CALL_RE.match(answer):
+        print("         [retry] final message was a textual pseudo-call — re-asking")
+        corrective = (
+            f"{user_text}\n\nYour previous reply was plain text that LOOKED like "
+            f"a tool call ({answer[:80]}); it was not executed. Either CALL the "
+            f"tool through the tool-calling interface, or give your final answer."
+        )
+        answer2, tc2, stats2 = _invoke_and_account(agent, corrective, rl)
+        # Merge accounting: both attempts were really billed.
+        stats.llm_prompt += stats2.llm_prompt
+        stats.llm_completion += stats2.llm_completion
+        stats.vl_prompt += stats2.vl_prompt
+        stats.vl_completion += stats2.vl_completion
+        stats.api_calls += stats2.api_calls
+        answer, tool_calls = answer2, tool_calls + tc2
+
+    return answer, tool_calls, stats
 
 
 # Benchmark-only agent system prompt: keep the tool-use strategy, but require a
@@ -407,7 +486,8 @@ _VLM_DIRECT_OVERSAMPLE = 8
 
 def _answer_vlm_direct(session, question: str,
                        short_answer: bool = True,
-                       frame_count: int | None = None) -> tuple[str, int, _TrialStats]:
+                       frame_count: int | None = None,
+                       with_transcript: bool = False) -> tuple[str, int, _TrialStats]:
     """Send sampled frames + question directly to VLM.
 
     Extracts its own uniform frames at a fixed count rather than reusing the
@@ -457,16 +537,29 @@ def _answer_vlm_direct(session, question: str,
 
     from src.perception.usage import LEDGER
 
+    # Fairness baseline (vlm_transcript): same frames, plus the narration
+    # transcript in the prompt — isolates "extra modality" from "architecture".
+    transcript_block = ""
+    if with_transcript:
+        from src.perception.asr import transcript_text
+        tr = transcript_text(getattr(session, "transcript", []))
+        transcript_block = (
+            f"Narration transcript of the video:\n{tr}\n\n" if tr
+            else "Narration transcript of the video: (no speech)\n\n"
+        )
+
     vl = get_vl_client()
     marker = LEDGER.marker()
     try:
         if short_answer:
-            prompt = f"Answer the question based on these video frames: {question}"
+            prompt = (f"{transcript_block}Answer the question based on these "
+                      f"video frames: {question}")
             answer = vl.call_multi([f.path for f in selected], prompt,
                                    system_prompt=_SHORT_ANSWER_SYS, json_mode=False)
         else:
             prompt = (
-                f"Answer the question based on these video frames: {question}\n\n"
+                f"{transcript_block}Answer the question based on these video "
+                f"frames: {question}\n\n"
                 f"Give a concise, accurate answer (2-4 sentences)."
             )
             answer = vl.call_multi([f.path for f in selected], prompt)
@@ -757,6 +850,8 @@ def run_trial(
         groups.setdefault(v, []).append(qa)
 
     needs_graph = method in ("agent", "agent_tiered", "rag_only")
+    needs_l0 = method == "agent_v2"
+    needs_transcript = method == "vlm_transcript"
     results: list[dict] = []
 
     for v, qas in groups.items():
@@ -779,6 +874,16 @@ def run_trial(
                   f"{len(session.scene_graph)} triplets, "
                   f"{pb.total_tokens} tokens ({pb.api_calls} VL calls) "
                   f"→ {prebuild_share:.0f}/Q amortized over {len(qas)} Qs")
+        elif needs_l0:
+            print(f"  [L0-init] {Path(v).name}: summary + transcript...")
+            pb = _prepare_l0(session)
+            prebuild_share = pb.total_tokens / len(qas)
+            print(f"  [L0-init] {pb.total_tokens} tokens "
+                  f"→ {prebuild_share:.0f}/Q over {len(qas)} Qs")
+        elif needs_transcript:
+            from src.perception import asr
+            session.transcript = asr.transcribe(v)
+            print(f"  [asr] {Path(v).name}: {len(session.transcript)} lines (local)")
 
         for i, qa in enumerate(qas):
             q = qa["question"]
@@ -787,6 +892,8 @@ def run_trial(
 
             if method == "agent":
                 answer, tool_calls, stats = _answer_agent(session, q, short_answer)
+            elif method == "agent_v2":
+                answer, tool_calls, stats = _answer_agent_v2(session, q, short_answer)
             elif method == "agent_tiered":
                 answer, tool_calls, stats = _answer_agent_tiered(session, q, short_answer)
             elif method == "rag_only":
@@ -794,6 +901,10 @@ def run_trial(
             elif method == "vlm_direct":
                 answer, tool_calls, stats = _answer_vlm_direct(
                     session, q, short_answer, frame_count=vlm_frames)
+            elif method == "vlm_transcript":
+                answer, tool_calls, stats = _answer_vlm_direct(
+                    session, q, short_answer, frame_count=vlm_frames,
+                    with_transcript=True)
             else:
                 raise ValueError(f"Unknown method: {method}")
 
@@ -824,6 +935,7 @@ def run_trial(
                 "tokens": stats.total_tokens,
                 "tokens_llm": stats.llm_tokens,
                 "tokens_vl": stats.vl_tokens,
+                "frames_touched": stats.frames,
                 "prebuild_share": round(prebuild_share, 1),
             })
 
@@ -897,6 +1009,9 @@ def _aggregate(all_trials: list[list[dict]],
     prebuild_per_q = [
         _mean([r.get("prebuild_share", 0.0) for r in trial]) for trial in all_trials
     ]
+    frames_per_q = [
+        _mean([r.get("frames_touched", 0) for r in trial]) for trial in all_trials
+    ]
 
     return {
         "scorers": {s: _aggregate_scorer(all_trials, s, categories) for s in scorers},
@@ -907,6 +1022,7 @@ def _aggregate(all_trials: list[list[dict]],
         "avg_tokens_per_q":   int(_mean(tokens_per_q)),
         "avg_prebuild_per_q": int(_mean(prebuild_per_q)),
         "avg_total_tokens_per_q": int(_mean(tokens_per_q) + _mean(prebuild_per_q)),
+        "avg_frames_per_q": round(_mean(frames_per_q), 1),
     }
 
 
@@ -1025,9 +1141,9 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         "## Overall Accuracy",
         "",
         f"| Method | {scorer_cols} | Avg Tool Calls | Avg Time (s) "
-        f"| Tokens/Q (answer) | + Prebuild/Q | = Total/Q |",
+        f"| Frames/Q | Tokens/Q (answer) | + Prebuild/Q | = Total/Q |",
         "|--------|" + "----|" * len(scorers)
-        + "----------------|--------------|------|------|------|",
+        + "----------------|--------------|------|------|------|------|",
     ]
     for method, agg in results_by_method.items():
         accs = " | ".join(
@@ -1038,6 +1154,7 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         pb = agg.get("avg_prebuild_per_q", 0)
         lines.append(
             f"| **{method}** | {accs} | {tc} | {agg['avg_time_sec']} "
+            f"| {agg.get('avg_frames_per_q', 0)} "
             f"| {agg['avg_tokens_per_q']} | {pb if pb else '—'} "
             f"| {agg.get('avg_total_tokens_per_q', agg['avg_tokens_per_q'])} |"
         )
@@ -1070,12 +1187,20 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         "## Notes",
         "",
         "- **agent**: Full ReAct Agent — extracts frames, builds scene graph, uses query + inspect tools",
+        "- **agent_v2**: Lazy-memory agent — per-video init is only a sparse-frame summary + local "
+        "ASR transcript; the agent then decides at runtime which time windows to explore "
+        "(explore_segment builds dense captions + indexed triplets on demand), with a "
+        "confidence-driven loop (rate 1-3, ≤2 explores/round, ≤3 rounds)",
         "- **agent_tiered**: Cost-aware agent — scene graph (or its summary, when >"
         f"{_TIERED_GRAPH_FULL_THRESHOLD} triplets) injected into context; the model decides at "
         "runtime whether to answer directly (one LLM call) or escalate to query/inspect tools",
         "- **rag_only**: Pre-builds full scene graph, then LLM answers from graph text only",
         "- **vlm_direct**: Samples N frames (default 4, see --vlm-frames), sends raw frames + "
         "question directly to VLM",
+        "- **vlm_transcript**: vlm_direct + the local ASR transcript prepended to the prompt — "
+        "fairness baseline isolating the extra modality from the architecture",
+        "- **Frames/Q**: frames sent to the vision model per question (answer phase) — the "
+        "guided-perception-budget metric",
         "- **Prebuild frame budget**: duration-adaptive — one frame per ~15s, clamped to [8, 24] "
         "(Charades-length clips stay at the historical 8)",
         "- **Token accounting**: all counts are real API-reported `usage` summed over every call "
@@ -1266,7 +1391,7 @@ def main() -> None:
                 {k: r.get(k) for k in
                  ("id", "video", "category", "question", "answer",
                   "answer_short", "scores", "tool_calls", "tokens",
-                  "tokens_llm", "tokens_vl", "prebuild_share")}
+                  "tokens_llm", "tokens_vl", "frames_touched", "prebuild_share")}
                 for r in trial
             ]
             for trial in trials

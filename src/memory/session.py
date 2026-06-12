@@ -8,7 +8,7 @@ read/write it directly — no message passing needed between tools.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from src.scene_graph.graph import SceneGraph, Triplet
@@ -20,6 +20,21 @@ class FrameMeta:
     timestamp: float           # seconds into the video
     path: Optional[str] = None # absolute path to saved JPEG, None if not yet written
     extracted: bool = False
+
+
+@dataclass
+class Segment:
+    """L1 memory: one explored time window — dense caption + provenance.
+
+    Triplets extracted from this window carry source=f"seg:{segment_id}", so a
+    triplet hit can be traced back to the full caption it came from (the graph
+    indexes evidence rather than replacing it)."""
+    segment_id: str
+    t_start: float
+    t_end: float
+    caption: str
+    question: str = ""                      # what the agent was looking for
+    frame_ids: list[str] = field(default_factory=list)
 
 
 class VideoSession:
@@ -41,6 +56,29 @@ class VideoSession:
         self.scene_graph: SceneGraph = SceneGraph()
         self.cached_frames: dict[str, FrameMeta] = {}
         self.query_history: list[str] = []
+        # ── lazy memory (v2) ───────────────────────────────────────────────
+        self.global_summary: str = ""           # L0: one-paragraph video gist
+        self.transcript: list[dict] = []        # L0: [{t_start, t_end, text}]
+        self.duration_sec: float = 0.0          # L0: video length metadata
+        self.segments: dict[str, Segment] = {}  # L1: explored windows
+
+    # ── lazy memory (v2) ──────────────────────────────────────────────────────
+
+    def add_segment(self, t_start: float, t_end: float, caption: str,
+                    question: str = "",
+                    frame_ids: Optional[list[str]] = None) -> Segment:
+        seg = Segment(
+            segment_id=f"seg_{len(self.segments) + 1:03d}",
+            t_start=t_start, t_end=t_end,
+            caption=caption, question=question,
+            frame_ids=frame_ids or [],
+        )
+        self.segments[seg.segment_id] = seg
+        return seg
+
+    def explored_windows(self) -> list[tuple[float, float]]:
+        """Time windows already explored (for the agent's orientation)."""
+        return sorted((s.t_start, s.t_end) for s in self.segments.values())
 
     # ── frame registry ────────────────────────────────────────────────────────
 

@@ -27,6 +27,7 @@ class UsageRecord(NamedTuple):
     model: str
     prompt_tokens: int
     completion_tokens: int
+    images: int = 0
 
 
 class UsageLedger:
@@ -34,15 +35,17 @@ class UsageLedger:
         self._lock = threading.Lock()
         self._records: list[UsageRecord] = []
 
-    def record(self, model: str, usage: Any) -> None:
+    def record(self, model: str, usage: Any, images: int = 0) -> None:
         """Append one API response's usage. Accepts the OpenAI SDK usage object
-        (or any object with prompt_tokens/completion_tokens); None is a no-op."""
+        (or any object with prompt_tokens/completion_tokens); None is a no-op.
+        `images` counts the frames sent in the request (frames-touched metric)."""
         if usage is None:
             return
         rec = UsageRecord(
             model=model,
             prompt_tokens=int(getattr(usage, "prompt_tokens", 0) or 0),
             completion_tokens=int(getattr(usage, "completion_tokens", 0) or 0),
+            images=images,
         )
         with self._lock:
             self._records.append(rec)
@@ -60,6 +63,7 @@ class UsageLedger:
             "prompt_tokens": sum(r.prompt_tokens for r in recs),
             "completion_tokens": sum(r.completion_tokens for r in recs),
             "calls": len(recs),
+            "images": sum(r.images for r in recs),
         }
 
 

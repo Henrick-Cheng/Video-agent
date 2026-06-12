@@ -303,6 +303,7 @@ def retrieve_triplets(
             "t_end":      t.t_end,
             "confidence": t.confidence,
             "score":      round(s, 2),
+            "source":     t.source,
         }
         for s, t in top
     ]
@@ -313,4 +314,83 @@ def retrieve_triplets(
         "found":          bool(triplets_out),
         "matched_tokens": matched_tokens,
         "nearby_entities": nearby_entities,
+    }
+
+
+# ── Unified memory search (v2 lazy memory) ────────────────────────────────────
+
+def _score_text(text: str, query_tokens: set[str]) -> float:
+    """Fraction of query tokens found in *text* (tokenized, lemmatized)."""
+    if not text or not query_tokens:
+        return 0.0
+    text_tokens = set(tokenize(text))
+    return len(query_tokens & text_tokens) / len(query_tokens)
+
+
+def search_memory(
+    question: str,
+    session,
+    top_k_triplets: int = 5,
+    top_k_segments: int = 3,
+    top_k_transcript: int = 4,
+    min_score: float = 0.15,
+) -> dict:
+    """
+    Joint retrieval over the three memory layers:
+      L2 triplets (existing scorer) → each hit carries its parent segment id
+      L1 segment captions (token-overlap score)
+      L0 transcript lines (token-overlap score)
+
+    The triplet index points INTO the evidence: a triplet hit pulls its parent
+    segment's caption into the result, so the agent sees both the structured
+    fact and the dense context it came from.
+    """
+    qt = set(tokenize(question))
+
+    trip_res = retrieve_triplets(
+        question, session.scene_graph,
+        top_k=top_k_triplets,
+        video_duration=getattr(session, "duration_sec", 0.0),
+    )
+
+    # Segment captions: scored directly + pulled in via triplet provenance.
+    seg_scores: dict[str, float] = {}
+    for sid, seg in session.segments.items():
+        seg_scores[sid] = _score_text(seg.caption, qt)
+    for t in trip_res.get("triplets", []):
+        src = str(t.get("source", ""))
+        if src.startswith("seg:"):
+            sid = src[4:]
+            if sid in session.segments:
+                seg_scores[sid] = max(seg_scores.get(sid, 0.0), 1.0)  # provenance pull
+    seg_hits = sorted(
+        (s for s in seg_scores.items() if s[1] >= min_score),
+        key=lambda x: -x[1],
+    )[:top_k_segments]
+    segments = [
+        {"segment_id": sid,
+         "t_start": session.segments[sid].t_start,
+         "t_end": session.segments[sid].t_end,
+         "caption": session.segments[sid].caption,
+         "score": round(score, 2)}
+        for sid, score in seg_hits
+    ]
+
+    transcript_hits = sorted(
+        (
+            {**row, "score": round(_score_text(row["text"], qt), 2)}
+            for row in getattr(session, "transcript", [])
+        ),
+        key=lambda r: -r["score"],
+    )
+    transcript_hits = [r for r in transcript_hits if r["score"] >= min_score][:top_k_transcript]
+
+    found = bool(trip_res.get("found") or segments or transcript_hits)
+    return {
+        "triplets": trip_res.get("triplets", []),
+        "segments": segments,
+        "transcript_hits": transcript_hits,
+        "entity_summary": trip_res.get("entity_summary", ""),
+        "explored_windows": session.explored_windows(),
+        "found": found,
     }

@@ -111,6 +111,110 @@ def build_agent(
     return agent
 
 
+# ── v2: lazy memory + confidence-driven loop ─────────────────────────────────
+# Literature template (Stanford/Graph-VideoAgent): answer → self-assess
+# confidence 1-3 → gather more evidence only if insufficient, bounded budget.
+# Graph construction itself is an agent decision (explore_segment), not a
+# preprocessing step.
+
+_V2_SYSTEM_CORE = """\
+You are a video question-answering agent. The user message provides: a global \
+summary of the video, its duration, the narration transcript (may be empty), \
+and the time windows already explored.
+
+[Tools]
+- search_memory — free lookup over everything known so far (facts with \
+timestamps, notes from explored windows, transcript). Always try this before \
+exploring.
+- explore_segment — watch a time window closely and add detailed notes + \
+facts to memory. Costs one vision call — choose the window deliberately, \
+guided by transcript timestamps, the summary, or earlier hits.
+- inspect_frame — pixel-level read of a single frame (on-screen text, exact \
+counting).
+
+Tools are used ONLY through the tool-calling interface. Plain text in your \
+message is treated as your final answer — never write anything that looks \
+like a function call.
+
+[Procedure — confidence-driven]
+1. You MUST start by CALLING the search_memory tool with the question (it is \
+free and shows what is already known).
+2. From the search result plus the provided context, privately rate your \
+confidence: 1 = insufficient evidence, 2 = partial, 3 = sufficient. If below \
+3, gather evidence with explore_segment — at most 2 explorations per round, \
+at most 3 rounds in total.
+3. Stop as soon as confidence reaches 3 or the budget is spent, then give \
+your best-supported answer.
+
+[Window strategy]
+- Short video (under ~60s) with nothing explored yet: explore the FULL span \
+(t_start=0, t_end=duration) first — one exploration covers everything.
+- Duration/order comparisons need the COMPLETE time extent of each activity; \
+if a fact's interval touches the edge of an explored window, the activity \
+may continue outside it — widen the exploration before comparing durations.
+
+[Grounding rules]
+- Never answer from prior knowledge; every claim must trace to the summary, \
+transcript, memory, or an explored window.
+- Absence of a fact in memory is NOT evidence of 'no' — the memory only \
+covers explored windows. Verify with explore_segment before answering 'no'.
+- If evidence is still insufficient after the budget, state what is missing \
+instead of guessing."""
+
+_V2_ANSWER_SHORT = """
+
+[Answer format — strict]
+Your FINAL message must be ONLY the answer itself: a single word or a short \
+phrase. For yes/no questions, answer exactly 'yes' or 'no'. No explanation, \
+no timestamps, no extra words in the final message."""
+
+_V2_ANSWER_VERBOSE = """
+
+[Answer format]
+Give a concise, accurate answer (1-3 sentences). Mention timestamps when \
+relevant."""
+
+
+def build_l0_context(session: "VideoSession") -> str:
+    """Render the L0 layer (summary + transcript + explored windows) as the
+    context prefix for a v2 agent invocation."""
+    from src.perception.asr import transcript_text
+
+    dur = getattr(session, "duration_sec", 0.0)
+    lines = [f"[Video] duration ≈ {dur:.0f}s"]
+    if session.global_summary:
+        lines.append(f"[Global summary] {session.global_summary}")
+    tr = transcript_text(getattr(session, "transcript", []))
+    lines.append(f"[Narration transcript]\n{tr}" if tr
+                 else "[Narration transcript] (none / no speech)")
+    wins = session.explored_windows()
+    if wins:
+        lines.append("[Explored windows] "
+                     + ", ".join(f"{a:.0f}-{b:.0f}s" for a, b in wins))
+    return "\n".join(lines) + "\n\n"
+
+
+def build_agent_v2(session: "VideoSession", short_answer: bool = True) -> Any:
+    """Create the v2 agent: lazy memory toolset + confidence-driven prompt.
+
+    Invoke with build_l0_context(session) + question as the user message.
+    """
+    from src.config import get_settings
+    from src.tools.memory_search import make_search_memory
+    from src.tools.segment_inspector import make_explore_segment
+
+    tools = [
+        make_search_memory(session),
+        make_explore_segment(session),
+        make_inspect_frame(session),
+    ]
+    prompt = _V2_SYSTEM_CORE + (_V2_ANSWER_SHORT if short_answer
+                                else _V2_ANSWER_VERBOSE)
+    agent = create_agent(_get_real_llm(), tools, system_prompt=prompt, debug=False)
+    agent._va_max_iterations = get_settings().agent.max_iterations  # type: ignore[attr-defined]
+    return agent
+
+
 # ── LLM helpers ───────────────────────────────────────────────────────────────
 
 def _get_real_llm():

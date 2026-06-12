@@ -576,3 +576,115 @@ def build_frames(
         "batches_ok":    batches_ok,
         "batches_fail":  batches_fail,
     }
+
+
+# ── Segment build (v2 lazy memory) ────────────────────────────────────────────
+# One explored window → dense caption (L1 evidence) + triplets (L2 index).
+# Unlike build_frames, the VLM keeps its full description of the window: the
+# caption is the payload, triplets index into it via source="seg:<id>".
+
+_SEGMENT_PROMPT_SUFFIX = """\
+
+Additionally, BEFORE the JSON, write 3-5 sentences densely describing what \
+happens in this window: actions in order, their apparent purpose or manner, \
+any visible on-screen text/captions/signs (quote them exactly), and notable \
+attributes. This description is stored as evidence, so be specific and \
+factual — do not speculate beyond what is visible.{question_hint}
+
+Then output the JSON object as specified, adding a "description" key holding \
+that same description string."""
+
+
+def build_segment(
+    session: "VideoSession",
+    frames: list,
+    vl_client: "VLClient",
+    question: str = "",
+    merge_window_sec: float = 3.0,
+    confidence_threshold: float = 0.75,
+) -> dict:
+    """
+    Build one L1 segment from already-extracted *frames* (sorted FrameMeta).
+
+    Single VL call: dense caption + entities/relations. Triplets are written
+    to the graph with source="seg:<segment_id>"; the caption is stored on the
+    session.Segment so retrieval can surface it alongside triplet hits.
+    """
+    frames = [f for f in frames if f.path and Path(f.path).exists()]
+    if not frames:
+        return {"segment_id": "", "caption": "", "nodes_added": 0,
+                "edges_added": 0, "ok": False}
+    frames.sort(key=lambda f: f.timestamp)
+    t0, t1 = frames[0].timestamp, frames[-1].timestamp
+
+    existing_entities = dict(session.scene_graph.entities)
+    timestamps = [f.timestamp for f in frames]
+    q_hint = (f"\nPay special attention to anything relevant to: {question}"
+              if question else "")
+    prompt = (
+        _build_prompt(timestamps, [], RELATION_VOCAB, existing_entities)
+        + _SEGMENT_PROMPT_SUFFIX.format(question_hint=q_hint)
+    )
+
+    raw = vl_client.call_multi([f.path for f in frames], prompt, _SYSTEM_PROMPT)
+    parsed = _parse_vlm_output(raw)
+    if parsed is None:
+        return {"segment_id": "", "caption": "", "nodes_added": 0,
+                "edges_added": 0, "ok": False}
+
+    caption = str(parsed.get("description") or "").strip()
+    if not caption:
+        # Level-3 parse fallback lost non-array keys — salvage any leading
+        # free text before the JSON as the caption.
+        brace = raw.find("{")
+        caption = raw[:brace].strip() if brace > 0 else ""
+
+    entities = parsed.get("entities") or []
+    relations = parsed.get("relations") or []
+
+    unique_entities, id_remap = _dedup_entities(entities)
+    for rel in relations:
+        rel["subject"] = id_remap.get(rel.get("subject", ""), rel.get("subject", ""))
+        rel["object"] = id_remap.get(rel.get("object", ""), rel.get("object", ""))
+
+    truly_new, label_remap = _cross_dedup_with_graph(unique_entities, existing_entities)
+    for rel in relations:
+        rel["subject"] = label_remap.get(rel["subject"], rel["subject"])
+        rel["object"] = label_remap.get(rel["object"], rel["object"])
+
+    merged = [r for r in _merge_relations(relations, merge_window_sec)
+              if r.get("confidence", 1.0) >= confidence_threshold]
+
+    seg = session.add_segment(
+        t_start=t0, t_end=t1, caption=caption, question=question,
+        frame_ids=[f.frame_id for f in frames],
+    )
+
+    id_to_label = {e["id"]: e["label"] for e in truly_new}
+    new_nodes = [
+        {"name": e["label"], "type": e.get("type", "object"),
+         "attributes": e.get("attributes", {}),
+         "first_seen": e.get("first_seen", t0), "last_seen": e.get("last_seen", t1)}
+        for e in truly_new if e.get("label")
+    ]
+    new_edges = [
+        {"subject": id_to_label.get(r["subject"], r["subject"]),
+         "relation": r["relation"],
+         "object": id_to_label.get(r["object"], r["object"]),
+         "t_start": r["t_start"],
+         "t_end": r["t_end"] if r["t_end"] > r["t_start"] else r["t_start"] + merge_window_sec,
+         "confidence": r["confidence"],
+         "source": f"seg:{seg.segment_id}"}
+        for r in merged
+        if r.get("subject") and r.get("object") and r.get("relation")
+    ]
+    stats = session.update_scene_graph(new_nodes, new_edges)
+
+    return {
+        "segment_id": seg.segment_id,
+        "t_start": t0, "t_end": t1,
+        "caption": caption,
+        "nodes_added": stats["nodes_added"],
+        "edges_added": stats["edges_added"],
+        "ok": True,
+    }

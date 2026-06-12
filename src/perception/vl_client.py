@@ -127,8 +127,15 @@ class VLClient:
     def _create(self, **kwargs) -> str:
         """All completions go through here so every response's real usage
         (image tokens included in prompt_tokens) lands in the global LEDGER."""
+        n_images = sum(
+            1
+            for m in kwargs.get("messages", [])
+            if isinstance(m.get("content"), list)
+            for part in m["content"]
+            if isinstance(part, dict) and part.get("type") == "image_url"
+        )
         resp = self._client.chat.completions.create(**kwargs)
-        LEDGER.record(self.model, resp.usage)
+        LEDGER.record(self.model, resp.usage, images=n_images)
         return resp.choices[0].message.content or ""
 
     # ── single-image call ─────────────────────────────────────────────────────
