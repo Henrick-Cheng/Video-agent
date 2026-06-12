@@ -957,3 +957,42 @@ token：agent 2860 vs vlm 6188 ≈ **46%**（verbose 模式，约一半成本）
 5. 中文文档（README / benchmark_agqa）暂保持中文，待整体英文化决定。
 
 > 报告产物：`docs/benchmark_en_llmjudge.md`（英文对照）、`docs/em_vs_agent_analysis.md`（EM 错配分析）、`docs/benchmark_en_smoke.json`（逐题原始记录）。代码均未 commit，工作树停在 `10aed53` 之上，`git stash -u` 可逆。
+
+## 第十三阶段：token 口径重建 + 分层应答 + MMBench-Video 迁移（2026-06-12）
+
+**背景**：面试两大质疑（①agent 与 workflow 区别不大；②token 测评不严谨）+ 博士后拍板解开 EM 死结：**只用 LLM-as-judge，转开放问答数据集，点名 MMBench-Video**（要求复刻在该数据集上报结果论文的评测协议）。
+
+### 完成的事
+
+1. **token 口径重建**（待办 4 清账）：新建 `src/perception/usage.py` 全局 UsageLedger（线程安全），VLClient 每次响应记真实 `usage`（图像 token 含在 prompt_tokens）；agent 按轮求和 `usage_metadata`（重发历史如实计费）；预建实测并按题摊销；报表三列 Tokens/Q (answer) / +Prebuild/Q / =Total/Q + 自动 break-even 行；删除错误的 est_cost_rmb。
+2. **分层应答 `agent_tiered`**：图文本注入上下文（>30 三元组只注入实体摘要），工具可选，**模型运行时自主决定是否升级**——非硬编码路由，直接回应"与 workflow 无异"质疑。冒烟抓到"缺证当证否"bug（图缺 lean 事实直接答 no），加第 6 条规则（缺证必先 inspect 验证）修复。预建帧数改时长自适应（1 帧/15s，夹 [8,24]）。
+3. **MMBench-Video 迁移**：13.4GB 下载解包（609 视频）；分层抽样 150 题（TR/HL 加密，seed=42）；官方 VLMEvalKit judge 协议逐字复刻（0-3 语义相似度，scorer="mmbv"，judge 经 JUDGE_* 可切；测试 qwen-max / 论文 gpt-4-turbo 重评缓存答案）；手工样例自检 5/5。
+
+### 核心发现 ①：真实计费把旧 token 故事彻底反转（比 Phase 12 预估的更狠）
+
+冒烟（8 题）实测：agent 边际 7154 tok/Q（97% 是文本 LLM——ReAct 每轮重发历史）vs vlm_direct **639**（真实 qwen-vl-plus 计费 ~130-175 tok/帧@480p，旧估算 1500/帧虚高 ~10×）。两个估算误差方向相反、双双偏袒 agent：**旧"1/4 token"卖点符号都反了，正式退役**。token 效率从卖点降级为需要刻画边界的成本模型。
+
+### 核心发现 ②：AGQA 70 题（短答案模式 runs=1）agent 双口径反超 + 自适应证据
+
+agent **0.450**（EM 0.429）> vlm_direct 0.371（0.357）> rag_only 0.343（0.314）；duration **0.500 vs 0.136（3.7×）**。工具调用随题型自适应：open 1.81 → binary 2.42 → sequencing 3.21 → duration 3.64（范围 1-8）——**努力精确投在优势题型上，固定 workflow 给不出这种分布**（面试问题①的硬证据）。成本：agent 边际 9315 + 摊销 971 vs vlm 626（短视频 ~16×）；rag_only 边际 953 **高于** vlm 626 → **短视频上多轮摊销机制死亡**。
+
+### 核心发现 ③：MMBench-Video 150 题——舒适区从"长视频"修正为四个具体条件
+
+总分 vlm_direct@8帧 1.447 > agent 1.193 > tiered 1.053 > rag 0.787（0-3 制）。但：
+
+- **HL 幻觉维度图方法 4-5× 碾压**（tiered 2.733 / rag 2.400 / agent 2.200 vs vlm **0.533**）——"答案必须接地"的架构属性，最硬的一条优势。
+- **"长视频 vlm 塌缩"假设在 ≤6min 被证伪**：vlm@8帧三个时长桶平直（1.52/1.36/1.46）。但 agent 得分随预建投入增长（>180s 桶 24 帧图，1.48 追平 vlm 1.46）——斜率差暗示 10min+ 可能交叉（未测，下轮动机）。
+- **多轮假设条件成立**：长视频上图方法边际反转（tiered 4721 / rag 985 < vlm 6752）→ break-even rag 2.3 题/视频、tiered 6.3 题/视频、完整 agent 永不。结论："轮次越多越省"当且仅当长视频+多题会话+低边际策略。
+- **tiered 过度自信短板**：TR 0.300 vs agent 0.833——22/30 题直答没升级，"图有相关但不充分证据"时升级判据失灵。
+- **硬边界：旁白依赖**（"according to the video"类）纯视觉管线够不着，TR 全线失分共因。**下轮最高杠杆改进：ASR/字幕入图**。
+
+### 待办（Phase 13 未完）
+
+1. judge 切 gpt-4-turbo 对缓存答案重评（论文口径，零推理成本）；
+2. AGQA + mmbv 补 runs=3 出 ±std；
+3. ASR/字幕通道入图（TR 失分主因，架构无需改）；
+4. tiered 升级判据细化（"图有证据"→"图能支撑该题型推理"）；
+5. 10min+ 长视频实验验证斜率交叉外推；
+6. 简历/论文叙事按"四条件舒适区"口径改写（HL 幻觉抵抗提为第一卖点）。
+
+> 报告产物：`docs/benchmark_tokens_smoke.md`（口径冒烟）、`docs/benchmark_tokens_full.md`（AGQA 70 题诊断）、`docs/benchmark_mmbv.md`（150 题标准报表）、`docs/benchmark_mmbv_analysis.md`（舒适区交叉分析）。本阶段代码与数据均已 commit。判断失误复盘：睡前预测"长视频是 agent 舒适区"——半对半错（成本边际反转对了，准确率塌缩错了），第四次被实测纠偏，教训仍是实测优先。
