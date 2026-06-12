@@ -31,15 +31,38 @@ def _get_model():
     return _MODEL
 
 
+def _cache_path(video_path: str):
+    from pathlib import Path
+    p = Path(video_path)
+    cache_dir = Path("data/asr_cache")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        size = p.stat().st_size
+    except OSError:
+        size = 0
+    return cache_dir / f"{p.stem}.{size}.{_MODEL_SIZE}.json"
+
+
 def transcribe(video_path: str, language: Optional[str] = None) -> list[dict]:
     """
-    Transcribe the audio track of *video_path*.
+    Transcribe the audio track of *video_path* (file-cached: transcription is
+    deterministic per video+model, and benchmark methods would otherwise
+    re-transcribe the same video once per method).
 
     Returns
     -------
     [{"t_start": float, "t_end": float, "text": str}, ...] — empty list when
     ASR is unavailable or the video has no speech.
     """
+    import json as _json
+
+    cache = _cache_path(video_path)
+    if cache.exists():
+        try:
+            return _json.loads(cache.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
     try:
         model = _get_model()
     except ImportError:

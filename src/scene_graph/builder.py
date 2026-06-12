@@ -588,8 +588,9 @@ _SEGMENT_PROMPT_SUFFIX = """\
 Additionally, BEFORE the JSON, write 3-5 sentences densely describing what \
 happens in this window: actions in order, their apparent purpose or manner, \
 any visible on-screen text/captions/signs (quote them exactly), and notable \
-attributes. This description is stored as evidence, so be specific and \
-factual — do not speculate beyond what is visible.{question_hint}
+attributes. Enumerate EVERY visible object, including small hand-held items \
+(phone, cup, dish, paper, bag...). This description is stored as evidence, \
+so be specific and factual — do not speculate beyond what is visible.{question_hint}
 
 Then output the JSON object as specified, adding a "description" key holding \
 that same description string."""
