@@ -1,158 +1,114 @@
 # 🎬 Video Agent
 
-> **一个用「时序场景图」做结构化工作记忆的 ReAct Agent，回答关于视频内容的中文自然语言问题。**
+> **一个把视频组织成「Lazy 多粒度记忆」、用置信度驱动按需探索的视频问答 Agent。场景图不再是答案来源，而是多模态证据的时序索引。**
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1.x-1C3C3C?logo=langchain&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-ReAct-FF6F00)
 ![Qwen-VL](https://img.shields.io/badge/Qwen--VL%20%2F%20Qwen--Plus-multimodal-615CED)
-![Gradio](https://img.shields.io/badge/Gradio-5.x-F97316?logo=gradio&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-38%20passed%20%2F%2012%20skipped-success)
+![Whisper](https://img.shields.io/badge/faster--whisper-ASR-00A98F)
+![Tests](https://img.shields.io/badge/tests-43%20passed%20%2F%2012%20skipped-success)
 
 ---
 
-## 架构一览
+## 架构一览（v2）
 
 ```mermaid
 flowchart TD
-    User(["👤 用户提问 · 中文自然语言"]) --> Agent
+    User(["👤 用户提问 · 自然语言"]) --> Agent
 
-    Agent["🧠 <b>ReAct Agent</b> · LangGraph<br/>Thought → Action → Observation 循环"]
+    Agent["🧠 <b>置信度驱动 Agent</b> · LangGraph<br/>作答 → 自评置信度 1-3 → 不足才探索"]
 
-    Agent -->|① 抽帧| T1["extract_keyframes"]
-    Agent -->|② 建图| T2["build_scene_graph 🔭"]
-    Agent -->|③ 检索·零成本| T3["query_scene_graph"]
-    Agent -->|④ 精读| T4["inspect_frame 🔭"]
+    Agent -->|① 免费检索| T1["search_memory<br/>三层联合检索"]
+    Agent -->|② 按需细看| T2["explore_segment 🔭<br/>自选时间窗 · 即时建图"]
+    Agent -->|③ 像素级精读| T3["inspect_frame 🔭"]
 
-    T1 -->|缓存帧| FC
-    T2 -->|写入三元组| SG
-    T3 -->|jieba 多策略检索| SG
-    T4 -->|VLM 新发现回写| SG
-
-    subgraph SESSION["📦 VideoSession · 跨轮共享工作记忆"]
-        SG[("🕸️ SceneGraph<br/>⟨主体, 关系, 客体, t_start, t_end⟩")]
-        FC[("🎞️ 帧缓存")]
+    subgraph MEM["📦 三层 Lazy 记忆 · VideoSession"]
+        L0[("🌐 L0 全局层<br/>稀疏帧摘要 + ASR 旁白转写")]
+        L1[("📝 L1 Segment 层<br/>密集 caption（按需建）")]
+        L2[("🕸️ L2 三元组索引<br/>⟨主体, 关系, 客体, t⟩ → seg 溯源")]
     end
 
-    SG -. 观测结果 .-> Agent
-    FC -. 观测结果 .-> Agent
-    Agent ==>|推理收敛| Answer(["✅ 答案 + 可解释推理 trace"])
+    T1 -. 联合检索 .-> L0 & L1 & L2
+    T2 -->|密集 caption + 三元组| L1
+    T2 --> L2
+    T3 -->|新发现回写| L2
 
-    T2 -. VLM 批量分析 .-> VLM["Qwen-VL"]
-    T4 -. VLM 单帧精读 .-> VLM
+    L0 -. 初始上下文 .-> Agent
+    Agent ==>|置信度达标 / 预算用尽| Answer(["✅ 答案 + 证据 trace"])
+
+    T2 -. VLM 多帧分析 .-> VLM["Qwen-VL"]
+    T3 -. VLM 单帧精读 .-> VLM
 ```
 
 ## 三句话
 
-**做什么**：把一段视频压缩成带时间戳的「时序场景图」（三元组 `⟨主体, 关系, 客体, t_start, t_end⟩`），作为 Agent 的结构化工作记忆，回答关于视频的中文问题。
+**做什么**：把一段视频组织成**三层 Lazy 记忆**（全局摘要 + 旁白转写 / 按需细化的段落描述 / 带时间戳的三元组索引），让 Agent 像查档案一样回答关于视频的问题——**不预先全片建图，问到哪里才细看哪里**。
 
-**怎么做**：基于 LangGraph 的 ReAct Agent 按需调度四个工具——*抽帧 → 建图 → 检索 → 精读*；其中 `inspect_frame` 把 VLM 的单帧精读发现**反向写回**场景图，形成「检索→精读→更新→再检索」的渐进式精化闭环。
+**怎么做**：基于 LangGraph 的 Agent 走**置信度驱动**循环——先免费检索现有记忆并作答，自评置信度 1–3，不足时才自己挑一段视频用 `explore_segment` 细看（即时生成密集描述 + 三元组），轮数与探索次数有上限。场景图被重新定位为**证据的时序索引**（三元组指向它出自的那段完整描述），而非有损的答案压缩。
 
-**结果如何**：在**两个数据集**上做了 3 方案 × 3 轮对照——自建 `cooking.mp4`(25 题) + **公开 AGQA Charades**(10 视频 / 70 题)。两个数据集呈现 **Pareto 互补**:在 AGQA 上 Agent **整体反超** vlm_direct(**0.364 vs 0.326**)且 token 开销仅为其 ~23%(1,368 vs 6,041),胜负在 `duration` 类问题(2.1× 领先)——三元组的 `t_start/t_end` 是 vlm_direct 没有的能力;在 cooking 上 vlm_direct 整体领先(0.373 vs 0.313),「看到了什么」类直接看帧更强。Agent 的核心定位是 **结构化时间推理 + token 效率**,不是单帧感知最优。
+**结果如何**：在公开长视频基准 **MMBench-Video**（150 题分层子集）上，v2 **首次整体反超**直接看帧的 VLM 基线（**1.933 vs 1.447**，0–3 分制）；归因干净——旁白模态贡献 +0.246，**架构本身再贡献 +0.240**（同模态公平基线对照）。优势随视频变长单调增强（舒适区边界 ≈90 秒），且**每题只看 3.1 帧** vs 基线固定 8 帧。
 
 > [!IMPORTANT]
-> **核心结果(两个数据集互补,讲完整故事)**
+> **核心结果（MMBench-Video 150 题 · runs=1 · 初步）**
 >
-> **公开数据集 AGQA Charades**(10 视频 × 70 题 × 3 轮)—— Agent **整体反超**:
-> Agent **0.364 ± 0.015** vs vlm_direct **0.326 ± 0.007**,且 token 开销仅其 **~23%**(1,368 vs 6,041)。胜负主要在 `duration`(0.318 vs 0.152, **2.1×**)——三元组的 `t_start/t_end` 是直接视觉感知没有的能力。
+> | 方法 | 总分 (0–3) | Frames/Q | 说明 |
+> |------|-----------|----------|------|
+> | **agent_v2** | **1.933** | **3.1** | Lazy 记忆 + 置信度探索 |
+> | vlm_transcript@8 | 1.693 | 8.0 | 同帧数 + 旁白文字（公平基线） |
+> | vlm_direct@8 | 1.447 | 8.0 | 直接看 8 帧 |
+> | agent (v1) | 1.193 | — | 全量预建场景图（旧架构） |
 >
-> **自建 `cooking.mp4`**(25 题 × 3 轮,消除字幕作弊后)—— vlm_direct 整体领先:
-> Agent **0.313 ± 0.019** vs vlm_direct **0.373 ± 0.009**。「看到了什么」(物体识别、实体属性)直接看帧更强;Agent 在跨帧聚合的「计数 / 出现」类唯一明确领先(0.133 vs 0.000)。
+> - **归因干净**：ASR 模态 +0.246（vlm_direct→vlm_transcript），架构再 +0.240（同模态对照）——「赢只是因为多了个模态」被数据排除。
+> - **舒适区边界 ≈90 秒**：agent_v2 得分随时长单调上升（**1.54 / 2.02 / 2.27**），所有基线平直。
+> - **幻觉抵抗**：官方 HL 维度 2.333，是同模态基线的 **2.1×**——「答案必须接地到证据」的架构属性。
+> - **帧效率**：3.1 帧/题打赢 8 帧/题；150 题中 81 题靠免费检索直答、69 题自主升级探索——按需分配感知预算。
 >
-> **整合结论 — Pareto 互补**:Agent 在 **结构化时间** + **跨帧聚合** + **token 成本** 三方面有可量化优势;不在「单帧 dense perception」(物体识别 / 属性)。
->
-> ⚠️ 评测设计上的两处**诚实修正**:① Phase 10 cooking 时早期版本曾因 `vlm_direct` 抽帧耦合 Agent 配置而误报「关系推理 2.7×」,修正后 vlm_direct 重测、整体反超 agent;② Phase 11 跑 AGQA 前预测「短视频会让 agent 输」,实测打脸 agent 反胜——两次都把诚实数据写进了 [`docs/progress.md`](docs/progress.md)(第十、第十一阶段)。完整报告:[`docs/benchmark_agqa.md`](docs/benchmark_agqa.md) · [`docs/benchmark_final.md`](docs/benchmark_final.md)。
+> ⚠️ **诚实披露**：结果为 **runs=1**、judge 为 `qwen-max`；论文级数字需 runs=3 ±std + 换 `gpt-4-turbo` 重评（已留缓存答案，零额外推理成本）。完整分析见 [`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md)。
+
+---
+
+## 为什么是 v2？—— 一次诚实的返修
+
+v1 用「时序场景图」做唯一工作记忆（全片预建 → 三元组 → 只查三元组作答）。在真实计费口径下复测，**v1 并没有对直接看帧取得决定性优势**——MMBench-Video 上 1.193 反而输给 vlm_direct 的 1.447。诊断出两个设计错误：
+
+1. **三元组被当成「答案来源」，但它是有损瓶颈**。VLM 看帧时理解的画面文字、属性细节、事件因果，在「只输出 JSON 三元组 + 50 词关系闭表」这一步被丢光。纯三元组 RAG 只保住了直接看帧约一半的可答信号。
+2. **全量预建摊不掉**。每视频约 1 题时，开场就把全片建图的成本永远收不回。
+
+对照前沿（VideoAgent / Graph-VideoAgent / DoraemonGPT / Deep Video Discovery / Agentic VLVU）收敛出的共识——**记忆应多粒度且按需构建、caption 必须保留、编排应由置信度驱动**——重写为 v2，于是有了上面的反超。完整演进记录见 [`docs/progress.md`](docs/progress.md)（第十二～十四阶段）。
 
 ---
 
 ## 核心设计
 
-### 四个工具的协作
+### 三层 Lazy 记忆
 
-Agent 不走固定流水线，而是按问题难度动态决策：先用 `extract_keyframes` 抽帧并缓存，再用 `build_scene_graph` 批量调用 VLM 把帧理解成三元组写入场景图；回答时**优先**调用零成本的 `query_scene_graph`（jieba 中文多策略检索）；只有当图检索 miss 或需要像素级细节时，才调用昂贵的 `inspect_frame` 做单帧 VLM 精读。这样「能查图就不看帧」，把 VLM 调用花在刀刃上。
+| 层 | 内容 | 何时构建 |
+|----|------|---------|
+| **L0 全局层** | 稀疏帧（8 帧）全局摘要 + faster-whisper 本地旁白转写 + 时长元信息 | 初始化一次（廉价） |
+| **L1 Segment 层** | Agent 选定时间窗 → 窗口内 ≤6 帧 → **密集 caption + 三元组** | **按需**（`explore_segment` 触发） |
+| **L2 三元组索引** | `⟨主体, 关系, 客体, t_start, t_end⟩`，每条挂 `seg:<id>` 溯源 | 随 L1 一起写入 |
 
-### 渐进式精化（Progressive Refinement）
+关键点：**建图本身成了逐题的 Agent 决策**，不再是预处理。检索时三元组命中会**连带返回它出自的那段完整 caption 与旁白片段**——图是目录，证据在 caption 与转写里。
 
-`inspect_frame` 的每次精读发现都会**自动反向写入** `VideoSession.scene_graph`，因此后续所有 `query_scene_graph` 都能查到新内容——场景图在对话过程中越用越完整，而不是一次建好就固定。
+### 置信度驱动编排
 
-```mermaid
-flowchart LR
-    A["build_scene_graph<br/>粗粒度建图 · N₁ 实体"] --> B["query_scene_graph"]
-    B -->|命中| Z["✅ 作答"]
-    B -->|miss| C["inspect_frame<br/>VLM 精读单帧"]
-    C -->|新发现回写| D["SceneGraph 更新<br/>N₂ &gt; N₁"]
-    D --> B
-```
+Agent 不走固定流水线，而是：① 先用零成本的 `search_memory` 三层联合检索并尝试作答；② 自评置信度 1–3，不足才用 `explore_segment` 挑一段视频细看（每轮 ≤2 次、最多 3 轮）；③ 置信度达标或预算用尽即停。需要画面文字 / 精确计数时才用 `inspect_frame` 做单帧像素级精读。**缺证据时绝不把「图里没有」当成「答案是否」**——必须先探索验证再答。
 
 ### 双后端部署
 
-同一套代码，配置一行切换三种运行模式：**DashScope 云端**（`qwen-plus-latest` + `qwen-vl-plus-latest`，开发 / 无 GPU 的 macOS）、**本地 vLLM**（单卡 RTX 4090 上跑 `Qwen3-8B` + `Qwen2.5-VL-7B-AWQ`，AWQ 量化让两个模型共存于 24GB 显存）、**Mock 模式**（无需 API Key，造假三元组，供 CI / 离线开发）。配置走 `configs/default.yaml` + `.env` + 环境变量三级覆盖。
+同一套代码，配置一行切换：**DashScope 云端**（`qwen-plus` + `qwen-vl-plus`，开发 / 无 GPU 的 macOS）、**本地 vLLM**（单卡 RTX 4090 上 `Qwen3-8B` + `Qwen2.5-VL-7B-AWQ` 共存于 24GB 显存）、**Mock 模式**（无需 API Key，供 CI / 离线开发）。配置走 `configs/default.yaml` + `.env` + 环境变量三级覆盖。faster-whisper 在本地转写、零 API 费用，缺失时优雅降级为纯视觉。
 
 ---
 
-## 评测结果
+## 评测方法
 
-3 方案对照:**agent**(完整 ReAct + 动态场景图)、**rag_only**(预建静态场景图,纯文本 RAG)、**vlm_direct**(每题抽 4 帧均匀覆盖全片直推 VLM,无场景图)。LLM-as-Judge 由 `qwen-plus-latest` 按 `key_facts` 打 0 / 0.5 / 1。
+- **真实计费口径**：所有 token 来自 API 返回的真实 `usage`（图像 token 含在内），不再用「字符数 ÷3 / 帧数 ×1500」估算——旧的「省 token」卖点经此修正已撤回，详见 [`docs/progress.md`](docs/progress.md) 第十二阶段。
+- **官方协议复刻**：MMBench-Video 评分逐字复刻 VLMEvalKit 的 0–3 语义相似度 judge（`src/eval/run_benchmark.py` 的 `mmbv` scorer），judge 端点可经 `JUDGE_*` 环境变量切换（测试用 `qwen-max`，论文换 `gpt-4-turbo`）。
+- **公平基线**：`vlm_transcript` = 同帧数 + 旁白文字进 prompt，把「多模态」与「架构」两个变量分开。
+- **新指标**：`frames-touched/Q`（每题真正送进视觉模型的帧数），衡量「有指导的感知预算」。
 
-> [!NOTE]
-> **对照轴的设计——agent 与 rag_only 共享同一张图,隔离出「调度」的净贡献**
->
-> `agent` 与 `rag_only` 吃的是**同一张预建场景图**(同帧数、同 `_prebuild_graph` 流程、同 `keyframe_count`),`vlm_direct` 则不碰图、自己抽帧。三者的差异被刻意做成单一变量:
->
-> - **rag_only**:把整张图序列化(`scene_graph.to_text()`)无差别灌进 prompt,LLM 一次性作答——**没有 Agent、没有检索、没有按需精读**,代表「静态全量 RAG」的天花板。
-> - **agent**:在**同一张图**之上加了一层调度——用 jieba 多策略 `query_scene_graph` **主动检索**相关三元组,miss 时再用 `inspect_frame` **精读单帧并回写图**(渐进式精化)。
->
-> 因此 **agent − rag_only 的差距,就是「主动检索 + 渐进精读」调度层相对「静态全量 RAG」的净贡献**——而非更多的视觉输入(两者图完全相同)。AGQA 上 agent **0.364** vs rag_only **0.186**(**近 2×**):rag_only 已拿到图的全部信息,这道近一倍的鸿沟全部记在调度层账上。
-
-### 公开数据集:AGQA Charades(10 视频 × 70 题 × 3 轮)
-
-题目来自 [AGQA 2.0 balanced](https://cs.stanford.edu/people/ranjaykrishna/agqa/)(Stanford 出品),视频来自 Charades。AGQA 问题是从 Action Genome 的**时空场景图**自动生成的——**主题与本项目高度契合**(题目正是问"时空关系")。英文 QA 由 LLM 翻译成中文(三轮 prompt 迭代修复了子句丢失 / 词义错 / Q/A 不一致),启发式分类成 binary / duration / sequencing / open 四类。
-
-| 方法 | 整体准确率 | Avg Tool Calls | Avg Time | Tokens/Q |
-|------|-----------|---------------|----------|----------|
-| **agent** | **0.364 ± 0.015** | 4.5 | 24.4s | **1,368** |
-| rag_only | 0.186 ± 0.031 | — | 4.0s | 838 |
-| vlm_direct | 0.326 ± 0.007 | — | 4.5s | 6,041 |
-
-**分类成绩** — Agent 的优势全在「结构化时间窗」相关赛道:
-
-| 分类 | agent | vlm_direct | |
-|------|-------|-----------|---|
-| **duration**(时长)| **0.318** | 0.152 | ✅ Agent **2.1×** — 三元组 `t_start/t_end` 直接答时长 |
-| **binary**(二元判断)| **0.514** | 0.444 | ✅ Agent 略胜 — 结构化 exists 判定 |
-| sequencing(先后顺序)| 0.381 | **0.452** | VLM 赢 0.07 — `merge_window_sec=3.0` 在 30s 短视频精度不够 |
-| open(开放问答)| 0.206 | 0.198 | 持平 |
-
-完整报告:[`docs/benchmark_agqa.md`](docs/benchmark_agqa.md)
-
-### 自建评测集(消除字幕作弊后的公平基线)
-
-| 视频 | 评测集 | agent | rag_only | vlm_direct |
-|------|--------|-------|----------|------------|
-| `test1.mp4`(游戏录屏 14s) | v1 · 25 题 × 1 轮 | 0.360 | 0.340 | **0.540** |
-| `cooking.mp4`(红烧肉教程 202s) | v2 · 25 题 × 3 轮 | 0.313 ±0.019 | 0.040 ±0.033 | **0.373** ±0.009 |
-
-> **为什么从 test1 换到 cooking?** `test1.mp4` 是游戏录屏,画面 UI 上有可直读的队伍名 / 角色名——`vlm_direct` 靠「读字」就能赢,这是**混杂变量**。换成 `cooking.mp4`(字幕为喜剧风格,不含食谱信息)后,`vlm_direct` 从 0.540 跌到 0.373,Agent 与它的差距从 0.180 缩小到 0.060。**评测设计本身要先排除作弊路径**——这种修正是项目方法论上的核心动作。
-
-**cooking 分类成绩**:
-
-| 分类 | agent | rag_only | vlm_direct | |
-|------|-------|----------|------------|---|
-| 物体识别 | 0.367 | 0.067 | **0.600** | VLM 直推明显胜出 |
-| 实体属性 | 0.333 | 0.033 | **0.500** | VLM 直推胜出 |
-| 关系推理 | 0.267 | 0.067 | 0.267 | 持平 |
-| 时序推理 | 0.467 | 0.000 | **0.500** | VLM 直推略胜 |
-| 计数/出现 | **0.133** | 0.033 | 0.000 | ✅ Agent 唯一明确领先 |
-
-完整报告:[`docs/benchmark_final.md`](docs/benchmark_final.md)(含 2026-05-17 vlm_direct 重测说明)
-
-### Pareto 互补:两个数据集整合结论
-
-- **Agent 赢的赛道**:AGQA 整体 / AGQA duration(2.1×) / cooking 计数;**token 成本始终 ~1/4 vlm_direct**(两个数据集都一致)
-- **vlm_direct 赢的赛道**:cooking 物体识别 / 实体属性(直接看帧的舒适区)、AGQA sequencing(短视频时序连贯性 vlm 更强)
-- **Agent 的核心定位**:**结构化时间推理 + 跨帧聚合 + token 效率**,不在「单帧 dense perception」
-
-> ⚠️ 单类别样本量有限(cooking 每类 5 题、AGQA 每类 11–24 题),分类层面胜负仅作**定性参考**;可靠结论是**整体准确率 + token 成本**(两个数据集都一致显示 Agent 占 token 优势 4–5×)。
+报告：[`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md)（v2 主结果） · [`docs/benchmark_mmbv_analysis.md`](docs/benchmark_mmbv_analysis.md)（v1 对照） · [`docs/benchmark_v2_agqa.md`](docs/benchmark_v2_agqa.md)（AGQA 验证门：duration 0.682，5× vlm；总成本 −48%）。
 
 ---
 
@@ -162,7 +118,10 @@ flowchart LR
 pip install -r requirements.txt
 ```
 
-**① Mock 模式** — 无需 API Key，造假三元组，验证流程 / 跑 CI：
+> [!NOTE]
+> 当前 `main.py` / Gradio 产品入口仍接的是 v1 Agent；v2 架构（三层 Lazy 记忆 + 置信度循环）目前通过 `src/eval/run_benchmark.py` 的 `agent_v2` 方法跑通与评测，产品入口接线 v2 是进行中的后续工作。
+
+**① Mock 模式** — 无需 API Key，验证流程 / 跑 CI：
 
 ```bash
 python main.py --video data/videos/cooking.mp4 --question "视频里用了哪几种锅？" --mock
@@ -175,45 +134,42 @@ cp .env.example .env          # 编辑 .env 填入 DASHSCOPE_API_KEY=sk-xxx
 python main.py --video data/videos/cooking.mp4 --question "炒糖色是在放猪肉之前还是之后？"
 ```
 
-**③ 本地 vLLM 模式** — 生产 / GPU 服务器（单卡 RTX 4090）：
+**③ 跑 v2 评测** — 在 MMBench-Video 子集上复现核心结果：
 
 ```bash
-# Terminal 1 — Agent 大脑
-vllm serve Qwen/Qwen3-8B --port 8000
-# Terminal 2 — 视觉模型
-vllm serve Qwen/Qwen2.5-VL-7B-Instruct-AWQ --port 8001
-# Terminal 3
-python main.py --video data/videos/cooking.mp4 --question "..." --backend vllm
+python -m src.eval.build_mmbench_video --out benchmarks/mmbv_150.json --total 150 --seed 42
+JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
+    --benchmark benchmarks/mmbv_150.json \
+    --methods agent_v2,vlm_transcript --vlm-frames 8 \
+    --scorers mmbv --answer-mode verbose --runs 1
 ```
-
-其他入口：`python main.py --video ... --interactive`（多轮对话，跨轮复用场景图）、`python frontend/app.py`（Gradio UI，端口 7860，右栏实时流式展示 Agent 推理 trace）。
 
 ---
 
 ## 已知局限性
 
-诚实评估 —— 每条都附带改进方向。
+诚实评估 —— 每条都附改进方向。
 
 | 局限 | 说明 | 改进方向 |
 |------|------|---------|
-| **评测集规模仍可扩** | 已接入公开 AGQA(70 题, 4 类)+ 自建 cooking(25 题, 5 类),共 95 题;但单类别样本量(AGQA 11–24 / cooking 5)仍偏小,分类胜负不具统计显著性 | 扩 AGQA 抽样到 200+ 题, 或接入第二个公开数据集 |
-| **Charades 短视频(~30s)抹掉 amortize 优势** | Agent「一次建图 / 多题复用」的成本优势在 30s 视频上不够明显;AGQA sequencing 类输给 vlm 0.07(`merge_window_sec=3.0` 时间精度不足) | 调小 merge window 或加事件时间线工具;接入 ActivityNet-QA / Video-MME 长视频(3 分钟+)让 Pareto 真正分离 |
-| **关系词表覆盖不全** | `relation_vocab.py` 仅 50 个中文关系动词,长尾关系(罕见动词)会被检索漏掉 | 数据驱动扩展词表;或改用 embedding 语义匹配替代固定词表 |
-| **实体去重是规则方案** | 跨批次实体合并用 `difflib.SequenceMatcher` 字面相似度(阈值 0.85),存在假阳性 / 假阴性,鲁棒性有限 | 改用 sentence-transformers 语义相似度去重 |
-| **单帧 dense perception 不如 vlm_direct** | cooking 上 vlm_direct 物体识别 / 实体属性领先;建图过程有信息损失,Agent 这一类准确率上限受场景图质量制约 | 优化 `build_scene_graph` 针对动作类视频的提取 prompt;Agent 的定位本就不在这一类 |
-| **评测脚本曾有交叉污染** | `vlm_direct` 曾从 Agent 预构建帧缓存取帧,输入隐式耦合 `keyframe_count`;早期「关系推理 2.7×」结论即此缺陷所致 | 已修复(见 `docs/progress.md` 第十阶段):`vlm_direct` 改为独立抽帧 + 过采样均匀覆盖全片 |
+| **结果仍是 runs=1** | 单轮、judge 为 qwen-max（存在 Qwen 评 Qwen 自偏好风险） | 补 runs=3 出 ±std；换 gpt-4-turbo 对缓存答案重评 |
+| **产品入口未接 v2** | `main.py` / Gradio 仍跑 v1 Agent，v2 目前仅评测路径跑通 | 把 v2 的三层记忆 + 置信度循环移植到产品 Agent |
+| **旁白依赖型问题的硬边界** | 「视频里说了什么」类答案在音轨里；纯视觉够不着，TR 维度的增益主要来自 ASR 而非架构 | ASR 已接入 L0；进一步做旁白×画面的时间对齐交叉检索 |
+| **置信度判据偶尔过度自信** | 「图里有相关但不充分证据」时会直接作答而不升级探索（AGQA TR 上可见） | 升级判据从「图里有没有」细化为「图能否支撑该题型所需推理」 |
+| **关系词表 / 实体去重仍是规则方案** | 50 词关系闭表 + `difflib` 字面相似度去重，长尾会漏 | 数据驱动扩词表；embedding 语义去重 |
+| **更长视频（10min+）未测** | 舒适区边界已实测到 ≈90s，但小时级视频上的外推尚无数据 | 接入 LVBench 切片验证斜率交叉 |
 
 ---
 
 ## Roadmap
 
-按性价比排序(数据已经指明痛点的先做)。完整的 P0/P1/P2 分层与「下一步建议」见 [`docs/progress.md`](docs/progress.md) Phase 11 末尾。
+按性价比排序，完整分层见 [`docs/progress.md`](docs/progress.md) 第十四阶段末尾。
 
-1. **时序窗口精度优化**(P0) — AGQA sequencing 输 vlm 0.07,`merge_window_sec=3.0` 在 30s 视频精度不够;先把 window 调到 1.0 重跑,无论涨跌都是有效数据点。
-2. **`build_scene_graph` 鲁棒性 + 动作类专项 prompt**(P0) — 单视频极差 7.5×(03PRW 0.095 vs 00607 0.714)+ cooking dense perception 输给 vlm;先审最差视频实际抽出了什么,再写「动作 → 食材 → 容器」专项 prompt。
-3. **跨数据集 / 长视频 benchmark**(P1) — 接第二个公开数据集证普适性,接 ActivityNet-QA / Video-MME(3 分钟+)让 Pareto 真正分离——AGQA Charades 是 vlm 的舒适区。
-4. **语义检索**(P1) — FAISS + sentence-transformers 替代 jieba,解决「焯水 ≠ 预处理」「人物 ≠ 具体角色名」近义词 / 类别-实例 miss;同时升级关系词表和实体去重。
-5. **多 Agent 协作**(P2,长期) — 拆分为「规划 Agent + 感知 Agent」,提升复杂多跳问题的成功率。
+1. **runs=3 + gpt-4-turbo 重评**（P0）— 出可发表的 ±std 与 SOTA 可比 judge，零额外推理成本（答案已缓存）。
+2. **产品入口接线 v2**（P0）— 把三层记忆 + 置信度循环移植到 `main.py` / Gradio。
+3. **亮点实验**（P1）— 多轮指代会话（agent 独有的跨问记忆）+ 时序定位精度（图独有的显式时间轴）。
+4. **长视频外推**（P1）— LVBench 小时级切片，验证「有指导的感知预算」在超长视频上的成本-准确率交叉。
+5. **升级判据细化 + 旁白时间对齐**（P2）— 解决过度自信与旁白×画面交叉检索。
 
 ---
 
@@ -221,16 +177,16 @@ python main.py --video data/videos/cooking.mp4 --question "..." --backend vllm
 
 ```
 src/
-├── agents/        ReAct Agent 工厂 + 中文系统 prompt
-├── tools/         四个 LangChain 工具
-├── perception/    VLClient（DashScope / vLLM 双后端，三层 JSON 容错解析）
-├── scene_graph/   三元组数据结构 + jieba 多策略检索器 + 关系词表
-├── memory/        VideoSession 跨轮共享状态
-└── eval/          benchmark runner + LLM-as-Judge
-frontend/app.py    Gradio UI（三栏，Agent trace 流式输出）
-benchmarks/        cn_video_qa_v1/v2.json 自建中文评测集
+├── agents/        Agent 工厂（v1 build_agent + v2 build_agent_v2 / 置信度 prompt）
+├── tools/         search_memory · explore_segment · inspect_frame（+ v1 四工具）
+├── perception/    VLClient（双后端，三层 JSON 容错）· usage 真实计费账本 · asr 本地转写
+├── scene_graph/   三元组结构 + 检索器（segment caption + 旁白联合检索）+ 关系词表
+├── memory/        VideoSession 跨轮共享状态 + 三层 Lazy 记忆（Segment）
+└── eval/          benchmark runner（多方法 / 多 scorer）· MMBench-Video 适配器
+frontend/app.py    Gradio UI（Agent trace 流式输出）
+benchmarks/        mmbv_150（MMBench-Video 子集）· agqa_en_small 等评测集
 configs/default.yaml   统一配置入口
-docs/              架构详解 + 各阶段评测报告 + 演进日志
+docs/              架构详解 + Phase 12–14 评测报告 + 演进日志
 ```
 
-技术栈：Python 3.13 · LangChain 1.x / LangGraph · Qwen-VL / Qwen-Plus · OpenCV · pydantic-settings · jieba · Gradio 5.x
+技术栈：Python 3.13 · LangChain 1.x / LangGraph · Qwen-VL / Qwen-Plus · faster-whisper · OpenCV · pydantic-settings · Gradio 5.x
