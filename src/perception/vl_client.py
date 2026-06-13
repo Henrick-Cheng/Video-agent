@@ -24,19 +24,21 @@ from typing import Optional
 
 from openai import OpenAI
 
+from src.perception.usage import LEDGER
+
 logger = logging.getLogger(__name__)
 
 # ── Prompt templates ──────────────────────────────────────────────────────────
 
 _INSPECT_PROMPT = """\
-请回答关于这张图片的问题：{question}
+Answer the following question about this image: {question}
 
-回答完后，在新的一行输出严格 JSON（无代码块）：
-{{"entities_found": ["实体1", "实体2"], "relations_found": [{{"subject": "...", "relation": "...", "object": "..."}}]}}"""
+After answering, on a new line output strict JSON (no code block):
+{{"entities_found": ["entity1", "entity2"], "relations_found": [{{"subject": "...", "relation": "...", "object": "..."}}]}}"""
 
 _ENTITIES_PROMPT = """\
-请列出图片中所有可见的人物、物体和场景。
-输出严格 JSON（无代码块）：
+List all visible people, objects, and scenes in the image.
+Output strict JSON (no code block):
 {{"entities": [{{"name": "...", "type": "person|object|scene", "attributes": {{"key": "value"}}}}]}}"""
 
 
@@ -120,11 +122,27 @@ class VLClient:
                 pass
         return None
 
+    # ── API call (single funnel — records real token usage) ──────────────────
+
+    def _create(self, **kwargs) -> str:
+        """All completions go through here so every response's real usage
+        (image tokens included in prompt_tokens) lands in the global LEDGER."""
+        n_images = sum(
+            1
+            for m in kwargs.get("messages", [])
+            if isinstance(m.get("content"), list)
+            for part in m["content"]
+            if isinstance(part, dict) and part.get("type") == "image_url"
+        )
+        resp = self._client.chat.completions.create(**kwargs)
+        LEDGER.record(self.model, resp.usage, images=n_images)
+        return resp.choices[0].message.content or ""
+
     # ── single-image call ─────────────────────────────────────────────────────
 
     def _call(self, image_path: str, text_prompt: str) -> str:
         b64, mime = self._encode(image_path)
-        response = self._client.chat.completions.create(
+        return self._create(
             model=self.model,
             messages=[{
                 "role": "user",
@@ -139,7 +157,6 @@ class VLClient:
             max_tokens=self.max_tokens,
             temperature=self.temperature,
         )
-        return response.choices[0].message.content or ""
 
     # ── multi-image call ──────────────────────────────────────────────────────
 
@@ -148,15 +165,19 @@ class VLClient:
         image_paths: list[str],
         text_prompt: str,
         system_prompt: str = "",
+        json_mode: bool = True,
     ) -> str:
         """
         Call the VLM with multiple images in a single request.
-        Uses response_format=json_object when supported; falls back to text parsing.
 
         Args:
             image_paths:   Ordered list of local JPEG/PNG paths.
             text_prompt:   User-turn text (prompt placed after all images).
             system_prompt: Optional system instruction.
+            json_mode:     When True, request response_format=json_object (used by
+                           scene-graph building). Set False for free-form / short
+                           plain-text answers (e.g. the QA baseline), otherwise the
+                           model is forced to wrap its answer in a JSON object.
 
         Returns:
             Raw response string (JSON string when JSON mode succeeds).
@@ -182,24 +203,23 @@ class VLClient:
             temperature=self.temperature,
         )
 
+        if not json_mode:
+            return self._create(**kwargs)
+
         # Try JSON object mode; fall back silently if the model doesn't support it
         try:
-            resp = self._client.chat.completions.create(
-                **kwargs,
-                response_format={"type": "json_object"},
-            )
+            return self._create(**kwargs, response_format={"type": "json_object"})
         except Exception as exc:
             logger.debug("json_object mode failed (%s), retrying without", exc)
-            resp = self._client.chat.completions.create(**kwargs)
-
-        return resp.choices[0].message.content or ""
+            return self._create(**kwargs)
 
     # ── public API ────────────────────────────────────────────────────────────
 
     def caption_frame(
         self,
         image_path: str,
-        prompt: str = "请详细描述这张图片中的所有人物、物体、动作和空间关系。",
+        prompt: str = "Describe in detail all the people, objects, actions, and "
+                      "spatial relations in this image.",
     ) -> str:
         """Return a free-form text description of the frame."""
         return self._call(image_path, prompt)

@@ -1,0 +1,1273 @@
+{
+  "meta": {
+    "video": "10 videos",
+    "videos": [
+      "data/videos/charades/00607.mp4",
+      "data/videos/charades/00T1E.mp4",
+      "data/videos/charades/015XE.mp4",
+      "data/videos/charades/01THT.mp4",
+      "data/videos/charades/02DPI.mp4",
+      "data/videos/charades/02SKC.mp4",
+      "data/videos/charades/03PRW.mp4",
+      "data/videos/charades/06LBQ.mp4",
+      "data/videos/charades/07BSH.mp4",
+      "data/videos/charades/07QNG.mp4"
+    ],
+    "runs": 1,
+    "scorers": [
+      "llm",
+      "exact"
+    ]
+  },
+  "results": {
+    "agent_v2": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.436,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.19,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.682,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.625,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.286,
+              "std": 0.0
+            }
+          }
+        },
+        "exact": {
+          "overall_mean": 0.386,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.19,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.273,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.625,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.357,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 1.3,
+      "avg_time_sec": 18.5,
+      "avg_tokens_per_q": 5190,
+      "avg_prebuild_per_q": 181,
+      "avg_total_tokens_per_q": 5372
+    }
+  },
+  "raw": {
+    "agent_v2": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "The exploration of the full video segment shows the person is sitting on a couch and interacting with a pink blanket. The caption specifically mentions \"A person is seen sitting on a couch\" and describes them adjusting and lying down on the couch while interacting with the blanket.\n\nSince the person is on the couch and the question asks what they were leaning on while holding the blanket, the answer must be the couch itself.\n\ncouch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 7564,
+          "tokens_llm": 5140,
+          "tokens_vl": 2424,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "The person was snuggling with the blanket (7.0–27.9s, duration ≈ 20.9s), and was sitting on the couch (7.0–13.9s, duration ≈ 6.9s). There is no evidence of the person sitting in a bed at any time — only a patterned couch is present.\n\nThe question asks whether snuggling with the blanket or sitting in a bed lasted shorter. Since “sitting in a bed” did not occur, the comparison is invalid — but per the facts, only snuggling with the blanket occurred, and it lasted longer than the initial sitting-on-couch phase.\n\nHowever, the question explicitly compares two activities: “snuggling with a blanket” vs “sitting in a bed”. The memory confirms snuggling happened, but no bed or sitting-in-bed activity is ever observed or inferred.\n\nSo: snuggling with a blanket occurred; sitting in a bed did not.\n\nThus, “sitting in a bed” lasted *zero* seconds — shorter than snuggling.\n\nBut wait — the question says “snuggling with a blanket or sitting in a bed for a shorter amount of time?” — i.e., which of the two was shorter? Since one is 20.9s and the other is 0s, sitting in a bed was shorter.\n\nHowever, we must verify whether “sitting in a bed” truly *did not happen*. The global summary says “cozy living room”, “patterned couch”, “tiled floor”, “entertainment center”, “potted plant” — no mention of a bed. Explored window covers full 0–35s. Memory contains no triplet involving “bed” or “sitting_in_bed”.\n\nTherefore, sitting in a bed duration = 0s < snuggling duration ≈ 20.9s.\n\nSo the answer is: sitting in a bed.\n\nBut the question is phrased as “Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?” — expecting a choice between the two.\n\nSince sitting in a bed did not occur, its duration is zero → shorter.\n\nHence, the shorter activity was sitting in a bed.\n\nBut let’s double-check: could “sitting on the couch” be misinterpreted as “sitting in a bed”? No — the summary and memory consistently say “couch”, and “sitting_on a patterned couch” is explicitly stated. Also, “lying_on a patterned couch” follows — still couch, not bed.\n\nNo ambiguity: no bed present.\n\nSo final answer: sitting in a bed.\n\nBut the question expects a single-word answer: either “snuggling with a blanket” or “sitting in a bed”.\n\nYes — and “sitting in a bed” is shorter (0s < ~21s).\n\nAnswer: sitting in a bed\n\nWait — instruction says: “For yes/no questions, answer exactly 'yes' or 'no'. Otherwise, short phrase.” This is not yes/no. It's an “or” question asking *which* was shorter.\n\nSo answer should be the shorter one: “sitting in a bed”\n\nBut is that accurate? Let’s re-read question: “Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?”\n\nGrammatically, this is asking: *Which of these two was shorter?* So answer is the shorter one.\n\nYes.\n\nSo: sitting in a bed\n\nBut hold on — is there *any* moment where they were sitting *in* a bed? No. So duration = 0.\n\nSnuggling = ~20.9s.\n\nSo sitting in a bed was shorter.\n\nAnswer: sitting in a bed",
+          "answer_short": "sitting in a bed",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 4273,
+          "tokens_llm": 4273,
+          "tokens_vl": 0,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "The search results show the person is sitting on and then lying on the couch while holding the pink blanket. There's no mention of them going beneath anything - they're on the couch, not beneath it or beneath the television.\n\nThe television is described as being \"in the background\" and \"on the entertainment center,\" which means it's positioned above or at eye level, not something one would go beneath. The person is watching it, not going beneath it.\n\nThe question asks if the television was \"the first thing they went beneath\" while snuggling with the blanket, but the evidence shows they never went beneath anything - they remained on the couch throughout.\n\nTherefore, the answer is no.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 4186,
+          "tokens_llm": 4186,
+          "tokens_vl": 0,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "03PRW-2660",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "Were they touching both a blanket and the first thing they went behind before starting to put on a shoe?",
+          "answer": "The search_memory result confirms no mention of \"putting on a shoe\" or \"going behind something\" — those actions are absent from all known facts, segments, transcript, and entity summary. The only footwear mentioned is \"a pair of black slippers\", but there's no description of anyone putting them on, nor any action of going behind anything.\n\nSince the premise (\"the first thing they went behind before starting to put on a shoe\") has no grounding in the video content — it's not described in the summary, not in the transcript, and not found in memory — the condition cannot be satisfied. Therefore, the person could not have been touching both the blanket and that non-existent thing.\n\nAnswer is 'no'.\n\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3430,
+          "tokens_llm": 3430,
+          "tokens_vl": 0,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "The search shows the person was holding a pink blanket from 7.0s to 27.9s, and the segment description mentions they \"initially adjusting a pink blanket\" then \"lies down on the couch, continuing to interact with the blanket.\" The global summary states \"As the video progresses, the individual adjusts the blanket, sits up, and appears to be eating or handling something small in their hands.\"\n\nThe question asks what was behind the person first after snuggling with the blanket. From the global summary and segment description, we know the person is on a couch in a living room with a wooden entertainment center housing a television, and the TV displays various scenes. The summary explicitly says \"The television in the background displays various scenes, suggesting that the person is watching it.\"\n\nSince the person is on the couch and the entertainment center with TV is behind them (as it's described as being in the background), and no other objects are mentioned as being directly behind the person, the television would be what's behind them first after snuggling with the blanket.\n\nLet me verify if there's any conflicting information about what's behind the person. The global summary mentions \"a wooden entertainment center housing a television\" and \"a potted plant in the corner\" - but the plant is specified to be in the corner, not directly behind the person. The entertainment center with TV is the main background element behind the couch.\n\nThe answer should be \"television\" since it's the primary object behind the person in the background.\n\ntelevision",
+          "answer_short": "television",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3715,
+          "tokens_llm": 3715,
+          "tokens_vl": 0,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "03PRW-15899",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "Before sitting in the object they were leaning on, what was the person wearing?",
+          "answer": "The person was wearing a black shirt and cap before sitting in the object they were leaning on.\n\nblack shirt and cap",
+          "answer_short": "black shirt and cap",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3510,
+          "tokens_llm": 3510,
+          "tokens_vl": 0,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "03PRW-7667",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Did they put on a shoe or eat some food for a longer amount of time?",
+          "answer": "The explored segment (9.99–24.9s) confirms the person is “holding an object in their hands, possibly eating or manipulating it” — but no mention of putting on shoes/slippers. The black slippers are noted as *lying on the tiled floor nearby*, not being worn or put on.\n\nSo:  \n- Eating/handling activity occurs at least during 10–25s (≈15s window).  \n- No evidence of shoe-putting action — slippers are stationary on floor.  \n- Global summary says “adjusts the blanket, sits up, and appears to be eating…” — implies eating starts after sitting up, likely within this window.  \n- Still no timing for *onset* or *offset* of eating, nor any competing shoe-related action.\n\nBut crucially: the question asks *which lasted longer* — implying both occurred. Yet we have zero evidence that “putting on a shoe” occurred *at all*. Presence of slippers ≠ putting them on. So comparison is undefined.\n\nWe must verify whether putting on shoes ever happens. Since slippers are on the floor and person is seated on couch wearing socks or bare feet (not stated), perhaps they never put them on. To confirm absence, we should check early and late segments — maybe they put them on before sitting or after pan-out? But video ends with camera panning away from empty couch — no action shown there.\n\nLet’s inspect the very beginning (0–5s): person is “initially covered with a pink blanket” — likely reclining, not putting on shoes. And end (30–35s): “camera panning away from the person, focusing on the empty couch” — no shoe action visible.\n\nSo unless shoe-putting happened fleetingly outside key windows, it didn’t occur. Meanwhile, eating/handling is observed mid-video.\n\nBut duration of eating remains unquantified — only that it occurs *during* 10–25s. Could be 2 seconds or 10 seconds — unknown.\n\nThus, still insufficient to compare durations. However, since one action (shoe-putting) has *no evidence of occurrence*, while the other (eating/handling) *is observed*, the answer hinges on whether “did not happen” counts as “0 seconds”, making eating longer by default.\n\nBut the question is comparative: “Did they put on a shoe or eat some food for a longer amount of time?” — expects one of the two.\n\nGiven:  \n- Zero evidence of shoe-putting → duration = 0s (or undefined).  \n- Eating/handling observed across ≥15s window → duration > 0s.\n\nTherefore, eating lasted longer.\n\nConfidence now = 3.\n\nanswer: eat some food",
+          "answer_short": "eat some food",
+          "scores": {
+            "llm": 1.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 9607,
+          "tokens_llm": 6496,
+          "tokens_vl": 3111,
+          "prebuild_share": 203.6
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "The exploration confirms the man is *seated* on the black leather couch and *occasionally interacts with the laptop*, but the caption makes no mention of leaning — no reference to leaning on the backrest, armrests, table, or any object. The description emphasizes sitting and eating while watching — consistent with upright or relaxed seated posture, not active leaning.\n\nSince the full video has been explored and no leaning behavior is observed or described in the detailed caption, and no other evidence (transcript, summary, memory) suggests leaning, we conclude he did not lean on anything.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 7355,
+          "tokens_llm": 5160,
+          "tokens_vl": 2195,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "The memory confirms the man is eating from a plate and watching a laptop *throughout* the entire explored window (0.0–40.95s), but it does **not** specify whether either activity started or stopped earlier or later, nor does it quantify durations of each activity separately — only that both occur concurrently for the full observed span.\n\nSince the video duration is ≈41s and the entire window 0–41s has already been explored, and the summary + segment caption state he is *both* eating *and* watching the laptop “while” doing so — i.e., simultaneously — there is no evidence that either activity occurred for a *shorter amount of time* than the other. They co-occur for the full duration.\n\nThus, neither activity was shorter; they were concurrent and equally long.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3405,
+          "tokens_llm": 3405,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "The search_memory returned no facts about cup movement or leaning behavior. The global summary mentions no cup at all — only a man eating from a plate, a laptop, a coffee table, and furniture. The explored window covers the full 41s, and no cup-related activity was recorded in memory.\n\nSince the summary, transcript, and memory contain zero mention of a cup or leaning on any object in that context, and the full video has already been explored (0–41s), we can conclude the described sequence — “before putting a cup somewhere but after taking a cup from somewhere” — does not occur in the video.\n\nTherefore, the premise is unsupported: there is no evidence of a cup being taken or placed, so the question of what they were leaning on during that non-occurring sequence cannot be answered with any object.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3228,
+          "tokens_llm": 3228,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "02DPI-12205",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Did they laugh at something or hold a cup of something for a longer amount of time?",
+          "answer": "The memory contains no evidence of laughing or holding a cup. The only object held is a plate with food (0.0–8.2s). No mention of laughter, cups, or related actions appears in the summary, transcript, or explored segment facts.\n\nConfidence is 2 (partial): we know he holds a plate, not a cup; no laughter is reported — but absence in memory doesn’t guarantee it didn’t occur, since “laugh” is a transient behavior possibly missed without frame-level inspection.\n\nTo confirm whether he laughed or held a cup, we need to inspect for subtle cues: facial expression changes (for laughter) or hand-object interactions beyond the plate (e.g., cup in hand). Since the full window 0–41s has already been explored and yielded no such facts, and no transcript hints at laughter, the safest grounded conclusion is that neither behavior is supported by current evidence.\n\nBut the question asks *which* lasted longer — implying both occurred. Since neither is confirmed, and no cup or laughter appears in any fact, the answer must be that neither occurred — so the premise fails.\n\nHowever, the question is comparative: “Did they laugh at something or hold a cup of something for a longer amount of time?” — i.e., between two options, which was longer? But if neither happened, the comparison is invalid.\n\nYet per grounding rules: absence in memory ≠ proof of non-occurrence *unless* fully explored. The full duration (0–41s) *has* been explored, and the segment caption and triplets explicitly describe only plate-holding (briefly), sitting, looking, and laptop interaction — no cup, no laughter.\n\nTherefore, based on complete coverage and explicit content, the answer is: neither occurred — so the question’s disjunction has no true operand.\n\nBut the instruction says: for yes/no questions, answer exactly 'yes' or 'no'. This is not a yes/no question — it's an *either/or duration comparison*. However, the phrasing “Did they laugh … or hold a cup … for a longer amount of time?” is syntactically a yes/no question expecting ‘yes’ if one of them did happen *and* lasted longer than the other — but that requires both to have occurred.\n\nSince neither action is attested, the correct grounded answer is ‘no’.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3945,
+          "tokens_llm": 3945,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "black leather couch",
+          "answer_short": "black leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3455,
+          "tokens_llm": 3455,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "02DPI-3907",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "Before starting to watch a laptop or something on a laptop, did they put down anything?",
+          "answer": "The memory shows the man is holding a plate with food from t_start=0.0 to t_end=8.2s, and he is looking at the laptop from t_start=0.0 to t_end=41.0s. The laptop is placed on the coffee table throughout (0.0–41.0s). There's no mention of him putting down anything *before* watching the laptop — he is already looking at it from the start, and holding the plate early on. No action of placing something down prior to laptop interaction is recorded.\n\nConfidence is 3: the full duration has been explored (0–41s), and the memory contains clear temporal facts about what he holds and when he looks at the laptop. No evidence of putting anything down before watching.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3705,
+          "tokens_llm": 3705,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "02DPI-11007",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While eating some food, what did they lean on?",
+          "answer": "The man leaned on the black leather couch while eating.  \nblack leather couch",
+          "answer_short": "black leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3465,
+          "tokens_llm": 3465,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "07BSH-7",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "Was a vacuum one of the things they were interacting with?",
+          "answer": "The global summary explicitly states: “A person with long hair, dressed in dark clothing, is seen vacuuming the floor.” and “maneuvering the vacuum cleaner near the couch and other furniture.” This confirms the person interacted with a vacuum.\n\nyes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 2993,
+          "tokens_llm": 2993,
+          "tokens_vl": 0,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "07BSH-659",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Which did they take, a vacuum or a bag?",
+          "answer": "The global summary states: \"In one of the frames, the person picks up a plastic bag from the floor.\" It also says the person is vacuuming — i.e., using the vacuum — but does not say they *take* the vacuum; they are already using it. The only item explicitly described as being *picked up* is the plastic bag.\n\nSo the person took the bag.\n\nbag",
+          "answer_short": "bag",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3017,
+          "tokens_llm": 3017,
+          "tokens_vl": 0,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "07BSH-655",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they tidying while taking a bag from somewhere?",
+          "answer": "The exploration confirms the person is vacuuming — specifically moving across and around the red couch while cleaning. The caption states: “They move across the red couch, operating the vacuum as they clean.” And the global summary says: “In one of the frames, the person picks up a plastic bag from the floor.”\n\nSince the activity is vacuuming, and the person is moving across the red couch while doing so, and the bag is picked up *from the floor*, the object being tidied at that moment is the **floor** — the surface being cleaned by the vacuum, and from which the bag is retrieved.\n\nNo other object (e.g., couch, lamp) is described as being tidied — only the floor is the surface being cleaned and the location of the bag.\n\nAnswer: floor",
+          "answer_short": "floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7488,
+          "tokens_llm": 5082,
+          "tokens_vl": 2406,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "07BSH-645",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Before taking a bag from somewhere, which object were they holding?",
+          "answer": "The person was holding a vacuum cleaner before picking up the plastic bag.\n\nyes",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3382,
+          "tokens_llm": 3382,
+          "tokens_vl": 0,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "07BSH-663",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "In the video, were they tidying the floor first?",
+          "answer": "The memory confirms the person is using the vacuum cleaner from 0.0s to 26.4s — the entire cleaning activity observed is vacuuming. There is no mention of any other floor-tidying activity (e.g., picking up objects, sweeping, wiping) occurring *before* vacuuming. The plastic bag pickup is noted in the global summary but not timestamped in memory — however, since the only explored window is 0–33s and vacuuming dominates the full span, and no earlier distinct tidying action is recorded, we cannot confirm a *prior* tidying step.\n\nBut the question is: “were they tidying the floor first?” — implying whether floor tidying was the *first* activity in the video. Since vacuuming starts at 0.0s and is the primary and only confirmed floor-cleaning activity, and no earlier non-vacuuming floor tidying is documented (e.g., picking up the plastic bag is not timed and may occur *during* vacuuming), the evidence supports that vacuuming — a form of floor tidying — *is* the first and main floor-tidying activity.\n\nThus, yes — they were tidying the floor first (via vacuuming), and no earlier activity contradicts that.\n\nyes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3543,
+          "tokens_llm": 3543,
+          "tokens_vl": 0,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "07BSH-671",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "duration",
+          "question": "Do they take a longer amount of time holding a bag or tidying something on the floor?",
+          "answer": "The 15–20s segment shows no bag pickup or holding. Since vacuuming runs continuously from 0.0 to 26.4s, and the bag pickup is confirmed to happen *in one frame*, it must occur outside the inspected windows — but all of 0–33s has been explored globally (per “Explored windows: 0–33s”), and the memory contains no timestamped bag event.\n\nThat implies the bag action is either:\n- Extremely brief (e.g., pick up and immediately discard or place — so no sustained “holding”), or  \n- Not captured in structured facts despite full-window exploration — meaning the summary’s “picks up a plastic bag” is an isolated visual detail not temporally anchored in the current memory.\n\nGiven that tidying (vacuuming) lasts **26.4 seconds**, and no duration >0 for bag holding appears anywhere — nor evidence of sustained holding in any explored segment or frame — we conclude bag holding is *not longer* than tidying. In fact, it’s almost certainly momentary (a single frame), far shorter than 26.4s.\n\nThus, they do **not** take a longer amount of time holding the bag than tidying.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 12441,
+          "tokens_llm": 9587,
+          "tokens_vl": 2854,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "07BSH-944",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they touching after tidying something on the thing they stood on?",
+          "answer": "The exploration of 25-33s confirms that the person stops vacuuming, bends down to pick up a white plastic bag from the floor, and carries it away. This matches the global summary's mention of picking up a plastic bag.\n\nThe question asks: \"Which object were they touching after tidying something on the thing they stood on?\"\n\n- \"the thing they stood on\" is the floor\n- \"tidying something on the floor\" is vacuuming (cleaning the floor)\n- \"after tidying\" refers to what they touched next, which according to the new exploration is the plastic bag\n\nTherefore, the object they were touching after tidying something on the floor is the plastic bag.\n\nplastic bag",
+          "answer_short": "plastic bag",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 10779,
+          "tokens_llm": 8218,
+          "tokens_vl": 2561,
+          "prebuild_share": 216.0
+        },
+        {
+          "id": "00607-11039",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Was the person walking something before or after tidying up a table?",
+          "answer": "Now I have information about the sequence of events. According to the exploration, the man starts near the dining table and appears to be organizing or cleaning the table area first. Then he moves around the room, picking up items from the floor and placing them on a cabinet. Finally, he uses a broom to sweep the floor.\n\nThe question asks whether the person was walking before or after tidying up the table. From the caption, it's clear that he begins by tidying up the table area (at the start), and then moves around the room (walking) as part of the cleaning process.\n\nSo the walking occurs after tidying up the table.\n\nThe answer is \"after\".",
+          "answer_short": "after",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7353,
+          "tokens_llm": 5242,
+          "tokens_vl": 2111,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "00607-10534",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "While tidying something on the thing they stood on, what did they go in front of?",
+          "answer": "The exploration of the 0-10 second segment confirms that the man is tidying near a dining area with a table and chairs, picking up an orange object from the floor. The global summary also mentions he begins near a dining table adorned with various items and has a decorative tree wall decal above it.\n\nThe question asks \"While tidying something on the thing they stood on, what did they go in front of?\" Since he's standing on the floor (the thing they stood on) and tidying, the most prominent object he goes in front of is the dining table, as both the global summary and the segment caption emphasize his activity near the dining table.\n\nThe answer should be \"dining table\" as that's the key object he's interacting with while standing on the floor and tidying.\n\ndining table",
+          "answer_short": "dining table",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 8373,
+          "tokens_llm": 6180,
+          "tokens_vl": 2193,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "00607-6097",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "In the video, were they behind a broom first?",
+          "answer": "The man first picks up and uses the orange object (0.0–6.6s), then places it on the cabinet (6.6–13.1s), approaches the cabinet (13.1–19.7s), and only begins using the broom at 26.2s. So he is not behind the broom first — the broom appears much later, and he is never *behind* it; he holds and uses it.\n\nThe question “were they behind a broom first?” implies either a person or group was positioned behind a broom before any other action — but the video shows only one person (a man), and he acquires the broom last, after handling the orange object and moving around the room. There is no moment where he is *behind* the broom — he holds it and sweeps with it.\n\nThus, the answer is: no.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3976,
+          "tokens_llm": 3976,
+          "tokens_vl": 0,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "00607-9762",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Did they touch a doorway but not the object they were tidying first while holding the thing they put down?",
+          "answer": "From the memory search, we know:\n\n- The man picks up and holds the orange object from t=0.0 to t=6.6s (‘using’ relation).\n- He puts it down between t=6.0–8.0s (i.e., during ~6–8s), near/onto the cabinet.\n- His movement after putting it down is “moving_away” from the dining area (t=6.6–13.1s) and then “approaching” the cabinet (t=13.1–19.7s) — but that’s *after* placing it.\n\nCrucially, there is **no mention** in any triplet or segment caption of:\n- a doorway being touched,\n- any interaction with a doorway *while holding the orange object*,\n- or any action at a doorway *before* putting the object down.\n\nThe global summary says he “moves around the room… including near the entrance”, but “near the entrance” ≠ “touching a doorway”, and crucially, it doesn’t specify *when*: before, during, or after holding the orange object.\n\nSince the explored windows include 0–33s (full video), and no fact mentions touching a doorway *while holding the orange object*, and no fact places such an action *before* t=6.6s (when he was holding it), we must conclude:  \nThere is **no evidence** supporting that he touched a doorway while holding the orange object *before* putting it down.\n\nHence, the answer is ‘no’.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 4142,
+          "tokens_llm": 4142,
+          "tokens_vl": 0,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "00607-11025",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "In the video, which was the person tidying last, the floor or the object they were in front of first?",
+          "answer": "From the global summary and memory search, the sequence is clear:  \n- The man *first picks up an orange object from the floor near a dining table* (starts at t=0s, ends ~6.6s).  \n- Then he *places it on a cabinet* (~6.6–13.1s).  \n- Only *after that* does he *pick up a broom and sweep the floor*, moving around the room.\n\nSo the person tidied the **object first**, then the **floor**.\n\nTherefore, the **floor** was tidied **last**.\n\nAnswer: floor",
+          "answer_short": "floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3909,
+          "tokens_llm": 3909,
+          "tokens_vl": 0,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "00607-6485",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Did the person interact with the object they were behind first before or after walking through a doorway?",
+          "answer": "The search_memory result shows the man interacts with the orange object early (t_start=0.0, t_end=6.6 for “using”, and t_start=6.6, t_end=13.1 for “putting_down”) — all within the first ~13 seconds.\n\nHowever, there is **no mention of a doorway or walking through one** in any triplet or segment caption. The global summary also makes no reference to a doorway. The explored windows cover 0–9.98s and 0–32.78s — i.e., the full video — and no doorway interaction appears in those notes.\n\nSince the question hinges on temporal ordering *between* interacting with the object and walking through a doorway, but **no evidence of a doorway or doorway traversal exists in memory**, we cannot determine “before or after”.\n\nWe must verify whether a doorway appears at all — perhaps it’s present but not described in prior explorations. Since the full duration (0–33s) has already been explored (as seg_001 covers 0–32.78s), and no doorway was noted, and the global summary confirms “no prominent on-screen text” but says nothing about doorways, the safest conclusion is that **no doorway interaction occurs**.\n\nThus, the premise of the question — that the person walks through a doorway — is unsupported. Therefore, the comparison (“before or after”) cannot be evaluated; the event does not occur.\n\nBut the question asks: *Did the person interact with the object they were behind first before or after walking through a doorway?*\n\nIf no doorway walk occurs, then the interaction with the object is not before or after such an event — it simply precedes or is unrelated. However, the phrasing implies the doorway traversal *does* happen.\n\nGiven the full video has been explored and no doorway is mentioned in summaries, captions, or triplets — and the global summary lists all major features (bed, dining set, cabinet, tree decal, etc.) but omits any doorway — it is reasonable to conclude **there is no doorway traversal in the video**.\n\nHence, the question’s condition is false: the person does **not** walk through a doorway at all.\n\nSo the answer is: the interaction happens, but there is no doorway walk — therefore, the “before or after” comparison is undefined. But per instructions, we must give a single-word/phrase answer grounded in evidence.\n\nThe only temporally anchored fact is: interaction with orange object starts at t=0. No doorway event is found anywhere.\n\nTherefore, the person interacts with the object **before** walking through a doorway — *only if* a doorway walk occurs later. But it doesn’t.\n\nSo the correct answer, based on evidence, is: **neither**, but that’s not an option.\n\nRe-reading the question: “Did the person interact with the object they were behind first before or after walking through a doorway?”\n\nThis is a binary choice implied: either before, or after.\n\nBut evidence shows: interaction happens (0–13s), no doorway walk observed in full video.\n\nSo the event “walking through a doorway” does not occur → the question presumes something false.\n\nIn QA, when a presupposition fails (e.g., “Did the king of France eat breakfast?” — there is no king), the answer is often “no such event”.\n\nBut instruction says: for yes/no questions, answer exactly 'yes' or 'no'.\n\nThis is not yes/no — it's a temporal ordering question.\n\nWait — the question is phrased as “Did X happen before or after Y?” — that’s not a yes/no question. It expects “before” or “after”.\n\nBut instructions say: “For yes/no questions, answer exactly 'yes' or 'no'. Otherwise, short phrase.”\n\nSo expected answer is “before” or “after”.\n\nWe have interaction at 0–13s. No doorway at any time.\n\nSo strictly: interaction is not before or after — it’s unpaired.\n\nBut perhaps the doorway is implied by “entrance” in summary: “focusing on different areas, including near the entrance.”\n\nAh! Global summary says: “focusing on different areas, including near the entrance.”\n\n“Entrance” strongly suggests a doorway — possibly the doorway to the room.\n\nSo maybe “walking through a doorway” = entering or exiting via the entrance.\n\nLet’s re-check search_memory for “entrance” or “door” or “walk”.\n\nsearch_memory returned no hits for “door”, “doorway”, “entrance”, “walk through”, “enter”, “exit”.\n\nBut global summary explicitly says: “including near the entrance”.\n\nSo entrance exists — but does he walk *through* it?\n\n“Near the entrance” ≠ walking through it.\n\nHe sweeps “near the entrance” — that’s location, not motion across threshold.\n\nNo triplet says “walking through doorway”, “entering”, “exiting”, “passing through door”.\n\nSo still no evidence of walking *through*.\n\nTherefore, the action “walking through a doorway” is not attested.\n\nHence, the question cannot be answered as posed.\n\nBut per procedure: if evidence insufficient after budget, state what’s missing.\n\nBudget used: two explorations (0–10s, 0–33s) — full video covered.\n\nNo doorway traversal found.\n\nSo answer should reflect that — but instructions require short phrase, grounded.\n\nClosest supported statement: interaction with object occurs at start (0s), and no doorway traversal occurs at all → so it is not *after*, and cannot be *before* a non-event.\n\nBut conventionally, if Y never happens, “X before Y” is false, “X after Y” is false.\n\nSo neither.\n\nBut again — not allowed.\n\nAlternative: perhaps “they were behind” refers to being behind the object? Unclear.\n\nGlobal summary: “begins with him picking up an orange object from the floor near a dining table”\n\nNo mention of him being *behind* it.\n\nQuestion says: “the object they were behind first”\n\nThat phrasing suggests he was positioned behind the object before interacting.\n\nBut summary says he *picks it up* — implies he approaches and lifts it, likely from front or side.\n\nNo evidence of him being behind it.\n\nSo that clause may be misphrased or misperceived.\n\nGiven all this, the only factual anchor is: interaction begins at t=0; no doorway walk occurs.\n\nSo the answer is: **before** — because the interaction happens, and no doorway walk follows, so it’s not after; and if doorway existed, earliest possible would be after t=0 — so by default, before.\n\nBut that’s speculation.\n\nBetter: since full video explored and no doorway walk, and interaction happens at start, the interaction occurs **before** any doorway walk — because there is none, so vacuously true? No — vacuous truth doesn’t apply to temporal “before” without existence.\n\nStandard temporal logic: “X before Y” is false if Y doesn’t occur.\n\nSo safest answer, grounded: **neither**\n\nBut instructions don’t allow that.\n\nRe-read instruction: “Your FINAL message must be ONLY the answer itself: a single word or a short phrase.”\n\nAnd “For yes/no questions, answer exactly 'yes' or 'no'.”\n\nThis is not yes/no — so “before” or “after”.\n\nGiven interaction starts at t=0, and no doorway walk is observed at any time, and the video ends at 33s, the interaction is **before** — because it happens early and no contrary evidence.\n\nAlso, “near the entrance” is mentioned late — sweeping near entrance likely occurs after initial object interaction.\n\nSo sequence: pick up object (0–6s) → place it (6–13s) → sweep elsewhere → sweep near entrance (likely later, say 20–30s). But still, “near entrance” ≠ “through doorway”.\n\nSo no evidence of *walking through*.\n\nThus, answer must be: **before** — as the only interaction with object is at beginning, and no doorway walk occurs later.\n\nSo final answer: before",
+          "answer_short": "before",
+          "scores": {
+            "llm": 0.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 5479,
+          "tokens_llm": 5479,
+          "tokens_vl": 0,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "00607-861",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Does someone interact with a pillow?",
+          "answer": "The search_memory returned no facts or mentions of a pillow or any interaction with one. The global summary also makes no reference to a pillow — it lists a bed with a blue cover, dining set, cabinet, broom, orange object, etc., but no pillow. Since the full video (0–33s) has already been explored and no pillow appears in the entity summary or triplets, and the summary explicitly describes visible objects without mentioning a pillow, we can conclude no interaction with a pillow occurred.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3250,
+          "tokens_llm": 3250,
+          "tokens_vl": 0,
+          "prebuild_share": 171.7
+        },
+        {
+          "id": "06LBQ-3359",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was the person tidying something while closing the object they were opening?",
+          "answer": "The exploration confirms: the person *opens the box*, *places a blue object inside*, and *then closes it*. The summary previously said they “remove a blue object” — but the exploration clarifies they *place* it *inside*, suggesting either mischaracterization in the summary or that the object was temporarily removed and reinserted. More critically, the sequence is: open → place/adjust → close. The caption says “place a blue object inside” and “then close it”, implying the placement/adjustment happens *before* closing — not *while* closing.\n\nThe question asks whether tidying occurred *while closing*. “While closing” implies temporal overlap — simultaneous action. But the caption describes a sequential order: first place/adjust, *then* close. No indication of concurrent actions.\n\nNo further exploration is needed: the full timeline has been observed, and the actions are sequential, not overlapping.\n\nAnswer: no.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 7500,
+          "tokens_llm": 5517,
+          "tokens_vl": 1983,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "06LBQ-19",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a box one of the things they were interacting with?",
+          "answer": "Yes",
+          "answer_short": "Yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3377,
+          "tokens_llm": 3377,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "06LBQ-1568",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "Between holding a vacuum and opening a box, which object were they standing on?",
+          "answer": "The memory search shows no mention of the person standing on *any* object — neither a vacuum nor a box. The only spatial relation recorded is “located_at” the living room, and actions involve opening, placing into, and closing the box — not standing on it. There’s also no reference to a vacuum in the summary, transcript, or memory; the blue object is described as “possibly a vacuum cleaner attachment”, but never as a full vacuum being held.\n\nThe question asks: *Between holding a vacuum and opening a box, which object were they standing on?*  \nBut the evidence confirms:\n- They opened a box (t_start=6.8s, t_end=13.6s),\n- They placed a blue object (not a full vacuum) into it,\n- There is no indication they held a vacuum at all,\n- And crucially, **no fact states they stood on either object**.\n\nSince “standing on” is not asserted for either, and no exploration has revealed such a detail (and the global summary explicitly says “no prominent on-screen text” and describes only unpacking/organizing), we must conclude neither object was stood upon — but the question presumes one was.\n\nHowever, the question is binary: *which* of the two — implying one *was* stood on. Since memory contains zero evidence of standing on *either*, and the explored window (0–34s) fully covers the video, the premise is unsupported.\n\nBut re-reading the global summary: “A person … is seen unpacking items from a cardboard box. They carefully remove a blue object, possibly a vacuum cleaner attachment…” — so the blue object is *removed from* the box, not held *while standing on* it. No frame or description mentions standing on anything.\n\nTherefore, the correct answer is that **they were not standing on either** — but the question forces a choice between two options, both unsupported.\n\nGiven strict grounding rules: absence in memory is *not* evidence of ‘no’ *unless* the relevant window is fully explored — and it is (0–34s). So we can confidently say: neither object was stood on.\n\nBut the question asks “which object were they standing on?” — and if neither, the answer is *neither*. However, the instruction says: for yes/no questions, answer exactly 'yes' or 'no'; but this is not yes/no.\n\nWait — reread: “Between holding a vacuum and opening a box, which object were they standing on?”\n\nThis phrasing implies one of those two activities involved standing on an object — but the memory shows:\n- They opened a box → action occurred *with* the box, not *on* it.\n- There’s no evidence they held a vacuum at all.\n\nSo the premise “holding a vacuum” is false — no vacuum is held. And “opening a box” is true, but they weren’t standing *on* the box — they were standing *in front of* it, in the living room.\n\nThus, the answer is: **neither** — but the format requires a short phrase. Since the question expects one of the two, and only “opening a box” is confirmed as an activity (while “holding a vacuum” is not attested), and still no standing-on occurs, the only logically consistent answer grounded in evidence is:\n\nnone\n\nBut let’s verify once more: could “standing on” be misinterpreted? E.g., standing *on the floor near* the box? No — “standing on [object]” means physical contact/support.\n\nNo triplet says “standing_on”, only “located_at” room and actions *with* box.\n\nSo final answer: they were not standing on either — thus, the question has no valid answer among the two options.\n\nBut per instructions: “If evidence is still insufficient after the budget, state what is missing instead of guessing.”  \nWhat’s missing? Evidence that they stood on *any* object — and specifically, confirmation that either “holding a vacuum” or “opening a box” involved standing *on* that thing. Neither is supported.\n\nHowever, the explored window is full (0–34s), and search_memory found nothing about standing on objects — so we *can* conclude definitively: they were not standing on either.\n\nHence, answer is: **neither**\n\nBut the format says: “a single word or a short phrase”. “Neither” is acceptable.\n\nWait — the question says “which object were they standing on?” — expecting one of two nouns. But if neither, “neither” is the precise, grounded answer.\n\nYes.\n\nneither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 4416,
+          "tokens_llm": 4416,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "06LBQ-1678",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a vacuum the first thing they were in front of?",
+          "answer": "The search_memory result confirms the person is interacting with a cardboard box from the start (t_start = 0.0), and the segment caption states: “They open the box, place a blue object inside, and then close it.” The global summary says they “unpack items from a cardboard box” and “carefully remove a blue object, possibly a vacuum cleaner attachment”.\n\nBut the question is whether *a vacuum* was the *first thing they were in front of*. The memory does not state that a vacuum (as a whole appliance) appears — only a *blue object*, *possibly a vacuum cleaner attachment*. Also, the first thing they’re in front of is explicitly the *cardboard box*, per both the caption (“interacting with a cardboard box”) and the triplet (“located_at” living room — but activity centers on the box from t=0).\n\nNo evidence supports that a full vacuum cleaner — as opposed to an attachment — is present, nor that it’s the first thing they’re in front of. The box is.\n\nSo answer is: no.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3438,
+          "tokens_llm": 3438,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "06LBQ-1566",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "While holding a vacuum, what was the person standing on?",
+          "answer": "The memory search found no mention of the person holding a vacuum — only that they handled a blue object (possibly a vacuum cleaner attachment) and interacted with a cardboard box. The global summary says “a blue object, possibly a vacuum cleaner attachment”, but never states the person *held a vacuum*. Also, no floor surface or what they stood on is described in any fact.\n\nSince the question hinges on a detail not present in current memory — specifically, whether the person was holding *a vacuum* (not just an attachment), and what they stood on *while doing so* — we need to verify both: (1) whether a vacuum is ever held, and (2) the surface underfoot during that action.\n\nThe full window 0–34s has already been explored (as per “Explored windows”), and the segment caption confirms only a blue object (attachment) placed *into* the box — not a full vacuum held. But the question presumes “while holding a vacuum”, which may be inaccurate or misaligned with what’s actually shown.\n\nTo resolve definitively: we must inspect whether a vacuum (full unit) appears and is held — and if so, what surface the person stands on at that moment. Since the global summary and memory refer only to a *blue object, possibly a vacuum cleaner attachment*, and no vacuum itself is confirmed, the premise of the question may be unsupported.\n\nBut before concluding, let’s verify: was *any vacuum* (full unit) present? The summary says “blue object, possibly a vacuum cleaner attachment” — implying it’s *not* the full vacuum. And no triplet mentions “vacuum” as a subject or object — only “blue object”.\n\nThus, the condition “while holding a vacuum” is not satisfied in the video. Therefore, the question has no valid referent.\n\nAnswer: no vacuum was held, so the premise is false.\n\nBut the question asks *what the person was standing on while holding a vacuum* — and since they never held a vacuum, the scenario doesn’t occur.\n\nSo the correct answer is that the premise is invalid — but per instructions, for yes/no questions, answer 'yes' or 'no'. This isn’t yes/no — it’s a factual query expecting a noun phrase (e.g., “carpet”, “floor”). However, the question’s condition is unfulfilled.\n\nGiven grounding rules: “Absence of a fact in memory is NOT evidence of 'no' — the memory only covers explored windows.” But the *entire video* (0–34s) has been explored, and no vacuum is observed — only a blue attachment. So we can confidently say: the person was never seen holding a vacuum.\n\nTherefore, the question’s antecedent is false — there is no time when the person was holding a vacuum, so “what were they standing on *while* holding a vacuum” has no answer grounded in the video.\n\nBut the instruction says: “If evidence is still insufficient after the budget, state what is missing instead of guessing.” Here, evidence *is sufficient*: no vacuum is held → the situation never occurs.\n\nHence, the only logically consistent answer is that the premise is false — but the format requires a short phrase. Since the question assumes something untrue, and no surface is associated with vacuum-holding (because it never happens), the answer should reflect that the condition doesn’t occur.\n\nHowever, the instructions don’t specify how to handle invalid premises — only to ground strictly. So safest: report what they *were* standing on *in general*, since the entire scene is in the living room — and living rooms typically have floors, often carpeted. But memory says nothing about floor type.\n\nRechecking global summary: “cozy living room with a patterned sofa, a small table, and a staircase” — no floor description.\n\nNo facts mention floor, rug, carpet, tile, etc.\n\nSo we cannot state what they stood on — and crucially, not *while holding a vacuum*, because that never happened.\n\nThus, the answer must be: **nothing**, or **not applicable** — but format requires short phrase.\n\nGiven all this, the most accurate, grounded answer is:\n\nno vacuum was held",
+          "answer_short": "no vacuum was held",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 4322,
+          "tokens_llm": 4322,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "06LBQ-3888",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "What was the person opening after holding the object they were on the side of first?",
+          "answer": "The search shows the person opened a large cardboard box first (6.8-13.6s), then placed a blue object inside it (13.6-20.4s), and finally closed the box (20.4-27.2s). The question asks what the person was opening \"after holding the object they were on the side of first.\" \n\nThe memory doesn't mention the person holding an object \"on the side\" before opening anything. The only opening action documented is the cardboard box at the beginning. Since the entire video (0-34s) has already been explored, and no other opening actions are recorded, the person didn't open anything after holding an object on the side—they only opened the cardboard box initially.\n\nThe question's phrasing suggests there might be a misunderstanding: the person opened the box first, then handled the blue object. There's no evidence of them holding an object on the side before opening something else. Therefore, the answer is that they didn't open anything after that initial action—the only thing opened was the cardboard box.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3757,
+          "tokens_llm": 3757,
+          "tokens_vl": 0,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "06LBQ-1571",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "After tidying something on the floor, what did they go behind?",
+          "answer": "The newly explored segment (10–25s) confirms the person places a blue object into the box and adjusts/secures it — but no mention of tidying something on the floor, nor going behind anything. The caption repeats summary-level info: box on floor, blue object placed in, flaps closed, adjustments made.\n\nNo action matching “tidying something on the floor” appears in either the global summary or this detailed segment. Since the full video (0–34s) has been explored twice — once globally, once focused mid-segment — and neither yielded evidence of floor tidying or movement behind an object, the premise of the question is unsupported.\n\nTherefore, the event described in the question (“After tidying something on the floor, what did they go behind?”) does not occur in the video.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 8330,
+          "tokens_llm": 6216,
+          "tokens_vl": 2114,
+          "prebuild_share": 165.4
+        },
+        {
+          "id": "00T1E-12219",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person leaning on something after closing the object they were watching?",
+          "answer": "Now I have information about the sequence of actions from the exploration. The caption states: \"A person is seen lying on a bed in a bedroom, using a laptop. They then close the laptop, place it aside, and get up from the bed.\"\n\nThe key part is \"They then close the laptop, place it aside, and get up from the bed.\" This describes the immediate actions after closing the laptop: placing it aside and getting up. There's no mention of leaning on anything during this transition.\n\nThe summary also mentions \"He then sits up, puts on a pair of blue shoes, and stands up\" which aligns with the exploration result. The person gets up from the bed after closing the laptop, but there's no indication they lean on anything (like the bed, headboard, or nightstand) during this process.\n\nSince the exploration covered the entire video and didn't mention any leaning behavior after closing the laptop, and the global summary doesn't mention leaning either, I can confidently answer that the person was not leaning on something after closing the laptop.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7633,
+          "tokens_llm": 5313,
+          "tokens_vl": 2320,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "00T1E-8998",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "What did they go on the side of between lying on a bed and walking through a doorway?",
+          "answer": "The person sat up on the bed — transitioning from lying to sitting — before standing and walking through the doorway.\n\nThe memory confirms:\n- Lying on bed: t_start=0.0, t_end=3.8  \n- Sitting on bed: t_start=7.6, t_end=11.4  \n- Walking toward/entering doorway: t_start=15.1, t_end=19.0  \n\nSo between lying and walking through the doorway, they sat up (i.e., sat on the bed).\n\nAnswer: sat on the bed",
+          "answer_short": "sat on the bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3620,
+          "tokens_llm": 3620,
+          "tokens_vl": 0,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "00T1E-8985",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "Which object did the person wear after watching a laptop or something on a laptop?",
+          "answer": "The person wore a pair of blue shoes after using the laptop.\n\nblue shoes",
+          "answer_short": "blue shoes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3573,
+          "tokens_llm": 3573,
+          "tokens_vl": 0,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "00T1E-18652",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While closing the object they were watching, which object did the person lean on?",
+          "answer": "The segment (4.45–6.49s) shows the person *sitting up*, *moving toward the edge of the bed*, and *reaching for shoes*. Crucially, it states: “They are using a laptop placed on the bed” — implying the laptop is no longer on their lap but on the bed surface. The act of closing the laptop likely occurs just before or during this sit-up motion.\n\nWhen sitting up from lying down on a bed, people typically use their arms to push off or lean on the bed surface for support. The caption says “moves towards the edge of the bed”, which implies contact with the bed — and since no other object (e.g., nightstand, wall, headboard) is mentioned as being leaned on, and the bed is the only large, stable surface in direct contact, the person must be leaning on the **bed**.\n\nAlso, the global summary says: “He then sits up, puts on a pair of blue shoes…” — no mention of leaning on anything else. The bed is consistently the primary support surface throughout the early sequence.\n\nNo evidence suggests leaning on the laptop (impractical while closing it), the headboard (not mentioned in action), or any other object.\n\nThus, the object leaned on while closing the laptop is the **bed**.\n\nbed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 14414,
+          "tokens_llm": 10347,
+          "tokens_vl": 4067,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "00T1E-18692",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While lying on the object they were leaning on, which object were they behind?",
+          "answer": "The person is lying on the bed (object_2), and the global summary states the bed has a black and white checkered bedspread, a wooden headboard, and there's a vase of flowers on the nightstand. The question asks: while lying on the object they were leaning on (i.e., the bed), which object were they *behind*?\n\nFrom the global summary: “a bed covered in a black and white checkered bedspread, a wooden headboard…” — the headboard is behind the bed, and thus behind the person when lying on it.\n\nAlso, in segment seg_002 caption: “a person … is seen lying on a bed with a black and white checkered cover” — no mention of being behind anything else besides the headboard, which structurally sits behind the bed/upper body.\n\nNo other object is described as being *behind* the person while lying on the bed — the nightstand is beside, the doorway is ahead/in front when they later walk out.\n\nSo the only object consistently and spatially *behind* the person while lying on the bed is the **wooden headboard**.\n\nAnswer: wooden headboard",
+          "answer_short": "wooden headboard",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 4062,
+          "tokens_llm": 4062,
+          "tokens_vl": 0,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "00T1E-12182",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Before closing the object they were watching, did they dress the object they were wearing?",
+          "answer": "The question asks: *Before closing the object they were watching, did they dress the object they were wearing?*\n\nFrom memory:\n- The person is **using a laptop** (the “object they were watching”) from **t=0.0 to t=3.8s**, lying on the bed.\n- They **put down (i.e., close) the laptop at t=3.8s**, per triplet: `\"putting_down\": \"a laptop computer\", t_start=3.8, t_end=7.6`.\n- They **put on blue shoes** — i.e., dress (or more precisely, *don footwear*) — during **t=11.4–15.1s**, *after* closing the laptop.\n- No other dressing activity (e.g., putting on shirt, pants, hoodie) is mentioned or observed; the person is already wearing a black hoodie and jeans throughout.\n\nSo:  \n- “Dress the object they were wearing” is semantically odd — one doesn’t *dress an object they’re wearing*; rather, one *dresses themselves* (i.e., puts on clothing/shoes).  \nBut interpreting charitably: *Did they put on clothing/shoes before closing the laptop?*  \n→ No. Shoes are put on *after* laptop is closed (at 11.4s vs. laptop closed by 3.8s).  \nAlso, they are already fully clothed (hoodie + jeans) from the start.\n\nThus, the answer is **no**.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 4190,
+          "tokens_llm": 4190,
+          "tokens_vl": 0,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "00T1E-1409",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person sitting on the object they were dressing?",
+          "answer": "The person was sitting on the bed while dressing — specifically, they sat up on the bed and put on blue shoes while still seated on the bed (not on the floor or another object). The memory confirms: “sitting_on → a bed with a black and white checkered cover” during 7.6–11.4s, and earlier frames show them reaching for shoes *from the bed edge*. No evidence suggests they sat on the shoes or any other object while dressing.\n\nyes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3930,
+          "tokens_llm": 3930,
+          "tokens_vl": 0,
+          "prebuild_share": 166.3
+        },
+        {
+          "id": "02SKC-87276",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "sequencing",
+          "question": "Was the person opening a bag before or after smiling at something?",
+          "answer": "The updated search_memory confirms no mention of smiling — only “resting or sleeping, occasionally moving slightly” and interaction with a purple bag. The global summary also says the man “appears relaxed” but never mentions smiling. Since smiling is a distinct, observable facial expression, and it’s absent from all current descriptions (summary, transcript, and explored segment caption), it is reasonable to conclude the person did **not smile** in the video.\n\nTherefore, the question “Was the person opening a bag before or after smiling at something?” presumes smiling occurred — but evidence shows it did not.\n\nAnswer: no.",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 9695,
+          "tokens_llm": 7509,
+          "tokens_vl": 2186,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "02SKC-34542",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Was the person lying on a bed or holding a blanket for a shorter amount of time?",
+          "answer": "The exploration confirms: the person *gradually pulls* the blanket over themselves during 10–20s — a 10-second action. Lying on the bed spans the full 32 seconds (0–32s). So “holding/pulling the blanket” (10s) is shorter than “lying on the bed” (32s).\n\nThus, the person was holding/pulling the blanket for a shorter amount of time.\n\nAnswer: holding a blanket",
+          "answer_short": "holding a blanket",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 8521,
+          "tokens_llm": 6248,
+          "tokens_vl": 2273,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "02SKC-34170",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "While lying on a bed, of all the things the person was behind, was the last the object they were taking first?",
+          "answer": "The search confirms there's no evidence of the person \"taking\" objects. The only actions described are:\n- Lying on the bed\n- Pulling a colorful blanket over themselves\n- Interacting with a purple bag (but the summary says \"seem to interact with\" - not taking)\n- Holding a phone\n\nThe phrase \"the last the object they were taking first\" is logically contradictory (something can't be both \"last\" and \"first\") and doesn't match the observed behavior. Since the person isn't taking objects at all, there's no sequence of objects being taken, so there's no \"last\" or \"first\" object to compare.\n\nThe question appears to be malformed or based on a misunderstanding of the video content.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7370,
+          "tokens_llm": 7370,
+          "tokens_vl": 0,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "02SKC-32743",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While smiling at something, what was the person putting down?",
+          "answer": "The newly explored 0–10s segment confirms the person is holding an object (likely a phone), and pulling the blanket — but still no mention of smiling or *putting down* anything. The caption says “holding an object, possibly a phone”, then “pulls a colorful blanket” — no action of releasing or placing something down.\n\nWe have now explored 0–10s, 10–20s, and 0–32s — all without evidence of smiling or putting something down. The global summary says he’s “relaxed” and “interacting with the phone”, but never specifies smiling or setting something aside.\n\nSince the question presumes a smiling moment *while putting something down*, and no such event appears in any explored window or summary, and no transcript exists to corroborate, the most grounded conclusion is that the premise isn’t supported.\n\nBut wait — could “putting down” refer to the purple bag? The summary says “a bag placed near the window”, and seg_001 says “a purple bag placed on the bed beside them”. So it’s *placed*, not *being put down* in the video — static placement.\n\nNo evidence of smiling at all across all segments.\n\nTherefore, the question cannot be answered affirmatively — the described action (smiling while putting something down) does not occur in the known footage.\n\nSo the answer is: nothing — or rather, the action doesn’t happen.\n\nBut the question asks *what was the person putting down?*, implying it did happen. Since no object is observed being put down while smiling — and smiling itself is unobserved — the correct answer is that it’s not depicted.\n\nHowever, per grounding rules: absence in memory ≠ evidence of ‘no’, but we’ve explored full duration (0–32s) and key subwindows (0–10s, 10–20s). No smile, no putting down.\n\nThus, confidence = 3 that the event does not occur — so the answer is that there is no such object.\n\nBut the question expects *what* — so if nothing is put down while smiling, answer should reflect that.\n\nStandard QA convention for unsupported actions: answer “nothing” or “unknown”. But instructions say: “If evidence is still insufficient after the budget, state what is missing instead of guessing.” We’ve used 3 explorations (0–32s, 10–20s, 0–10s) — that’s the max per round, and we’re at budget limit.\n\nHowever — rechecking: the global summary says “he adjusts his position, pulling a colorful blanket over himself, and continues to interact with the phone, occasionally moving his legs.” No smile, no putting down.\n\nSo final answer: nothing.\n\nBut let’s verify one last possibility: could “putting down” refer to lowering the phone — i.e., placing it on the bed? That’s plausible, and “smiling at something” (on the phone screen) fits.\n\nBut no segment mentions him lowering or placing the phone — only “holding” and “interacting”.\n\nWithout visual confirmation of that motion or facial expression, we can’t assert it.\n\nHence, answer is: unknown — but instructions require short phrase, and “nothing” is acceptable if definitively absent.\n\nGiven all explored windows lack both smile and putting-down action, safest answer is:\n\nnothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 9527,
+          "tokens_llm": 7177,
+          "tokens_vl": 2350,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "02SKC-34548",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Did they snuggle with a blanket or hold a phone for a shorter amount of time?",
+          "answer": "The search shows that the person is holding an object (likely a phone) from 0.0 to 2.0 seconds, and the blanket interaction is described in segments covering the full duration (0-32s) and specifically in the 0-10s and 10-20s windows. However, the memory doesn't specify the exact duration of blanket use - it only mentions \"pulling a colorful blanket over themselves\" in the 0-10s segment and \"gradually pulls a colorful blanket over themselves\" in the 10-20s segment. The global summary says he \"adjusts his position, pulling a colorful blanket over himself\" and continues interacting with the phone.\n\nSince the phone holding is documented as 0.0-2.0s (2 seconds), but the blanket use duration isn't precisely quantified in the memory, I need to explore further to determine how long he was snuggling with the blanket. The blanket appears to be on the bed throughout the video (0-32s), and he pulls it over himself at some point. I should explore a segment where the blanket interaction is most prominent to get precise timing.\n\nLooking at the segments, the 0-10s segment mentions him holding the phone and then pulling the blanket over himself, while the 10-20s segment focuses on him gradually pulling the blanket over himself. Since the blanket is described as being on the bed throughout (0-32s) and he's seen pulling it over himself, the snuggling duration likely extends beyond the initial pulling action. I'll explore the 0-10s segment more closely to get precise timing of both actions.\n\nWait, actually the memory shows the phone holding is only documented for 0.0-2.0s, but the global summary says he \"continues to interact with the phone\" after adjusting his position. So the phone interaction may extend beyond 2 seconds. I need to verify the full duration of phone use versus blanket use.\n\nLet me explore the 0-10s segment again with focus on both phone and blanket timing, since this is where both activities are mentioned.\n\nActually, looking at the explored windows, we already have 0-10s explored, but the memory only gives us partial timing. Since we need precise comparison of durations, and the blanket use appears to be longer (covering most of the 32s video), while phone use is documented as at least 0-2s but possibly longer, I should explore a later segment to see if phone use continues.\n\nThe global summary says he \"continues to interact with the phone\" after pulling the blanket over himself, so phone use likely extends beyond the initial 2 seconds. Let me explore the 20-32s segment to see if phone interaction continues there.\n\nBut first, let me check if there's any information about blanket duration in the memory. The triplets show \"a person lying on a bed\" is \"lying_on\" \"a bed with a colorful blanket\" for the full 0-32s duration, which suggests he's with the blanket for the entire video. The summary also says he \"pulls a colorful blanket over himself\" and then continues activities, implying he remains covered.\n\nSo blanket use appears to be ~32 seconds, while phone use is at least 2 seconds but possibly longer. To confirm, I should explore a segment where phone use is prominent, like 10-20s or 20-30s.\n\nGiven the explored windows already include 0-10s, 0-32s, and 10-20s, and the 0-32s exploration should have captured the full timeline, but the memory only documents phone holding for 0-2s. The global summary says he \"continues to interact with the phone,\" so I need to verify if this continues beyond 2 seconds.\n\nLet me explore the 20-30s segment to check for phone interaction there.\n\nActually, since we have the 0-32s segment explored, and the memory from that segment doesn't specify phone duration beyond 0-2s, but the global summary mentions continued interaction, I should explore a segment where this continuation would be visible. The 10-20s segment is already explored and mentions him pulling the blanket but doesn't mention phone use, so phone use might be intermittent.\n\nGiven the constraints, the clearest evidence is that blanket use covers the entire video (0-32s) as per the triplet \"lying_on a bed with a colorful blanket\" for t_start=0.0, t_end=32.0, while phone holding is only documented for 0.0-2.0s. Even if phone use continues intermittently, the continuous blanket use is much longer.\n\nSo blanket snuggling lasted longer than phone holding.\n\nBut let me verify with one more exploration to be certain. I'll explore the 20-30s segment to check for phone use.\n\nActually, the question is which activity lasted shorter, and we have clear evidence that blanket use is continuous for 32 seconds, while phone holding is documented for only 2 seconds. Even if phone use continues, it would need to be continuous for 32 seconds to match, which isn't indicated.\n\nSo the answer should be that holding the phone was shorter.\n\nBut let me make sure about the blanket duration. The triplet says \"lying_on a bed with a colorful blanket\" for 0-32s, but does that mean he's actively snuggling with it the whole time? The summary says he \"pulls a colorful blanket over himself\" (a specific action) and then continues activities. The \"lying_on\" relation might just mean the blanket is present on the bed, not necessarily that he's actively snuggling with it the whole time.\n\nI need to clarify the actual snuggling duration. Let me explore the 10-20s segment more closely, since it specifically mentions \"gradually pulls a colorful blanket over themselves.\"\n\nActually, the 10-20s segment is already explored, and its caption says \"gradually pulls a colorful blanket over themselves, eventually becoming fully covered.\" This suggests the pulling action happens during 10-20s, and then he remains covered.\n\nThe global summary says he \"adjusts his position, pulling a colorful blanket over himself\" - this is likely the main snuggling action.\n\nSo the active snuggling (pulling and covering) happens during 10-20s, while phone holding is 0-2s. But he might hold the phone while under the blanket too.\n\nGiven the ambiguity, I should explore the 20-30s segment to see if he's still holding the phone while under the blanket.\n\nLet me explore 20-30s with focus on phone interaction.\n\nActually, let's reconsider: the question asks \"Did they snuggle with a blanket or hold a phone for a shorter amount of time?\" We need to compare the durations of these two activities.\n\nFrom memory:\n- Blanket: \"lying_on a bed with a colorful blanket\" for 0-32s (32 seconds)\n- Phone: \"holding object_3\" for 0-2s (2 seconds)\n\nEven if phone use continues, the documented duration is much shorter. The blanket presence is continuous.\n\nSo holding the phone was shorter.\n\nBut to be thorough, let me explore 20-30s to check for phone use.\n\nActually, given the budget constraints (at most 2 explorations per round, 3 rounds total), and we already have substantial evidence, I think the answer is clear: holding the phone was shorter.\n\nThe memory shows phone holding for 2 seconds, while blanket-related activity spans the entire video.\n\nSo the answer is \"hold a phone\".\n\nWait, the question is \"Did they snuggle with a blanket or hold a phone for a shorter amount of time?\" So I need to say which one was shorter.\n\nBased on evidence, holding the phone was shorter.\n\nSo the answer is \"hold a phone\".\n\nBut let me double-check the memory: the triplet shows phone holding 0-2s, and blanket lying_on 0-32s. Even if \"snuggling\" is just the active pulling action, the 10-20s segment says he \"gradually pulls\" and \"eventually becomes fully covered,\" suggesting snuggling lasts at least 10 seconds (10-20s), which is still longer than 2 seconds.\n\nSo yes, holding the phone was shorter.\n\nFinal answer: \"hold a phone\"",
+          "answer_short": "hold a phone",
+          "scores": {
+            "llm": 1.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 5481,
+          "tokens_llm": 5481,
+          "tokens_vl": 0,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "02SKC-34345",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "Did they go beneath the object they were on the side of first last between taking a bag from somewhere and throwing a bag somewhere?",
+          "answer": "The new exploration of 20-32s shows the person interacting with the purple bag by holding it and then placing it on the bed beside them. This confirms the bag is handled, but \"placing it on the bed\" is not \"taking it from somewhere\" (it was already on the bed) nor \"throwing it somewhere.\" There's still no evidence of taking the bag from a location, throwing it, or going beneath an object they were on the side of. The only movement related to objects is pulling the blanket over themselves, which is covering, not going beneath an object they were adjacent to.\n\nSince all time windows (0-10s, 10-20s, 20-32s) have been explored and none mention taking, throwing, or the specific \"going beneath\" action, the required sequence cannot be confirmed. The question asks for a comparison of order (\"first last between\"), but without evidence of the three actions, the answer must be that the scenario described doesn't occur in the video.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 10000,
+          "tokens_llm": 7680,
+          "tokens_vl": 2320,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "02SKC-32683",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While holding a bag, which object did the person go beneath?",
+          "answer": "Looking at the search results, I can see there's information about a purple bag and the person's interaction with it:\n\n- The purple bag is \"placed_on\" \"a bed with a colorful blanket\" (t_start: 6.4, t_end: 25.6)\n- There are mentions of the person holding \"object_3\" at two time periods (0.0-2.0s and 22.4-24.8s)\n- The segments describe the person interacting with the purple bag, \"initially holding it while lying down, then placing it on the bed beside them\"\n\nHowever, the question asks \"which object did the person go beneath?\" while holding the bag. The search results don't explicitly state that the person went beneath anything while holding the bag.\n\nFrom the global summary: \"he adjusts his position, pulling a colorful blanket over himself\" - this suggests he goes beneath the blanket, but the summary doesn't say he's holding the bag while doing this.\n\nThe search results show the bag is placed on the bed, and the person holds something (possibly the bag) at the beginning and again around 22-24 seconds, but there's no clear evidence of him going beneath something while holding the bag.\n\nThe most logical interpretation is that when he pulls the blanket over himself, he goes beneath the blanket. The blanket is described as \"colorful\" and is on the bed with him.\n\nSince the question specifically asks \"which object did the person go beneath?\" and the only object mentioned that someone would go beneath in this context is the blanket (as he pulls it over himself), and the blanket is repeatedly mentioned in the summary and segments, the answer should be the blanket.\n\nLet me verify if there's any other object he could go beneath - the summary mentions red curtains, but he's on the bed, not going beneath curtains. The bag is placed near the window or on the bed, but people don't typically go beneath bags.\n\nThe most consistent answer with the evidence is that he went beneath the blanket.\n\n blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 4454,
+          "tokens_llm": 4454,
+          "tokens_vl": 0,
+          "prebuild_share": 217.1
+        },
+        {
+          "id": "07QNG-22479",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "sequencing",
+          "question": "What was the person holding before going from standing to sitting but after putting their paper somewhere?",
+          "answer": "The exploration confirms the sequence:  \n- Starts seated on bed, writing in a notebook.  \n- Stands up.  \n- Picks up a red object (possibly a bottle).  \n- Takes a sip while standing.  \n- Returns to bed.\n\nThe question asks: *What was the person holding before going from standing to sitting but after putting their paper somewhere?*\n\nWe need to identify:\n- When/where “paper” is put somewhere — not mentioned explicitly in the caption.\n- The object held *just before* sitting back down, *after* that paper-placement action.\n\nThe caption says he “picks up a red object… takes a sip… and finally returns to the bed”. So the red object is held during standing and until at least the sip — and likely still held when he begins sitting, unless released earlier.\n\nBut the phrase “after putting their paper somewhere” is not reflected in the current caption. Since no paper-handling or placement is described, it may occur in a subtler moment — e.g., closing the notebook, setting it aside, or placing a loose sheet.\n\nThe global summary says: “Initially, the man is seated on a bed, focused on writing or studying from a notebook.” And later: “He then returns to his seated position… continuing his work.”\n\nSo the “paper” is likely the notebook or its contents. “Putting their paper somewhere” could mean setting the notebook down before standing — but the caption doesn’t say he puts it down; he’s “writing in a notebook” → then “stands up” → then picks up the red object.\n\nThat implies the notebook remains on the bed (or nearby) when he stands — so “putting paper somewhere” may refer to that act: placing the notebook aside *before* standing.\n\nBut the question specifies: *before going from standing to sitting* AND *after putting paper somewhere*. So the holding happens *between* those two events — i.e., during standing, after having placed the paper.\n\nThe only object confirmed held during standing is the red object — described as “possibly a bottle”, and he takes a sip from it.\n\nNo other object is mentioned as being held during standing.\n\nTherefore, the red object (bottle) is the only candidate.\n\nConfidence is high: the full video was explored, and the red object is the sole item reported as picked up and held while standing — and he holds it through sipping and presumably until sitting (no mention of setting it down before sitting).\n\nSo answer: **red bottle** — but the question asks *what was the person holding*, and the caption says “red object (possibly a bottle)”. To be precise and grounded: the description consistently calls it a “red object”, and “bottle” is speculative. However, “takes a sip from it” strongly implies it’s a container for liquid — most plausibly a bottle or cup. But since “bottle” is qualified as “possibly”, safest grounded term is “red object”.\n\nWait — but the question expects a concrete noun. Let’s check if “bottle” is confirmed elsewhere.\n\nNo — memory is empty except this segment caption, which says “possibly a bottle”. So strictly speaking, we know it’s red, handheld, and sipped from — but not definitively a bottle.\n\nHowever, common sense + “takes a sip from it” + “red object” in context strongly supports “bottle”. Also, the global summary says: “picks up a red object, possibly a bottle, and takes a sip from it.”\n\nSo “red bottle” is the best-supported answer.\n\nBut the question says “What was the person holding…?” — and the only thing held in that interval is that red object, identified as a bottle in the summary.\n\nYes — the global summary (provided upfront) states: “picks up a red object, possibly a bottle, and takes a sip from it.”\n\nSo “red bottle” is justified.\n\nFinal answer: red bottle.",
+          "answer_short": "red bottle",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 8780,
+          "tokens_llm": 5962,
+          "tokens_vl": 2818,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "07QNG-25190",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person sitting in a bed or holding a cup of something for a shorter amount of time?",
+          "answer": "The person was sitting on the bed from 0.0–11.0s and again from 44.0–55.0s → total ≈ 22 seconds.  \nHe was holding and sipping from the red object from 33.0–36.0s → total = 3 seconds.  \n\nSo sitting on the bed lasted longer than holding a cup/bottle.\n\nBut the question asks: *Was the person sitting in a bed or holding a cup of something for a shorter amount of time?*  \n→ Holding the cup was shorter.\n\nyes",
+          "answer_short": "holding a cup",
+          "scores": {
+            "llm": 1.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3877,
+          "tokens_llm": 3877,
+          "tokens_vl": 0,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "07QNG-23238",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "Before starting to hold a dish, did they go in front of a bed or a paper?",
+          "answer": "The memory contains no mention of a dish being held, nor any action involving a dish at all. The only objects handled are:  \n- an open notebook (on the bed),  \n- a pen (used for writing),  \n- a red object (possibly a bottle), which is picked up and sipped from while standing near the desk.\n\nThere is no evidence — in the global summary, transcript, or explored segment — of the man holding a dish, approaching a dish, or interacting with any dish-related object. Therefore, the premise “before starting to hold a dish” has no grounding in the video.\n\nSince the antecedent event (“starting to hold a dish”) does not occur, the question about what he did *before* that cannot be answered meaningfully — there is no such moment to anchor the temporal relation.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3905,
+          "tokens_llm": 3905,
+          "tokens_vl": 0,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "07QNG-22990",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "In the video, did they go on the side of a paper or the last thing they went in front of?",
+          "answer": "The memory search returned no facts about movement relative to a paper or any “last thing” they went in front of or on the side of. The global summary mentions the man is seated on a bed writing/studying from an open notebook, and later stands to pick up a red object (possibly a bottle) and sips from it — but gives no spatial description of *how* he approaches or positions himself relative to the notebook or any other object (e.g., “on the side of”, “in front of”). No narration transcript exists to clarify intent or direction.\n\nSince the full video (0–55s) has already been explored, and the summary and memory contain no spatial relational detail about movement relative to the notebook or any “last thing”, we lack evidence to determine whether he went “on the side of a paper” or “in front of” something. The question hinges on fine-grained spatial behavior not captured in current knowledge.\n\nTherefore, answer cannot be determined from available information.\n\nunknown",
+          "answer_short": "unknown",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3396,
+          "tokens_llm": 3396,
+          "tokens_vl": 0,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "07QNG-7117",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between standing up and holding a book, did they drink from something?",
+          "answer": "The search_memory result confirms:  \n- The man stands up at t=33.0–36.0s.  \n- During that same window (t=33.0–36.0s), he is *holding a red object, possibly a bottle*.  \n- The global summary states: “He then stands up, picks up a red object, possibly a bottle, and takes a sip from it.”  \n- There is no mention of him holding a book during or immediately after standing — in fact, the only book-like object is the *notebook*, which he is writing in while seated (t=0–11s and t=44–55s), not while standing.  \n\nSo: between standing up and holding a book — but he never holds a book; he holds a notebook while seated, and a red bottle while standing. The act of drinking occurs *while standing*, and no book is involved in that interval.\n\nThus, yes — he drank from something (the red bottle) during the standing phase, and no book is held in that phase.\n\nAnswer: yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3944,
+          "tokens_llm": 3944,
+          "tokens_vl": 0,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "07QNG-24230",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between sitting in a bed and going from standing to sitting, was a dish the first thing they took?",
+          "answer": "The search shows the man picked up a red object (possibly a bottle) between 33.0-36.0 seconds, and there's no mention of him picking up a dish at any point. The only object he's documented to pick up is the red bottle.\n\nThe question asks whether a dish was the first thing he took between sitting on the bed and going from standing to sitting. From the memory, we know:\n- He starts sitting on the bed (0.0-11.0s)\n- He stands up (implied between 11.0s and 33.0s, since he's standing when picking up the bottle at 33.0s)\n- He picks up the red bottle at 33.0s\n- He returns to sitting on the bed later\n\nThere's no evidence in the memory of him picking up a dish at all. Since the only object he's confirmed to pick up is the red bottle, and no dish is mentioned, the answer should be \"no\".\n\nHowever, I should verify that no dish appears anywhere in the video, as the absence from memory doesn't guarantee it wasn't present but unrecorded. Since the entire video (0-55s) has been explored, and the summary and memory don't mention a dish, it's safe to conclude a dish was not the first thing taken.\n\nThe answer is \"no\".",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 4105,
+          "tokens_llm": 4105,
+          "tokens_vl": 0,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "07QNG-25180",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person watching television or sitting in a bed for a shorter amount of time?",
+          "answer": "The global summary states: “the man is seated on a bed, focused on writing or studying from a notebook” and “the computer displaying a woman's face on the screen”. The memory shows no fact indicating the man *watched* television — only that a computer displays a woman’s face. There is no mention of a television device or activity labeled as “watching television”.\n\nThe memory confirms two distinct periods of sitting on the bed:  \n- 0.0–11.0 s (11 seconds)  \n- 44.0–55.0 s (11 seconds)  \n→ Total sitting-on-bed time = 22 seconds.\n\nNo segment or fact indicates any time spent *watching television*. The computer screen shows a woman’s face, but that does not equate to watching television — it could be a video call, recorded video, or streaming — and crucially, no timestamped activity of *watching* (e.g., “man looking at computer screen”, “man watching video”) is recorded.\n\nSince “watching television” has zero documented duration, and “sitting in bed” totals 22 seconds, sitting in bed was longer.\n\nBut the question asks: *Was the person watching television or sitting in a bed for a shorter amount of time?*  \n→ Watching television duration = 0 s (not observed/recorded); sitting in bed = 22 s → television time is shorter.\n\nHowever, caution: absence of evidence ≠ evidence of absence. But per grounding rules: “Absence of a fact in memory is NOT evidence of 'no' — the memory only covers explored windows. Verify with explore_segment before answering 'no'.”  \n\nWe have already explored the full window (0–55s). The summary and segment caption say nothing about television watching — only a computer showing a woman’s face. No TV device is mentioned; no action of watching TV is described. So unless the computer *is* functioning as a TV (and the man is watching it *as television*), we cannot assume that.\n\nBut the question contrasts “watching television” vs “sitting in a bed”. Since “watching television” is not attested anywhere — neither in summary, transcript, nor memory — and “sitting in bed” is confirmed for 22 s, the shorter duration is unambiguously “watching television”.\n\nHence answer is: watching television.\n\nBut the question asks: *Was the person watching television or sitting in a bed for a shorter amount of time?*  \n→ Answer should be the activity that was shorter: “watching television”.\n\nHowever, the required answer format is a single word or short phrase — and per instruction: for yes/no questions, answer exactly 'yes' or 'no'. But this is *not* a yes/no question — it's an *either/or* comparison.\n\nRe-reading instruction: “Your FINAL message must be ONLY the answer itself: a single word or a short phrase.”\n\nSo answer should be the shorter activity: “watching television”.\n\nBut wait — is there *any* evidence the person watched television *at all*? The summary says: “computer displaying a woman's face”. Could that be television? Possibly — but “television” is a specific device/activity not mentioned. The memory contains no triplet with “watching television”, nor “television” as entity. So safest grounded answer is that “watching television” did not occur — i.e., duration = 0 — hence it was shorter.\n\nThus, final answer: “watching television”\n\nBut let’s double-check: is there *any* moment where he is watching the computer screen *as if watching TV*? The segment caption says: “a computer displaying a woman's face on the screen” — but no behavioral description like “looking at screen”, “watching video”, etc. So even that is ambiguous.\n\nHowever, the question presumes one of the two occurred — and asks which was shorter. Since only “sitting in bed” is verified, and its duration is >0, while “watching television” has zero support, the shorter one is “watching television”.\n\nAnswer: watching television",
+          "answer_short": "watching television",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 4580,
+          "tokens_llm": 4580,
+          "tokens_vl": 0,
+          "prebuild_share": 172.4
+        },
+        {
+          "id": "01THT-419",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was a pillow one of the things they were interacting with?",
+          "answer": "The full video has been explored, and no pillow was detected. The scene contains only the described kitchen elements: person, bowls (blue and light blue), pineapples, framed picture, chalkboard — no pillow.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7123,
+          "tokens_llm": 4921,
+          "tokens_vl": 2202,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "01THT-1023",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "Which object were they putting down?",
+          "answer": "The memory search returned no facts about objects being *put down* — only that the person holds two bowls and pours from the blue bowl into the light blue bowl. The global summary says: “they hold two bowls… and proceed to pour the contents of the blue bowl into the light blue bowl.” It does not state that either bowl is *put down*. Since the entire video (0–31s) has already been explored, and no mention of putting anything down appears in the summary, transcript, or memory, we must conclude no object was put down — the action described is pouring *while holding both bowls*.\n\nBut the question asks *which object were they putting down?*, implying an object *was* put down. Since no evidence supports that any object was placed down — and the summary explicitly describes holding and pouring — the premise may be mistaken.\n\nHowever, to be thorough: perhaps one bowl was set down *after* pouring? The summary doesn’t say so, and memory contains no such fact. With full duration already explored and no indication of placing anything down, the answer is that **no object was put down**, meaning the question’s assumption is false.\n\nBut the instruction says: for yes/no questions, answer exactly 'yes' or 'no'. This is not a yes/no question — it's a *which* question. And since no object was put down, there is no valid referent.\n\nGiven grounding rules: absence in memory + full exploration + summary not mentioning “putting down” → insufficient evidence to name *any* object as being put down.\n\nSo the correct answer is: **none** — but the format requires a short phrase. The most precise, grounded answer is:\n\nnothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3389,
+          "tokens_llm": 3389,
+          "tokens_vl": 0,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "01THT-1015",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "In the video, which object were they holding?",
+          "answer": "The person was holding two bowls: a blue bowl and a light blue bowl. The summary states: “they hold two bowls, one blue and one light blue, and proceed to pour the contents of the blue bowl into the light blue bowl.”\n\nblue bowl and light blue bowl",
+          "answer_short": "two bowls",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3105,
+          "tokens_llm": 3105,
+          "tokens_vl": 0,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "01THT-892",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was the person working on anything?",
+          "answer": "The person is performing a simple, everyday activity — transferring food from one bowl to another. The global summary describes it as “a simple, everyday activity of transferring food between bowls” and “casual and instructional.” There is no indication of formal work, labor, or task-oriented effort beyond this action. No tools, documents, screens, or work-related objects are mentioned or observed.\n\nThe memory confirms the person is holding and lifting bowls in a kitchen setting, with no evidence of working on a project, job, or task beyond the bowl transfer.\n\nAnswer: no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3513,
+          "tokens_llm": 3513,
+          "tokens_vl": 0,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "01THT-1050",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "What was the person doing for the longest amount of time?",
+          "answer": "The person is holding a light blue ceramic bowl from t=6.1s to t=30.6s — a duration of ~24.5 seconds.\n\nThey are also holding and lifting a dark blue ceramic bowl from t=6.1s to t=12.3s (~6.2 seconds), and eating from a bowl initially (before t=6.1s, but exact start/end not specified in memory).\n\nSince the longest *explicitly timed* activity is “holding a light blue ceramic bowl” for ~24.5 seconds — and no other activity has a longer documented duration — that is the longest activity.\n\nholding a light blue ceramic bowl",
+          "answer_short": "holding a light blue ceramic bowl",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3555,
+          "tokens_llm": 3555,
+          "tokens_vl": 0,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "01THT-1052",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "sequencing",
+          "question": "Were they interacting with a table before or after putting something on a table?",
+          "answer": "The video has been fully explored (0–31s), and the memory contains no mention of interaction with a table *or* putting something on a table. The summary and facts describe actions involving bowls — holding, lifting, pouring — but all occur in a kitchen setting with countertops, not a table. No triplet or description references a table at all.\n\nSince “table” is absent from all known facts, and the full duration has been explored, we can conclude: there is no evidence of interaction with a table before or after putting something on it — because no table interaction occurred.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3551,
+          "tokens_llm": 3551,
+          "tokens_vl": 0,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "01THT-1018",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "While doing the action they did the longest, which object were they holding?",
+          "answer": "The person held the light blue ceramic bowl from t=6.1s to t=30.6s (≈24.5s), and the dark blue ceramic bowl from t=6.1s to t=12.3s (≈6.2s). The longest-held object is therefore the light blue ceramic bowl.\n\nlight blue ceramic bowl",
+          "answer_short": "light blue ceramic bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3497,
+          "tokens_llm": 3497,
+          "tokens_vl": 0,
+          "prebuild_share": 167.9
+        },
+        {
+          "id": "015XE-296",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, what did they carry?",
+          "answer": "The exploration confirms: the woman raises her hand to touch or adjust one of the framed pictures on the wall — no object is carried. She exits the frame without holding anything. No other person or object-carrying action is observed.\n\nTherefore, nothing was carried.\n\nnothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 6996,
+          "tokens_llm": 5139,
+          "tokens_vl": 1857,
+          "prebuild_share": 172.6
+        },
+        {
+          "id": "015XE-298",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, which object did the person hold?",
+          "answer": "The search_memory returned no facts about objects held by the person. The global summary states she “raises her hand to adjust or interact with something above her, possibly a light fixture or an object on the ceiling”, but does not say she *holds* any object — only that she raises her hand to interact. No narration or explored segment confirms she holds anything.\n\nSince “held” implies physical contact and grasping, and no such object is mentioned or confirmed in memory, and the summary describes only hand-raising (not holding), we must conclude: no object was held.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3230,
+          "tokens_llm": 3230,
+          "tokens_vl": 0,
+          "prebuild_share": 172.6
+        },
+        {
+          "id": "015XE-172",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "While taking a picture of something, was the person carrying something?",
+          "answer": "The global summary states the woman is the main subject, standing near a wall with paintings and a shelf, and later steps out of frame. It describes her actions — looking at the camera, raising her hand to adjust something above her (possibly a light fixture), and stepping out — but never mentions her taking a picture or carrying anything. The search_memory returned no facts about picture-taking or carrying objects. Since the narration is empty and no explored window contains evidence of picture-taking or carrying, and the summary gives no indication she is holding or carrying anything (e.g., a camera), we cannot confirm she was carrying something *while taking a picture*, because there's no evidence she was taking a picture at all.\n\nThus, the premise “while taking a picture” is unsupported — the video does not show or imply picture-taking.\n\nAnswer: no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3292,
+          "tokens_llm": 3292,
+          "tokens_vl": 0,
+          "prebuild_share": 172.6
+        },
+        {
+          "id": "015XE-233",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "Was the person playing on something?",
+          "answer": "The global summary states the woman “raises her hand to adjust or interact with something above her, possibly a light fixture or an object on the ceiling” and that “her actions suggest she is either turning off the light or adjusting it.” There is no mention of playfulness, toys, games, or any behavior consistent with *playing*. The setting is described as a casual domestic environment, but all observed actions are functional (adjusting light, stepping out). No evidence supports “playing.”\n\nAnswer: no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3208,
+          "tokens_llm": 3208,
+          "tokens_vl": 0,
+          "prebuild_share": 172.6
+        },
+        {
+          "id": "015XE-238",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "In the video, was the person closing anything?",
+          "answer": "The global summary states: “The sequence begins with her looking directly at the camera, then she raises her hand to adjust or interact with something above her, possibly a light fixture or an object on the ceiling. Her actions suggest she is either turning off the light or adjusting it. The video concludes with her stepping out of the frame, leaving the room empty.”\n\nNo mention of closing a door, drawer, container, or any object appears in the summary, transcript, or memory. She steps *out of the frame*, but the summary does not say she closes the door (or anything else) — and the wooden door is described only as being “to her right”, with no action attributed to it.\n\nSince “closing” is not supported by any evidence — and the only exit-related action is her stepping out — the answer is:\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3278,
+          "tokens_llm": 3278,
+          "tokens_vl": 0,
+          "prebuild_share": 172.6
+        },
+        {
+          "id": "015XE-297",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "While standing up, what was the person carrying?",
+          "answer": "The global summary states the woman is standing near a wall, with no mention of her carrying anything. The search_memory returned no facts about her carrying an object, and the explored window (0–33s) covers the entire video. The summary describes her raising her hand to adjust something above her and then stepping out of frame — no object is mentioned as being held or carried.\n\nTherefore, she was not carrying anything.\n\nnothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3202,
+          "tokens_llm": 3202,
+          "tokens_vl": 0,
+          "prebuild_share": 172.6
+        },
+        {
+          "id": "015XE-295",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "sequencing",
+          "question": "What was the person interacting with while standing up?",
+          "answer": "The global summary states: “she raises her hand to adjust or interact with something above her, possibly a light fixture or an object on the ceiling. Her actions suggest she is either turning off the light or adjusting it.”\n\nNo narration or explored segment provides definitive identification beyond “possibly a light fixture or an object on the ceiling.” Since the summary explicitly says “possibly a light fixture” and no other evidence contradicts or refines this — and the action is described as adjusting/turning off the light — the most directly supported answer is “light fixture.”\n\nlight fixture",
+          "answer_short": "light fixture",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3231,
+          "tokens_llm": 3231,
+          "tokens_vl": 0,
+          "prebuild_share": 172.6
+        }
+      ]
+    ]
+  }
+}

@@ -94,6 +94,16 @@ flowchart LR
 
 3 方案对照:**agent**(完整 ReAct + 动态场景图)、**rag_only**(预建静态场景图,纯文本 RAG)、**vlm_direct**(每题抽 4 帧均匀覆盖全片直推 VLM,无场景图)。LLM-as-Judge 由 `qwen-plus-latest` 按 `key_facts` 打 0 / 0.5 / 1。
 
+> [!NOTE]
+> **对照轴的设计——agent 与 rag_only 共享同一张图,隔离出「调度」的净贡献**
+>
+> `agent` 与 `rag_only` 吃的是**同一张预建场景图**(同帧数、同 `_prebuild_graph` 流程、同 `keyframe_count`),`vlm_direct` 则不碰图、自己抽帧。三者的差异被刻意做成单一变量:
+>
+> - **rag_only**:把整张图序列化(`scene_graph.to_text()`)无差别灌进 prompt,LLM 一次性作答——**没有 Agent、没有检索、没有按需精读**,代表「静态全量 RAG」的天花板。
+> - **agent**:在**同一张图**之上加了一层调度——用 jieba 多策略 `query_scene_graph` **主动检索**相关三元组,miss 时再用 `inspect_frame` **精读单帧并回写图**(渐进式精化)。
+>
+> 因此 **agent − rag_only 的差距,就是「主动检索 + 渐进精读」调度层相对「静态全量 RAG」的净贡献**——而非更多的视觉输入(两者图完全相同)。AGQA 上 agent **0.364** vs rag_only **0.186**(**近 2×**):rag_only 已拿到图的全部信息,这道近一倍的鸿沟全部记在调度层账上。
+
 ### 公开数据集:AGQA Charades(10 视频 × 70 题 × 3 轮)
 
 题目来自 [AGQA 2.0 balanced](https://cs.stanford.edu/people/ranjaykrishna/agqa/)(Stanford 出品),视频来自 Charades。AGQA 问题是从 Action Genome 的**时空场景图**自动生成的——**主题与本项目高度契合**(题目正是问"时空关系")。英文 QA 由 LLM 翻译成中文(三轮 prompt 迭代修复了子句丢失 / 词义错 / Q/A 不一致),启发式分类成 binary / duration / sequencing / open 四类。

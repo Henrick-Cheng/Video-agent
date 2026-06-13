@@ -89,7 +89,8 @@ def make_inspect_frame(session: "VideoSession"):
                        frame is selected automatically. If no frame is near
                        this timestamp, one is extracted on demand.
             question:  Focused question for the VLM, e.g.
-                       "图中有多少人？" or "墙上的牌子写的什么？"
+                       "How many people are in the frame?" or
+                       "What does the sign on the wall say?"
 
         Returns:
             JSON with keys:
@@ -138,8 +139,8 @@ def make_inspect_frame(session: "VideoSession"):
                 ),
                 "entities_found": ["person_A", "bicycle", "traffic_light"],
                 "relations_found": [
-                    {"subject": "person_A", "relation": "骑乘",   "object": "bicycle"},
-                    {"subject": "bicycle",  "relation": "穿过", "object": "intersection"},
+                    {"subject": "person_A", "relation": "riding",   "object": "bicycle"},
+                    {"subject": "bicycle",  "relation": "crossing", "object": "intersection"},
                 ],
             }
 

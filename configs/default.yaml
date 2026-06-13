@@ -7,7 +7,7 @@ backend: "dashscope"
 models:
   vl:
     provider: "dashscope"
-    model_name: "qwen-vl-plus-latest"       # switch to qwen-vl-max-latest for higher quality
+    model_name: "qwen-vl-plus"              # stable name (the "-latest" alias is access-denied on this account); use qwen-vl-max for higher quality
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
     temperature: 0.1
     max_tokens: 4096

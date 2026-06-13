@@ -1,9 +1,9 @@
 """
-Test: progressive refinement (渐进式精化) — the project's core differentiator.
+Test: progressive refinement — the project's core differentiator.
 
 Pipeline under test:
-  1. build_scene_graph(focus_entities="人") → initial graph with N1 entities
-  2. inspect_frame(question="描述所有可见物体和细节") → VLM deep-reads one frame
+  1. build_scene_graph(focus_entities="person") → initial graph with N1 entities
+  2. inspect_frame(question="describe all visible objects and details") → VLM deep-reads one frame
   3. scene graph back-propagation (automatic inside inspect_frame)
   4. query_scene_graph(keyword) → newly discovered content is findable
 
@@ -51,11 +51,11 @@ def test_progressive_refinement() -> None:
     assert len(frame_ids) >= 1, "should cache at least one frame"
     print(f"\n[Step 1] Extracted {len(frame_ids)} frames: {frame_ids}")
 
-    # ── Step 2: build initial scene graph (focus on 人) ───────────────────────
+    # ── Step 2: build initial scene graph (focus on person) ───────────────────
     builder = make_build_scene_graph(session)
     r2 = json.loads(builder.invoke({
         "frame_ids": ",".join(frame_ids[:2]),
-        "focus_entities": "人",
+        "focus_entities": "person",
     }))
     n1 = len(session.scene_graph.entities)
     t1 = len(session.scene_graph)
@@ -69,7 +69,8 @@ def test_progressive_refinement() -> None:
     inspector = make_inspect_frame(session)
     r3 = json.loads(inspector.invoke({
         "timestamp": first_frame.timestamp,
-        "question": "描述画面中所有可见的物体、人物和细节，包括颜色、形状和相互关系",
+        "question": "Describe all visible objects, people, and details in the frame, "
+                    "including colors, shapes, and their relationships",
     }))
 
     # ── Assert: return contract ───────────────────────────────────────────────
@@ -88,7 +89,7 @@ def test_progressive_refinement() -> None:
     print(f"         nodes_added_to_graph: {r3['nodes_added_to_graph']}")
     print(f"         edges_added_to_graph: {r3['edges_added_to_graph']}")
     print(f"         graph_size_after    : {r3['graph_size_after']}")
-    print(f"[渐进式精化] 场景图增长: {n1}→{n2} entities, {t1}→{t2} triplets")
+    print(f"[progressive refinement] graph grew: {n1}→{n2} entities, {t1}→{t2} triplets")
 
     # ── Assert: graph grew or inspect at least ran cleanly ───────────────────
     assert n2 >= n1, "entity count must not decrease after inspect_frame"
@@ -98,7 +99,7 @@ def test_progressive_refinement() -> None:
     querier = make_query_scene_graph(session)
 
     # Always verify the graph is queryable after inspect
-    r4 = json.loads(querier.invoke({"question": "视频中有什么"}))
+    r4 = json.loads(querier.invoke({"question": "what is in the video"}))
     assert r4["found"], "query_scene_graph must return found=True after build+inspect"
     print(f"[Step 4] query_scene_graph found: {r4['found']}")
     print(f"         {r4['entity_summary']}")

@@ -1,0 +1,2877 @@
+[
+  {
+    "id": "mmbv-0010",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/4jOk3ajqJ2s_processed.mp4",
+    "category": "HL",
+    "question": "What is the author's real name?",
+    "reference_answer": "There is no way to know based on the video content.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 10,
+      "youtube_id": "4jOk3ajqJ2s_processed",
+      "video_type": "Games",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 292.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0053",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Qnyb73rf7gM_processed.mp4",
+    "category": "HL",
+    "question": "Can this game be streamed in mainland China?",
+    "reference_answer": "There is no way to know based on the video content.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 53,
+      "youtube_id": "Qnyb73rf7gM_processed",
+      "video_type": "Games",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 353.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0059",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/dSHcCllTCzY.mp4",
+    "category": "CSR",
+    "question": "Which two games does this video appear to be a combination of?",
+    "reference_answer": "League of Legends and Minecraft.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 59,
+      "youtube_id": "dSHcCllTCzY",
+      "video_type": "Games",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 181.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0075",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/HtFrFZN8ud4.mp4",
+    "category": "FP-S",
+    "question": "Based on this video, which company is the rand-8 IT company in India?",
+    "reference_answer": "HCL Technologies.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 75,
+      "youtube_id": "HtFrFZN8ud4",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "OCR"
+      ],
+      "duration_sec": 95.6,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0101",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Pfq9tqX_r-4.mp4",
+    "category": "CP",
+    "question": "What is this video about?",
+    "reference_answer": "This video explains in layman's terms how finance works.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 101,
+      "youtube_id": "Pfq9tqX_r-4",
+      "video_type": "Finance",
+      "dimensions": [
+        "Video Topic"
+      ],
+      "duration_sec": 59.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0102",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Pfq9tqX_r-4.mp4",
+    "category": "LR",
+    "question": "What is the interest rate in the example given in this video?",
+    "reference_answer": "10/100 = 0.1 = 10%, so the interest rate is 10%.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 102,
+      "youtube_id": "Pfq9tqX_r-4",
+      "video_type": "Finance",
+      "dimensions": [
+        "Mathematical Calculation"
+      ],
+      "duration_sec": 59.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0105",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/bVceDFUlkX4.mp4",
+    "category": "RR",
+    "question": "What is the relationship between the two people sitting face to face in the video?",
+    "reference_answer": "Both of them are professors of Tsinghua University, so they are colleagues.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 105,
+      "youtube_id": "bVceDFUlkX4",
+      "video_type": "Finance",
+      "dimensions": [
+        "Social Relation"
+      ],
+      "duration_sec": 59.3,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0117",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/a1ZNeTpMve8.mp4",
+    "category": "HL",
+    "question": "Where can I download the test papers for the climate risk stress test for the financial industry that appear in the video?",
+    "reference_answer": "I dont know.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 117,
+      "youtube_id": "a1ZNeTpMve8",
+      "video_type": "Finance",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 150.5,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0131",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/cHazQV45SPs.mp4",
+    "category": "TR",
+    "question": "Why has the Fed continued to raise interest rates in recent years?",
+    "reference_answer": "This is to deal with the problem of high domestic inflation.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 131,
+      "youtube_id": "cHazQV45SPs",
+      "video_type": "Finance",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 173.2,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0137",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/ebFwtm1hUWM.mp4",
+    "category": "FP-S",
+    "question": "Does mapo tofu appear in this video?",
+    "reference_answer": "Yes, the food bloggers in this video have already eaten mapo tofu.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 137,
+      "youtube_id": "ebFwtm1hUWM",
+      "video_type": "Food & Drink",
+      "dimensions": [
+        "Object Recognition"
+      ],
+      "duration_sec": 294.5,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0167",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/DrQzaGncGmw.mp4",
+    "category": "TR",
+    "question": "At the beginning of the video, what effect does the clip of the two girls watching others eat?",
+    "reference_answer": "It's a causal relationship. They see other people eating delicious food. They felt very envious, so they planned to eat this delicacy next time.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 167,
+      "youtube_id": "DrQzaGncGmw",
+      "video_type": "Food & Drink",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 158.5,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0171",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/-9mIKCYg2vU.mp4",
+    "category": "CP",
+    "question": "Did the guy eat shrimp in the video?",
+    "reference_answer": "Of course, at about 2 minutes and 50 seconds of the video, the boy is eating shrimp.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 171,
+      "youtube_id": "-9mIKCYg2vU",
+      "video_type": "Food & Drink",
+      "dimensions": [
+        "Video Scene"
+      ],
+      "duration_sec": 278.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0196",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/u0GSFSvWDG4.mp4",
+    "category": "LR",
+    "question": "How much did they spend per person on this meal?",
+    "reference_answer": "They have 3 people, total cost 836 yuan, so the per-person cost is 836/3 =  278.67 yuan.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 196,
+      "youtube_id": "u0GSFSvWDG4",
+      "video_type": "Food & Drink",
+      "dimensions": [
+        "Mathematical Calculation"
+      ],
+      "duration_sec": 190.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0257",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Mylca_onT_I.mp4",
+    "category": "HL",
+    "question": "How many degrees Celsius are the flames coming out of the car in the video?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 257,
+      "youtube_id": "Mylca_onT_I",
+      "video_type": "Autos & Vehicles",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 229.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0276",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/YGE5Q2wgfs8.mp4",
+    "category": "HL",
+    "question": "What is the date this video was taken?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 276,
+      "youtube_id": "YGE5Q2wgfs8",
+      "video_type": "Autos & Vehicles",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 68.3,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0299",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/RWkKNcGmUI0.mp4",
+    "category": "FP-S",
+    "question": "How many kilometers has this blue Volkswagen been driven?",
+    "reference_answer": "According to the subtitles, it is already 84,000 kilometers.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 299,
+      "youtube_id": "RWkKNcGmUI0",
+      "video_type": "Autos & Vehicles",
+      "dimensions": [
+        "OCR"
+      ],
+      "duration_sec": 136.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0324",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/115amzVdV44_processed.mp4",
+    "category": "FP-S",
+    "question": "What bad thing happened at the beginning of the video?",
+    "reference_answer": "The blogger pouring water on computer.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 324,
+      "youtube_id": "115amzVdV44_processed",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "Event Recognition"
+      ],
+      "duration_sec": 82.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0332",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/umlonbnm1Kk.mp4",
+    "category": "FP-S",
+    "question": "How many laptops did the blogger buy?",
+    "reference_answer": "The blogger bought two computers, one of which was for a friend.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 332,
+      "youtube_id": "umlonbnm1Kk",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "OCR"
+      ],
+      "duration_sec": 168.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0338",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zmHB11-V3cs.mp4",
+    "category": "HL",
+    "question": "What does the printer in the video print?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 338,
+      "youtube_id": "zmHB11-V3cs",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 206.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0383",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zRRm1Kpx5zQ.mp4",
+    "category": "FP-S",
+    "question": "What word was printed on the Coke bottle that the boy got finally?",
+    "reference_answer": "The word is \"Love\".",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 383,
+      "youtube_id": "zRRm1Kpx5zQ",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "OCR",
+        "Event Recognition"
+      ],
+      "duration_sec": 45.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0392",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/rdQrwBVRzEg.mp4",
+    "category": "CP",
+    "question": "After the athletes finished their game, how did the mothers feel?",
+    "reference_answer": "The mothers were all touched and excited.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 392,
+      "youtube_id": "rdQrwBVRzEg",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Video Emotion"
+      ],
+      "duration_sec": 136.4,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0399",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/iBIGBcGo1rY.mp4",
+    "category": "CP",
+    "question": "What is the most likely use of this video?",
+    "reference_answer": "The video is an advertisement for the iPhone X’s Face Unlock feature.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 399,
+      "youtube_id": "iBIGBcGo1rY",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Video Topic",
+        "Video Style"
+      ],
+      "duration_sec": 68.1,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0416",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3jQ_toeu314.mp4",
+    "category": "TR",
+    "question": "Why did the peddler give a bottle of 7UP to the girl?",
+    "reference_answer": "Because the girl felt very hot and sweated a lot.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 416,
+      "youtube_id": "3jQ_toeu314",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 40.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0417",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3jQ_toeu314.mp4",
+    "category": "TR",
+    "question": "Why did the peddler take out an umbrella?",
+    "reference_answer": "Because he knew there would be water falling from the sky.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 417,
+      "youtube_id": "3jQ_toeu314",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 40.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0418",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3jQ_toeu314.mp4",
+    "category": "CP",
+    "question": "How did the girl feel after she drank the 7UP?",
+    "reference_answer": "She felt very excited and satisfied. ",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 418,
+      "youtube_id": "3jQ_toeu314",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Video Emotion"
+      ],
+      "duration_sec": 40.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0419",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/UIoqKfO8RJw.mp4",
+    "category": "FP-S",
+    "question": "What happened after the little boy sneezed?",
+    "reference_answer": "The little girl gave the boy a handkerchief.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 419,
+      "youtube_id": "UIoqKfO8RJw",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Event Recognition"
+      ],
+      "duration_sec": 35.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0423",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/z3yqHiQxlhg.mp4",
+    "category": "TR",
+    "question": "Why is the little girl in the video crying?",
+    "reference_answer": "Because her teddy bear is about to be given away by her parents.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 423,
+      "youtube_id": "z3yqHiQxlhg",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 67.6,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0424",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/z3yqHiQxlhg.mp4",
+    "category": "TR",
+    "question": "Why is the girl's mother very sad?",
+    "reference_answer": "Because there's no room at home for the bag she likes, so she's planning to give it away.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 424,
+      "youtube_id": "z3yqHiQxlhg",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 67.6,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0427",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/vBOWe1WK0Ig.mp4",
+    "category": "TR",
+    "question": "What is the reason for yawning mentioned in the video?",
+    "reference_answer": "Yawning occurs when fatigue leads to an increase in carbon dioxide in the body. The body takes deep breaths to metabolize carbon dioxide and replenish oxygen to activate brain blood oxygen concentration",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 427,
+      "youtube_id": "vBOWe1WK0Ig",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 132.6,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0434",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/SX2Ajdf4-34.mp4",
+    "category": "FP-C",
+    "question": "How does the little girl in the video choose fresh pork?",
+    "reference_answer": "She asks the saleswoman to help select it because she has a lot of experience",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 434,
+      "youtube_id": "SX2Ajdf4-34",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 41.1,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0435",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/SX2Ajdf4-34.mp4",
+    "category": "TR",
+    "question": "How does the man wearing glasses react after smelling the pork?",
+    "reference_answer": "The pork is stale. After he smells it, he feels nauseated and wants to vomit.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 435,
+      "youtube_id": "SX2Ajdf4-34",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Causal Reasoning",
+        "Human-object Interaction"
+      ],
+      "duration_sec": 41.1,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0438",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/d2ohLXJBykM.mp4",
+    "category": "LR",
+    "question": "What will appear if you search for Madame Curie on Google according to the video?",
+    "reference_answer": "The Knowledge Graph automatically locates to Marie Curie, and her birth-death years, spouse, children, etc. information is shown on the right side",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 438,
+      "youtube_id": "d2ohLXJBykM",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Structuralized Image-Text Understanding"
+      ],
+      "duration_sec": 85.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0442",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/mSaQXWoUHm0.mp4",
+    "category": "FP-S",
+    "question": "Which no-fly zones are airlines not allowed to fly over according to the video?",
+    "reference_answer": "Sacred religious sites, fragile ecological balance natural reserves, ancient building clusters, and military conflict zones",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 442,
+      "youtube_id": "mSaQXWoUHm0",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "OCR",
+        "Video Scene"
+      ],
+      "duration_sec": 133.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0481",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/rQt4Q-ML7U4.mp4",
+    "category": "AR",
+    "question": "What is the function of the aircraft's landing gear?",
+    "reference_answer": "It serves a shock-absorbing function.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 481,
+      "youtube_id": "rQt4Q-ML7U4",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Function Reasoning"
+      ],
+      "duration_sec": 189.8,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0494",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/mfBNcc33EGA.mp4",
+    "category": "FP-S",
+    "question": "What's the reason for the airplane's luggage weight limit according to the video?",
+    "reference_answer": "It's related to the balance of the airplane.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 494,
+      "youtube_id": "mfBNcc33EGA",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "OCR",
+        "Causal Reasoning"
+      ],
+      "duration_sec": 181.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0495",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/mfBNcc33EGA.mp4",
+    "category": "CSR",
+    "question": "What caused the deformation of the suitcase that appeared at the end of the video?",
+    "reference_answer": "It was caused by impact during the baggage handling process.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 495,
+      "youtube_id": "mfBNcc33EGA",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 181.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0497",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/BbARfF2Gf64.mp4",
+    "category": "TR",
+    "question": "What happens when a car passes quickly over the liquid speed bump in the video?",
+    "reference_answer": "It becomes instantly hard, causing the car to shake.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 497,
+      "youtube_id": "BbARfF2Gf64",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 171.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0499",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/BbARfF2Gf64.mp4",
+    "category": "AR",
+    "question": "According to the video, what is the physical property of non-Newtonian fluid?",
+    "reference_answer": "Non-Newtonian fluids become soft when encountering soft objects and become hard when encountering hard objects.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 499,
+      "youtube_id": "BbARfF2Gf64",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Physical Property"
+      ],
+      "duration_sec": 171.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0505",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/py6OsO_WSqU.mp4",
+    "category": "TR",
+    "question": "Which is cheaper, manganese steel or stainless steel?",
+    "reference_answer": "Stainless steel.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 505,
+      "youtube_id": "py6OsO_WSqU",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 198.4,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0542",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/SEdkof4g8Y8.mp4",
+    "category": "FP-C",
+    "question": "What is the person wearing blue boxing gloves in the video doing?",
+    "reference_answer": "Punching the opponent's stomach.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 542,
+      "youtube_id": "SEdkof4g8Y8",
+      "video_type": "People",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 57.2,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0553",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Eer_CfDgqhY.mp4",
+    "category": "FP-S",
+    "question": "What happened to the blogger at the end of the video?",
+    "reference_answer": "He lay down on the table in despair",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 553,
+      "youtube_id": "Eer_CfDgqhY",
+      "video_type": "People",
+      "dimensions": [
+        "Human Motion"
+      ],
+      "duration_sec": 59.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0556",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/2Ja6H_up6TQ.mp4",
+    "category": "CSR",
+    "question": "Did the man with the hat in the video tell the truth about the machine malfunctioning?",
+    "reference_answer": "No, it was just to create panic among the tourists.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 556,
+      "youtube_id": "2Ja6H_up6TQ",
+      "video_type": "People",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 48.6,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0559",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/opf_wezZTic.mp4",
+    "category": "TR",
+    "question": "Why does the man in the video throw some things into the air?",
+    "reference_answer": "Because he wants to slice them with a knife as they fall.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 559,
+      "youtube_id": "opf_wezZTic",
+      "video_type": "People",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 27.9,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0562",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/tn3bGHxJH_M.mp4",
+    "category": "FP-C",
+    "question": "What is the man with the gun in the video doing?",
+    "reference_answer": "Robbing someone else.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 562,
+      "youtube_id": "tn3bGHxJH_M",
+      "video_type": "People",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 32.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0568",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zm5bL2v876s.mp4",
+    "category": "CSR",
+    "question": "What does this video want to illustrate?",
+    "reference_answer": "Street dancers are more expressive than social media dancers.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 568,
+      "youtube_id": "zm5bL2v876s",
+      "video_type": "People",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 20.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0601",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/RnDYM-EBsXM.mp4",
+    "category": "CSR",
+    "question": "Who is the defending player, the man with the blue T-shirt or the man with the black T-shirt?",
+    "reference_answer": "Blue",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 601,
+      "youtube_id": "RnDYM-EBsXM",
+      "video_type": "Sports",
+      "dimensions": [
+        "Common Sense Reasoning",
+        "Human Motion"
+      ],
+      "duration_sec": 25.3,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0612",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/no9Ajy0tabs.mp4",
+    "category": "FP-S",
+    "question": "Was anyone hurt in the video?",
+    "reference_answer": "Yes, a man in white get hurt and bleeds.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 612,
+      "youtube_id": "no9Ajy0tabs",
+      "video_type": "Sports",
+      "dimensions": [
+        "Event Recognition"
+      ],
+      "duration_sec": 75.5,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0617",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/ccz1kfkdo2o.mp4",
+    "category": "FP-S",
+    "question": "What is Cao Yuan's final total score?",
+    "reference_answer": "547.60",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 617,
+      "youtube_id": "ccz1kfkdo2o",
+      "video_type": "Sports",
+      "dimensions": [
+        "OCR"
+      ],
+      "duration_sec": 131.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0633",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/qyOpdQO2__c.mp4",
+    "category": "FP-S",
+    "question": "Did the first man in the video to compete succeed or fail?",
+    "reference_answer": "The first man failed.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 633,
+      "youtube_id": "qyOpdQO2__c",
+      "video_type": "Sports",
+      "dimensions": [
+        "Event Recognition"
+      ],
+      "duration_sec": 92.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0660",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/h70GdtAkEOw.mp4",
+    "category": "HL",
+    "question": "What is the name of the man in the video?",
+    "reference_answer": "I don't know.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 660,
+      "youtube_id": "h70GdtAkEOw",
+      "video_type": "Instruction Video (how to ...)",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 27.2,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0673",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/b5soe5g0igs.mp4",
+    "category": "HL",
+    "question": "What was the doctor's advice in the video?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 673,
+      "youtube_id": "b5soe5g0igs",
+      "video_type": "Instruction Video (how to ...)",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 39.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0677",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/nJYKKyZFqzU.mp4",
+    "category": "FP-S",
+    "question": "How many methods does the video describe?",
+    "reference_answer": "Two methods.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 677,
+      "youtube_id": "nJYKKyZFqzU",
+      "video_type": "Instruction Video (how to ...)",
+      "dimensions": [
+        "Counting"
+      ],
+      "duration_sec": 64.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0679",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3cs8S_urAXU.mp4",
+    "category": "HL",
+    "question": "What country is the girl in the video from?\n",
+    "reference_answer": "I don't konw.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 679,
+      "youtube_id": "3cs8S_urAXU",
+      "video_type": "Instruction Video (how to ...)",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 140.2,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0688",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/pod4x5NJoYI.mp4",
+    "category": "FP-S",
+    "question": "How many people appear in the video?",
+    "reference_answer": "Only one",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 688,
+      "youtube_id": "pod4x5NJoYI",
+      "video_type": "Instruction Video (how to ...)",
+      "dimensions": [
+        "Counting"
+      ],
+      "duration_sec": 93.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0691",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Mng2me2TNro.mp4",
+    "category": "HL",
+    "question": "What is the name of the host in the video?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 691,
+      "youtube_id": "Mng2me2TNro",
+      "video_type": "Finance",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 119.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0699",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/jF31ICvl1T8.mp4",
+    "category": "LR",
+    "question": "According to the video, which is higher, median price residential land in 2023 or in 2013?",
+    "reference_answer": "median price residential in 2023 is higher.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 699,
+      "youtube_id": "jF31ICvl1T8",
+      "video_type": "Finance",
+      "dimensions": [
+        "Structuralized Image-Text Understanding"
+      ],
+      "duration_sec": 116.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0722",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/QVzeW1_hyHI.mp4",
+    "category": "FP-C",
+    "question": "What the protagonists do at the beginning of the video ?",
+    "reference_answer": "He's drinking with his friends.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 722,
+      "youtube_id": "QVzeW1_hyHI",
+      "video_type": "Humor",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 184.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0739",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/fYP4SryI9L0.mp4",
+    "category": "FP-C",
+    "question": "Who loses the race at the end, and what is the punishment?",
+    "reference_answer": "A little white boy loses the race and is thrown into a pool by his two companions at the end of the video.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 739,
+      "youtube_id": "fYP4SryI9L0",
+      "video_type": "Humor",
+      "dimensions": [
+        "Human Interaction",
+        "Event Recognition"
+      ],
+      "duration_sec": 121.3,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0748",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/_Zt1EuIEhvw_processed.mp4",
+    "category": "FP-C",
+    "question": "What is the final step?",
+    "reference_answer": "Cover the bag with a towel, then shake it for five minutes, or until the fluid in the small bag transforms into ice cream.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 748,
+      "youtube_id": "_Zt1EuIEhvw_processed",
+      "video_type": "Instruction Video (how to ...)",
+      "dimensions": [
+        "Human-object Interaction"
+      ],
+      "duration_sec": 214.3,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0757",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/2mYHGn_Pd5M_processed.mp4",
+    "category": "CSR",
+    "question": "What are some other non-Newtonian fluids in addition to ketchup and corn starch?",
+    "reference_answer": "In addition to ketchup and cornstarch, there are several other examples of non-Newtonian fluids in everyday life. These include:\n\n1. **Toothpaste**: It behaves more like a solid in the tube, but flows like a liquid under pressure when you squeeze the tube.\n\n2. **Slime**: A very popular non-Newtonian fluid among kids. It behaves like a solid when hit swiftly, but will flow like a liquid when handled gently.\n\n3. **Blood**: It behaves as a Non-Newtonian fluid due to the red blood cells it contains.\n\nThese examples showcase a diverse range of materials that change their behaviors under different conditions, illustrating the fascinating properties of non-Newtonian fluids.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 757,
+      "youtube_id": "2mYHGn_Pd5M_processed",
+      "video_type": "Science",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 182.8,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0769",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Q1cDKWToTGA.mp4",
+    "category": "FP-C",
+    "question": "What activities are available to the characters in the game?",
+    "reference_answer": "It is worth mentioning that the game's protagonist has the ability to fish, plant trees, build a snowman, arrange furniture, and socialize with friends.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 769,
+      "youtube_id": "Q1cDKWToTGA",
+      "video_type": "Games",
+      "dimensions": [
+        "Human-object Interaction",
+        "Human Interaction"
+      ],
+      "duration_sec": 104.3,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0771",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Q1cDKWToTGA.mp4",
+    "category": "HL",
+    "question": "How much does this game sell for?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 771,
+      "youtube_id": "Q1cDKWToTGA",
+      "video_type": "Games",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 104.3,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0772",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/1zLgiOaOzNI.mp4",
+    "category": "CP",
+    "question": "What classification of game do you believe this falls under?",
+    "reference_answer": "It is an action-adventure video game with elements from platform games. It is specifically designed for split-screen cooperative multiplayer.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 772,
+      "youtube_id": "1zLgiOaOzNI",
+      "video_type": "Games",
+      "dimensions": [
+        "Video Topic"
+      ],
+      "duration_sec": 162.5,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0798",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/bS1ePEZZCDY_processed.mp4",
+    "category": "CP",
+    "question": "What's Mr. Bean doing ?",
+    "reference_answer": "He sees the guy next to him eating a sandwich, so he's making one.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 798,
+      "youtube_id": "bS1ePEZZCDY_processed",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Video Topic",
+        "Human Motion"
+      ],
+      "duration_sec": 282.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0810",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/8dgyPRA86K0.mp4",
+    "category": "CSR",
+    "question": "What is the principle of this phenomenon?",
+    "reference_answer": "This device is a Newton's pendulum, which is based on the principle of conservation of momentum.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 810,
+      "youtube_id": "8dgyPRA86K0",
+      "video_type": "Science",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 273.4,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0814",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/c_lFunATvhk.mp4",
+    "category": "RR",
+    "question": "Which way is the arrow on the white paper at the beginning of the video pointing?",
+    "reference_answer": "The arrow on the white paper at the beginning of the video is pointing to the right.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 814,
+      "youtube_id": "c_lFunATvhk",
+      "video_type": "Science",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 263.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0824",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/RTSrYhD-Qk0.mp4",
+    "category": "CSR",
+    "question": "Why did the balloon pick up the hair?",
+    "reference_answer": "Balloons create static electricity through friction, so they can attract light objects.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 824,
+      "youtube_id": "RTSrYhD-Qk0",
+      "video_type": "Science",
+      "dimensions": [
+        "Common Sense Reasoning",
+        "Causal Reasoning"
+      ],
+      "duration_sec": 128.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0827",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/dxE80fpImj8.mp4",
+    "category": "CSR",
+    "question": "What is the principle of the experiments in the video?",
+    "reference_answer": "This phenomenon can be explained by Lenz's law, which states that the magnetic field of an induced current must always impede the change in magnetic flux that causes the induced current.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 827,
+      "youtube_id": "dxE80fpImj8",
+      "video_type": "Science",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 120.1,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0845",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/V_Hn6pT4M-Y.mp4",
+    "category": "FP-S",
+    "question": "Why was the balloon blown up at the end?",
+    "reference_answer": "The baking soda and the vinegar create an ACID-BASE reaction and the two chemicals work together to create a gas, carbon dioxide. \nGases need space to move and therefore it moves into the balloon and inflates it.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 845,
+      "youtube_id": "V_Hn6pT4M-Y",
+      "video_type": "Science",
+      "dimensions": [
+        "OCR",
+        "Causal Reasoning"
+      ],
+      "duration_sec": 58.9,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0851",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/biAFfW-uiKI.mp4",
+    "category": "TR",
+    "question": "What color will the solution change to if you keep stirring?",
+    "reference_answer": "The solution will stay green.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 851,
+      "youtube_id": "biAFfW-uiKI",
+      "video_type": "Science",
+      "dimensions": [
+        "Future Prediction",
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 124.2,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0940",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/0018ybk0K-E.mp4",
+    "category": "FP-S",
+    "question": "How many types of cancer can now be identified through the blood test?",
+    "reference_answer": "50 kinds of cancer can now be identified through the blood test. ",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 940,
+      "youtube_id": "0018ybk0K-E",
+      "video_type": "News",
+      "dimensions": [
+        "OCR"
+      ],
+      "duration_sec": 182.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0967",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/2zTwYcdW0Ew.mp4",
+    "category": "FP-S",
+    "question": "What are the two firefighters carrying in their hands at the end of the video?",
+    "reference_answer": "A ladder.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 967,
+      "youtube_id": "2zTwYcdW0Ew",
+      "video_type": "News",
+      "dimensions": [
+        "Object Recognition"
+      ],
+      "duration_sec": 80.2,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0993",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/LOxxhecSHQM.mp4",
+    "category": "CP",
+    "question": "At the beginning of this story, where do two octopuses live?",
+    "reference_answer": "In a fish tank in the seafood store. ",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 993,
+      "youtube_id": "LOxxhecSHQM",
+      "video_type": "Humor",
+      "dimensions": [
+        "Video Scene"
+      ],
+      "duration_sec": 143.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0994",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/LOxxhecSHQM.mp4",
+    "category": "FP-C",
+    "question": "What is this man trying to do?",
+    "reference_answer": "He's trying to catch those two octopuses.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 994,
+      "youtube_id": "LOxxhecSHQM",
+      "video_type": "Humor",
+      "dimensions": [
+        "Human-object Interaction"
+      ],
+      "duration_sec": 143.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1005",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/XnABXVhqXI0.mp4",
+    "category": "CP",
+    "question": "What product is this video meant to market?",
+    "reference_answer": "Hero garbage bag",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1005,
+      "youtube_id": "XnABXVhqXI0",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Video Topic"
+      ],
+      "duration_sec": 45.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1027",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/GgqhnkkJTp8.mp4",
+    "category": "CP",
+    "question": "What is the topic of this video?",
+    "reference_answer": "This video is an advertisement of 飞象, a platform for food delivery in Thailand",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1027,
+      "youtube_id": "GgqhnkkJTp8",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Video Topic",
+        "OCR"
+      ],
+      "duration_sec": 162.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1030",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/GgqhnkkJTp8.mp4",
+    "category": "FP-C",
+    "question": "How does the man in the video communicate with his family. ",
+    "reference_answer": "via video chat",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1030,
+      "youtube_id": "GgqhnkkJTp8",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 162.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1074",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/9uBbgltCs94.mp4",
+    "category": "TR",
+    "question": "Why the bird is too scared to go to the beach?",
+    "reference_answer": "It initially went to the seashore to search for food when it was confronted by the waves.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1074,
+      "youtube_id": "9uBbgltCs94",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 129.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1082",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zON0wDD7VJY.mp4",
+    "category": "TR",
+    "question": "The first man who made a wish, what was his wish?",
+    "reference_answer": "He wished for wealth.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1082,
+      "youtube_id": "zON0wDD7VJY",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 288.3,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1100",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/GhABIaANJCY.mp4",
+    "category": "CP",
+    "question": "Tell me how the guy felt at the beginning of the video.",
+    "reference_answer": "He felt lonely and depressed.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1100,
+      "youtube_id": "GhABIaANJCY",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Video Emotion"
+      ],
+      "duration_sec": 180.3,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1120",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Zvoxf_W1ZvA.mp4",
+    "category": "LR",
+    "question": "Based on this video, is Dairy Queen ranked higher than Papa John's?",
+    "reference_answer": "No, Dairy Queen is ranked NO.10 and Papa John's is ranked NO.6.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1120,
+      "youtube_id": "Zvoxf_W1ZvA",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Mathematical Calculation",
+        "OCR"
+      ],
+      "duration_sec": 65.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1140",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zBv_fuKyg5E.mp4",
+    "category": "CSR",
+    "question": "Where is the factory in this video? China, Germany, or United States. Please provide your reason.",
+    "reference_answer": "China, cuz there appear many Chinese words in the production line.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1140,
+      "youtube_id": "zBv_fuKyg5E",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Common Sense Reasoning",
+        "OCR"
+      ],
+      "duration_sec": 40.8,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1162",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/O-17kqjsiFc_processed.mp4",
+    "category": "LR",
+    "question": "In 2006, which website surpass Yahoo becoming NO.1?",
+    "reference_answer": "Google.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1162,
+      "youtube_id": "O-17kqjsiFc_processed",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Structuralized Image-Text Understanding"
+      ],
+      "duration_sec": 300.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1176",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/9OxNk-d1PNw.mp4",
+    "category": "LR",
+    "question": "In which year did Amazon surpass eBay becoming NO.1 in all internet companies?",
+    "reference_answer": "2008.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1176,
+      "youtube_id": "9OxNk-d1PNw",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Structuralized Image-Text Understanding"
+      ],
+      "duration_sec": 306.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1185",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/e_iZaS00xds.mp4",
+    "category": "HL",
+    "question": "Did NIO rank the 20th place in the chart?",
+    "reference_answer": "No. NIO ranked 21st. ",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1185,
+      "youtube_id": "e_iZaS00xds",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Hallucination",
+        "Structuralized Image-Text Understanding"
+      ],
+      "duration_sec": 179.2,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1202",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/ZVl-Lm_XaTI.mp4",
+    "category": "HL",
+    "question": "Did any human appear in this video?",
+    "reference_answer": "No",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1202,
+      "youtube_id": "ZVl-Lm_XaTI",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Hallucination",
+        "Object Recognition"
+      ],
+      "duration_sec": 46.3,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1212",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/QH7GaLx5JYc.mp4",
+    "category": "CP",
+    "question": "Where did the event took place in this video.",
+    "reference_answer": "On a golf course.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1212,
+      "youtube_id": "QH7GaLx5JYc",
+      "video_type": "News",
+      "dimensions": [
+        "Video Scene"
+      ],
+      "duration_sec": 93.5,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1228",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/xUkqUL5bXSE.mp4",
+    "category": "CP",
+    "question": "What was Mike's birthday gift when he was 25?",
+    "reference_answer": "It was an accordion and a yellow stripe tie. ",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1228,
+      "youtube_id": "xUkqUL5bXSE",
+      "video_type": "Humor",
+      "dimensions": [
+        "Video Scene",
+        "OCR"
+      ],
+      "duration_sec": 203.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1245",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/HxxfnxOIzdo.mp4",
+    "category": "TR",
+    "question": "Why the lizard stopped to chase the cloude.",
+    "reference_answer": "Because it was attacked by thunders.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1245,
+      "youtube_id": "HxxfnxOIzdo",
+      "video_type": "Humor",
+      "dimensions": [
+        "Causal Reasoning",
+        "Event Recognition"
+      ],
+      "duration_sec": 210.3,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1250",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/rDWzQ6lZNpY.mp4",
+    "category": "FP-S",
+    "question": "What's the transportation that Popy and Buck take in the desert?",
+    "reference_answer": "A shopping cart.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1250,
+      "youtube_id": "rDWzQ6lZNpY",
+      "video_type": "Humor",
+      "dimensions": [
+        "Object Recognition",
+        "Human-object Interaction"
+      ],
+      "duration_sec": 211.3,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1281",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/QKHPOzA9Ge0_processed.mp4",
+    "category": "CP",
+    "question": "Where are the batteries?",
+    "reference_answer": "In the drawer by the refrigerator.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1281,
+      "youtube_id": "QKHPOzA9Ge0_processed",
+      "video_type": "Humor",
+      "dimensions": [
+        "Video Scene"
+      ],
+      "duration_sec": 224.8,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1287",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/rhkkCDTkcvI_processed.mp4",
+    "category": "FP-C",
+    "question": "What's the boy's favorite color?",
+    "reference_answer": "Khaki",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1287,
+      "youtube_id": "rhkkCDTkcvI_processed",
+      "video_type": "Humor",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 196.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1307",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/ApNRpFOKQrA.mp4",
+    "category": "HL",
+    "question": "What country is the host from?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1307,
+      "youtube_id": "ApNRpFOKQrA",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 46.9,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1327",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/W8OzZa16vtE.mp4",
+    "category": "CSR",
+    "question": "Which subject is this video about, math, physics, chemistry, or biology?",
+    "reference_answer": "Chemistry",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1327,
+      "youtube_id": "W8OzZa16vtE",
+      "video_type": "Science",
+      "dimensions": [
+        "Common Sense Reasoning"
+      ],
+      "duration_sec": 120.1,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1331",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/r7COWvxlN5g_processed.mp4",
+    "category": "FP-S",
+    "question": "Which laptop has more USB-C ports? Mac or Windows?",
+    "reference_answer": "The Windows laptop",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1331,
+      "youtube_id": "r7COWvxlN5g_processed",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "Attribute Recognition"
+      ],
+      "duration_sec": 180.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1336",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/0eKi5V1IOi0.mp4",
+    "category": "RR",
+    "question": "Are the four men more likely to be friends or competitors?",
+    "reference_answer": "They're more likely to be friends because they're touching each other, walking in similar posture, and smiling when they speak.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1336,
+      "youtube_id": "0eKi5V1IOi0",
+      "video_type": "People",
+      "dimensions": [
+        "Social Relation"
+      ],
+      "duration_sec": 28.2,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1341",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/hHZvUeAdzeI.mp4",
+    "category": "FP-C",
+    "question": "In the video, did the man who kept slapping others slap the one he was initially talking to?",
+    "reference_answer": "No, he didn't.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1341,
+      "youtube_id": "hHZvUeAdzeI",
+      "video_type": "People",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 71.8,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1351",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/qfUZBKDh9BY_processed.mp4",
+    "category": "CSR",
+    "question": "What does LCSO means in this video?",
+    "reference_answer": "Learn Computer Science Online.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1351,
+      "youtube_id": "qfUZBKDh9BY_processed",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "Common Sense Reasoning",
+        "OCR"
+      ],
+      "duration_sec": 120.1,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1362",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/YGSKW5AVBjc.mp4",
+    "category": "FP-S",
+    "question": "How many people is not wearing tops in this video?",
+    "reference_answer": "There is only one person.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1362,
+      "youtube_id": "YGSKW5AVBjc",
+      "video_type": "People",
+      "dimensions": [
+        "Attribute Recognition",
+        "Counting"
+      ],
+      "duration_sec": 115.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1368",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/WCT6xM9jyzA.mp4",
+    "category": "RR",
+    "question": "What is the spatial relationship between the driver and his vehicle?",
+    "reference_answer": "The driver is sitting on his vehicle.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1368,
+      "youtube_id": "WCT6xM9jyzA",
+      "video_type": "People",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 122.6,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1373",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/PU7j9UF4lpA.mp4",
+    "category": "FP-S",
+    "question": "What is the TV station that is playing this show?",
+    "reference_answer": "CDTV-3 or 天府-TV",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1373,
+      "youtube_id": "PU7j9UF4lpA",
+      "video_type": "People",
+      "dimensions": [
+        "OCR"
+      ],
+      "duration_sec": 212.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1392",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/BY3nBVbUYjI.mp4",
+    "category": "FP-S",
+    "question": "How many boats are there at least in this video?",
+    "reference_answer": "Two",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1392,
+      "youtube_id": "BY3nBVbUYjI",
+      "video_type": "People",
+      "dimensions": [
+        "Object Recognition"
+      ],
+      "duration_sec": 81.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1404",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/4Gb0lotHA8E.mp4",
+    "category": "TR",
+    "question": "What does this video want to express? ",
+    "reference_answer": "The video wants to encourage people to help others, while the people one will also support him / her when the helper is in trouble.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1404,
+      "youtube_id": "4Gb0lotHA8E",
+      "video_type": "People",
+      "dimensions": [
+        "Causal Reasoning",
+        "Video Emotion"
+      ],
+      "duration_sec": 19.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1441",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/S2nBBMbjS8w.mp4",
+    "category": "CP",
+    "question": "What is the product that the video is trying to market?",
+    "reference_answer": "Coca-Cola",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1441,
+      "youtube_id": "S2nBBMbjS8w",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Video Topic"
+      ],
+      "duration_sec": 62.1,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1443",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/AkaEnPxMla8.mp4",
+    "category": "TR",
+    "question": "Why doesn't the pudding get pierced when placed on hundreds of toothpicks?\n",
+    "reference_answer": "Sharp objects have the ability to pierce through the pudding because the force is focused at the point, but when hundreds of toothpicks are used, the force is dispersed, which makes piercing difficult.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1443,
+      "youtube_id": "AkaEnPxMla8",
+      "video_type": "Science",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 120.1,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1454",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/bRpUauseTVw.mp4",
+    "category": "FP-C",
+    "question": "What did Mr. Bean originally want to throw at the end of the video, but was prevented from doing so?",
+    "reference_answer": "He tried to throw a chair, but was stopped by the staff.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1454,
+      "youtube_id": "bRpUauseTVw",
+      "video_type": "Humor",
+      "dimensions": [
+        "Human-object Interaction"
+      ],
+      "duration_sec": 155.2,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1477",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/q01PqUubacA.mp4",
+    "category": "FP-S",
+    "question": "What caused the traffic jam in the end of the video?",
+    "reference_answer": "A driverless car accidentally stopped in the fast lane and caused a major traffic jam.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1477,
+      "youtube_id": "q01PqUubacA",
+      "video_type": "Autos & Vehicles",
+      "dimensions": [
+        "Event Recognition"
+      ],
+      "duration_sec": 277.8,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1478",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/q01PqUubacA.mp4",
+    "category": "HL",
+    "question": "What is the nationality of the presenter at the beginning of the video?",
+    "reference_answer": "I don't know",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1478,
+      "youtube_id": "q01PqUubacA",
+      "video_type": "Autos & Vehicles",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 277.8,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1523",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/EpFKDzmMnao_processed.mp4",
+    "category": "FP-S",
+    "question": "What kind of game console did the author dismantle?",
+    "reference_answer": "A Xbox one X",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1523,
+      "youtube_id": "EpFKDzmMnao_processed",
+      "video_type": "Computers & Electronics",
+      "dimensions": [
+        "Object Recognition"
+      ],
+      "duration_sec": 354.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1552",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/LEHR8YQNm_Q.mp4",
+    "category": "TR",
+    "question": "In the video, what happens next after the yellow ball flying towards the apple (which really happens, not in the man's imagination)? ",
+    "reference_answer": "The yellow ball passed the apple and continue to fly. The apple didn't fall down.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1552,
+      "youtube_id": "LEHR8YQNm_Q",
+      "video_type": "Science",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 307.8,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1580",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/hq7nFVTFukc.mp4",
+    "category": "TR",
+    "question": "What are common images composed of, according to the video?",
+    "reference_answer": "They are composed of three layers called R,G,B channels.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1580,
+      "youtube_id": "hq7nFVTFukc",
+      "video_type": "Algorithm & Models",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 237.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1586",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/68191uKawYw.mp4",
+    "category": "TR",
+    "question": "Why is the loss graph expected to be a lot noiser after implementing MiniBatch training?",
+    "reference_answer": "Because differnet minibatches main contain differnet proportions of samples, which makes the model have different performance.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1586,
+      "youtube_id": "68191uKawYw",
+      "video_type": "Algorithm & Models",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 243.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1590",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/5phZ6-eHbqM.mp4",
+    "category": "TR",
+    "question": "Do penguins have long legs, according to the video?",
+    "reference_answer": "Yes, the penguin has very long legs. But half of its legs are usually hidden when it walks.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1590,
+      "youtube_id": "5phZ6-eHbqM",
+      "video_type": "News",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 266.4,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1598",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/l1uE_pBqnvE.mp4",
+    "category": "RR",
+    "question": "What is the relationship between the man in red T-shirt and the man in white shirt?",
+    "reference_answer": "They are classmates since they're the students attending the same course.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1598,
+      "youtube_id": "l1uE_pBqnvE",
+      "video_type": "People",
+      "dimensions": [
+        "Social Relation"
+      ],
+      "duration_sec": 49.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1627",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/tnMr9abBX7k.mp4",
+    "category": "RR",
+    "question": "What is the relationship between the two men in the video?",
+    "reference_answer": "They are student and teacher.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1627,
+      "youtube_id": "tnMr9abBX7k",
+      "video_type": "People",
+      "dimensions": [
+        "Social Relation"
+      ],
+      "duration_sec": 32.1,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1630",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/ZNRSHr3b4uA.mp4",
+    "category": "TR",
+    "question": "What would the aliens do after they eat up all the milk chocolates?",
+    "reference_answer": "They would stop dancing until they find more milk chocolates.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1630,
+      "youtube_id": "ZNRSHr3b4uA",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Future Prediction"
+      ],
+      "duration_sec": 41.2,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1641",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/66XwG1CLHuU.mp4",
+    "category": "TR",
+    "question": "What would Apple do in the future years before 2030 based on Apple's plan?",
+    "reference_answer": "Apple would try its best to make everything Apple completely carbon neutral.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1641,
+      "youtube_id": "66XwG1CLHuU",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Future Prediction"
+      ],
+      "duration_sec": 75.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1642",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/9HsKNFr7xmI.mp4",
+    "category": "AR",
+    "question": "What is the occupation of the man in a blue T-shirt?",
+    "reference_answer": "He is a deliveryman.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1642,
+      "youtube_id": "9HsKNFr7xmI",
+      "video_type": "People",
+      "dimensions": [
+        "Identity Reasoning"
+      ],
+      "duration_sec": 38.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1643",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/9HsKNFr7xmI.mp4",
+    "category": "LR",
+    "question": "How much larger is a large pizza than a small pizza according to the video?",
+    "reference_answer": "A large pizza is four inches bigger than a small pizza.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1643,
+      "youtube_id": "9HsKNFr7xmI",
+      "video_type": "People",
+      "dimensions": [
+        "Mathematical Calculation"
+      ],
+      "duration_sec": 38.7,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1701",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/TseT4C38UAg.mp4",
+    "category": "FP-C",
+    "question": "What did the blue-haired boy do that first makes the purple-haired girl angry?",
+    "reference_answer": "The little boy spilled water from the fish tank on the girl.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1701,
+      "youtube_id": "TseT4C38UAg",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 223.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1712",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/uO8v6bjwRdo.mp4",
+    "category": "LR",
+    "question": "How many cubic millimeters larger is the brain of a bee than that of a mosquito?",
+    "reference_answer": "According to the video, the brain volume of a bee is 0.8 cubic millimeters larger than that of a mosquito.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1712,
+      "youtube_id": "uO8v6bjwRdo",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Mathematical Calculation"
+      ],
+      "duration_sec": 146.6,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1720",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/BfemWi1SKdw.mp4",
+    "category": "LR",
+    "question": "How many times the diameter of a giraffe's eye is that of a horse's eye?",
+    "reference_answer": "The diameter of a giraffe's eye is 0.8 times the diameter of a horse's eye.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1720,
+      "youtube_id": "BfemWi1SKdw",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Mathematical Calculation"
+      ],
+      "duration_sec": 168.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1734",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Zh3Yz3PiXZw_processed.mp4",
+    "category": "AR",
+    "question": "What is the identity of Danny?",
+    "reference_answer": "Danny is a student.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1734,
+      "youtube_id": "Zh3Yz3PiXZw_processed",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Identity Reasoning"
+      ],
+      "duration_sec": 240.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1751",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/M7OiIun5NfQ.mp4",
+    "category": "FP-C",
+    "question": "What is the grandma doing at the end?",
+    "reference_answer": "She is wandering and waiting the young man.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1751,
+      "youtube_id": "M7OiIun5NfQ",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 80.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1753",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/X3COFNPpdDc_processed.mp4",
+    "category": "TR",
+    "question": "What will the man who waves get?",
+    "reference_answer": "Maybe get a chance to go to the beach.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1753,
+      "youtube_id": "X3COFNPpdDc_processed",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Future Prediction"
+      ],
+      "duration_sec": 120.1,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1762",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/B363bRgVUUA_processed.mp4",
+    "category": "TR",
+    "question": "Why a character can go from the bottom to the top?",
+    "reference_answer": "Because this game uses optical illusions.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1762,
+      "youtube_id": "B363bRgVUUA_processed",
+      "video_type": "Games",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 80.8,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1778",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/bTG65BRLaRE_processed.mp4",
+    "category": "TR",
+    "question": "What’s so special about the old man who appears at the beginning?",
+    "reference_answer": "He turned into a leg.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1778,
+      "youtube_id": "bTG65BRLaRE_processed",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 100.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1792",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/lWCA_3GLrCE_processed.mp4",
+    "category": "TR",
+    "question": "What happened to the chicken?",
+    "reference_answer": "This raw chicken became fried chicken.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1792,
+      "youtube_id": "lWCA_3GLrCE_processed",
+      "video_type": "Food & Drink",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 123.8,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1811",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/T2XOiCM0OOA_processed.mp4",
+    "category": "RR",
+    "question": "What is the effect of water flow on soil?",
+    "reference_answer": "Water erodes soil.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1811,
+      "youtube_id": "T2XOiCM0OOA_processed",
+      "video_type": "Science",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 120.3,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1823",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/cTA2rkKp6qo_processed.mp4",
+    "category": "AR",
+    "question": "Why is solid water less dense?\n",
+    "reference_answer": "Because when it freezes, water molecules form a stable lattice through hydrogen bonds.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1823,
+      "youtube_id": "cTA2rkKp6qo_processed",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Physical Property"
+      ],
+      "duration_sec": 292.7,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1838",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/ddzjFNvpZhM.mp4",
+    "category": "RR",
+    "question": "What is the relationship between the two people who appear most often in the video?",
+    "reference_answer": "Father-son relationship.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1838,
+      "youtube_id": "ddzjFNvpZhM",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "Social Relation"
+      ],
+      "duration_sec": 59.8,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1841",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/yVkdfJ9PkRQ.mp4",
+    "category": "AR",
+    "question": "Why does each ball swing inconsistently?",
+    "reference_answer": "Because the length of the rope is inconsistent",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1841,
+      "youtube_id": "yVkdfJ9PkRQ",
+      "video_type": "Science",
+      "dimensions": [
+        "Physical Property"
+      ],
+      "duration_sec": 105.1,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1850",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/5eNhS0oaLHo_processed.mp4",
+    "category": "TR",
+    "question": "What is a counterfactual?\n",
+    "reference_answer": "Counterfactuals are sometimes defined as conditional statements in which the first half of the condition is false.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1850,
+      "youtube_id": "5eNhS0oaLHo_processed",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 280.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1851",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/5eNhS0oaLHo_processed.mp4",
+    "category": "TR",
+    "question": "Regarding counterfactuals, why is it said that the second half of the condition is not necessarily false?\n",
+    "reference_answer": "Even if pigs couldn't fly I could try your horrible cooking and you would still get sick even without eating street meat.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1851,
+      "youtube_id": "5eNhS0oaLHo_processed",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 280.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1868",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/9j_HWkrSxzI_processed.mp4",
+    "category": "TR",
+    "question": "What is causality?",
+    "reference_answer": "Casuality can be defined as the difference between actual outcomes and counterfactual outcomes.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1868,
+      "youtube_id": "9j_HWkrSxzI_processed",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Counterfactual Reasoning",
+        "OCR",
+        "Causal Reasoning"
+      ],
+      "duration_sec": 292.2,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1879",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/QkPJzK9SnTg.mp4",
+    "category": "AR",
+    "question": "What is the function of alcohol in the video?",
+    "reference_answer": "In the video, alcohol is used to extract pigments from the leaves.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1879,
+      "youtube_id": "QkPJzK9SnTg",
+      "video_type": "Science",
+      "dimensions": [
+        "Function Reasoning"
+      ],
+      "duration_sec": 178.4,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1889",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/Mwc4ePLjkQ8_processed.mp4",
+    "category": "FP-C",
+    "question": "Why is try to start a conversation with more people.",
+    "reference_answer": "Because conversation leads to more conversations.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1889,
+      "youtube_id": "Mwc4ePLjkQ8_processed",
+      "video_type": "People",
+      "dimensions": [
+        "Human Interaction"
+      ],
+      "duration_sec": 279.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1893",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/WydM_QmW1ec.mp4",
+    "category": "AR",
+    "question": "What is the function of the almost extinguished wooden stick in the video?",
+    "reference_answer": "A nearly extinguished stick can be used to test what kind of gas is being collected. The gas captured in the video caused the stick to re-ignite, thus proving the production of oxygen.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1893,
+      "youtube_id": "WydM_QmW1ec",
+      "video_type": "Science",
+      "dimensions": [
+        "Function Reasoning"
+      ],
+      "duration_sec": 157.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1912",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/vNhORnwcQcU_processed.mp4",
+    "category": "RR",
+    "question": "Do octopuses eat sea anemones?",
+    "reference_answer": "No, the octopuse doesn't eat sea anemones.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1912,
+      "youtube_id": "vNhORnwcQcU_processed",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Natural Relation"
+      ],
+      "duration_sec": 180.9,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1926",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/IFQ9zQekRio_processed.mp4",
+    "category": "AR",
+    "question": "What is the function of the machines and devices in the video?",
+    "reference_answer": "Destroy tires.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1926,
+      "youtube_id": "IFQ9zQekRio_processed",
+      "video_type": "Autos & Vehicles",
+      "dimensions": [
+        "Function Reasoning"
+      ],
+      "duration_sec": 27.2,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1946",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/L8luXQhnAGk.mp4",
+    "category": "RR",
+    "question": "Did the woman in the black top have physical contact with the fourth person who fell?",
+    "reference_answer": "The woman's hands touch the back of the fourth fallen person.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1946,
+      "youtube_id": "L8luXQhnAGk",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 240.9,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1949",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zXR93P8EnxM_processed.mp4",
+    "category": "AR",
+    "question": "What are the physical properties of rope?",
+    "reference_answer": "Soft but not easy to break.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1949,
+      "youtube_id": "zXR93P8EnxM_processed",
+      "video_type": "Pets & Animals",
+      "dimensions": [
+        "Physical Property"
+      ],
+      "duration_sec": 66.4,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1951",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/khXSmQHenSk_processed.mp4",
+    "category": "RR",
+    "question": "In the video, is there physical contact between the woman outside the door and the doorbell?",
+    "reference_answer": "Yes, the woman outside the door pressed the doorbell with her finger.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1951,
+      "youtube_id": "khXSmQHenSk_processed",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 128.4,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1960",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/kiwy_nV-hxE.mp4",
+    "category": "AR",
+    "question": "Is the man in a orange T-shirt receiving a burger homeless?",
+    "reference_answer": "Yes, he is homeless.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1960,
+      "youtube_id": "kiwy_nV-hxE",
+      "video_type": "People",
+      "dimensions": [
+        "Identity Reasoning"
+      ],
+      "duration_sec": 58.4,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1976",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/b9DW-tHrQB8.mp4",
+    "category": "RR",
+    "question": "Why can the fork in the bowl stand upright without falling over?",
+    "reference_answer": "The fork in the bowl is supported by the plate and resisted by the noodles, so it can stand upright on the plate without falling over.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1976,
+      "youtube_id": "b9DW-tHrQB8",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 325.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1977",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/G4DPefY6-NM.mp4",
+    "category": "RR",
+    "question": "Does that black coffee machine interact with the table?",
+    "reference_answer": "Yes, the black coffee machine is supported vertically by the table, and the table is pressured in the opposite direction.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1977,
+      "youtube_id": "G4DPefY6-NM",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 161.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1981",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/G4DPefY6-NM.mp4",
+    "category": "RR",
+    "question": "At the end of the video, is there any contact between the girl’s phone and the table?",
+    "reference_answer": "No, the girl's phone is in contact with her notebook at the end of the video.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1981,
+      "youtube_id": "G4DPefY6-NM",
+      "video_type": "Films & TV Shows",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 161.7,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1990",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/0luoGkddtYw_processed.mp4",
+    "category": "AR",
+    "question": "What is the function of the forklift?",
+    "reference_answer": "Carrying huge rocks.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1990,
+      "youtube_id": "0luoGkddtYw_processed",
+      "video_type": "Business & Industrial",
+      "dimensions": [
+        "Function Reasoning"
+      ],
+      "duration_sec": 120.0,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1994",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/HRe90ySP38U_processed.mp4",
+    "category": "AR",
+    "question": "What is sliding friction?",
+    "reference_answer": "Frictional force which opposes the relative sliding motion between the two surfaces in contact.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1994,
+      "youtube_id": "HRe90ySP38U_processed",
+      "video_type": "Science",
+      "dimensions": [
+        "Physical Property"
+      ],
+      "duration_sec": 262.4,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-1996",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/9-r4VLHQRlM_processed.mp4",
+    "category": "AR",
+    "question": "What is the function of the stove?",
+    "reference_answer": "The function is to heat food.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1996,
+      "youtube_id": "9-r4VLHQRlM_processed",
+      "video_type": "Others",
+      "dimensions": [
+        "Function Reasoning"
+      ],
+      "duration_sec": 45.9,
+      "duration_bucket": "<90s"
+    }
+  }
+]

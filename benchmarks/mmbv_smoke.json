@@ -1,0 +1,156 @@
+[
+  {
+    "id": "mmbv-0559",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/opf_wezZTic.mp4",
+    "category": "TR",
+    "question": "Why does the man in the video throw some things into the air?",
+    "reference_answer": "Because he wants to slice them with a knife as they fall.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 559,
+      "youtube_id": "opf_wezZTic",
+      "video_type": "People",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 27.9,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-0427",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/vBOWe1WK0Ig.mp4",
+    "category": "TR",
+    "question": "What is the reason for yawning mentioned in the video?",
+    "reference_answer": "Yawning occurs when fatigue leads to an increase in carbon dioxide in the body. The body takes deep breaths to metabolize carbon dioxide and replenish oxygen to activate brain blood oxygen concentration",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 427,
+      "youtube_id": "vBOWe1WK0Ig",
+      "video_type": "Knowledge",
+      "dimensions": [
+        "Causal Reasoning"
+      ],
+      "duration_sec": 132.6,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-1590",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/5phZ6-eHbqM.mp4",
+    "category": "TR",
+    "question": "Do penguins have long legs, according to the video?",
+    "reference_answer": "Yes, the penguin has very long legs. But half of its legs are usually hidden when it walks.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1590,
+      "youtube_id": "5phZ6-eHbqM",
+      "video_type": "News",
+      "dimensions": [
+        "Counterfactual Reasoning"
+      ],
+      "duration_sec": 266.4,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0010",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/4jOk3ajqJ2s_processed.mp4",
+    "category": "HL",
+    "question": "What is the author's real name?",
+    "reference_answer": "There is no way to know based on the video content.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 10,
+      "youtube_id": "4jOk3ajqJ2s_processed",
+      "video_type": "Games",
+      "dimensions": [
+        "Hallucination"
+      ],
+      "duration_sec": 292.1,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0383",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/zRRm1Kpx5zQ.mp4",
+    "category": "FP-S",
+    "question": "What word was printed on the Coke bottle that the boy got finally?",
+    "reference_answer": "The word is \"Love\".",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 383,
+      "youtube_id": "zRRm1Kpx5zQ",
+      "video_type": "Advertisements",
+      "dimensions": [
+        "OCR",
+        "Event Recognition"
+      ],
+      "duration_sec": 45.0,
+      "duration_bucket": "<90s"
+    }
+  },
+  {
+    "id": "mmbv-1212",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/QH7GaLx5JYc.mp4",
+    "category": "CP",
+    "question": "Where did the event took place in this video.",
+    "reference_answer": "On a golf course.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 1212,
+      "youtube_id": "QH7GaLx5JYc",
+      "video_type": "News",
+      "dimensions": [
+        "Video Scene"
+      ],
+      "duration_sec": 93.5,
+      "duration_bucket": "90-180s"
+    }
+  },
+  {
+    "id": "mmbv-0814",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/c_lFunATvhk.mp4",
+    "category": "RR",
+    "question": "Which way is the arrow on the white paper at the beginning of the video pointing?",
+    "reference_answer": "The arrow on the white paper at the beginning of the video is pointing to the right.",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 814,
+      "youtube_id": "c_lFunATvhk",
+      "video_type": "Science",
+      "dimensions": [
+        "Physical Relation"
+      ],
+      "duration_sec": 263.0,
+      "duration_bucket": ">180s"
+    }
+  },
+  {
+    "id": "mmbv-0601",
+    "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/RnDYM-EBsXM.mp4",
+    "category": "CSR",
+    "question": "Who is the defending player, the man with the blue T-shirt or the man with the black T-shirt?",
+    "reference_answer": "Blue",
+    "key_facts": [],
+    "_source": {
+      "dataset": "MMBench-Video",
+      "index": 601,
+      "youtube_id": "RnDYM-EBsXM",
+      "video_type": "Sports",
+      "dimensions": [
+        "Common Sense Reasoning",
+        "Human Motion"
+      ],
+      "duration_sec": 25.3,
+      "duration_bucket": "<90s"
+    }
+  }
+]

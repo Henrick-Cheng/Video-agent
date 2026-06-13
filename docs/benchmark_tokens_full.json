@@ -1,0 +1,3767 @@
+{
+  "meta": {
+    "video": "10 videos",
+    "videos": [
+      "data/videos/charades/00607.mp4",
+      "data/videos/charades/00T1E.mp4",
+      "data/videos/charades/015XE.mp4",
+      "data/videos/charades/01THT.mp4",
+      "data/videos/charades/02DPI.mp4",
+      "data/videos/charades/02SKC.mp4",
+      "data/videos/charades/03PRW.mp4",
+      "data/videos/charades/06LBQ.mp4",
+      "data/videos/charades/07BSH.mp4",
+      "data/videos/charades/07QNG.mp4"
+    ],
+    "runs": 1,
+    "scorers": [
+      "llm",
+      "exact"
+    ]
+  },
+  "results": {
+    "agent": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.45,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.381,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.5,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.625,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.214,
+              "std": 0.0
+            }
+          }
+        },
+        "exact": {
+          "overall_mean": 0.429,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.381,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.364,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.625,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.214,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 2.6,
+      "avg_time_sec": 14.2,
+      "avg_tokens_per_q": 9315,
+      "avg_prebuild_per_q": 971,
+      "avg_total_tokens_per_q": 10287
+    },
+    "rag_only": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.343,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.286,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.182,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.625,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.071,
+              "std": 0.0
+            }
+          }
+        },
+        "exact": {
+          "overall_mean": 0.314,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.238,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.091,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.625,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.071,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 1.6,
+      "avg_tokens_per_q": 953,
+      "avg_prebuild_per_q": 980,
+      "avg_total_tokens_per_q": 1933
+    },
+    "vlm_direct": {
+      "scorers": {
+        "llm": {
+          "overall_mean": 0.371,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.357,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.136,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.542,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.286,
+              "std": 0.0
+            }
+          }
+        },
+        "exact": {
+          "overall_mean": 0.357,
+          "overall_std": 0.0,
+          "by_category": {
+            "open": {
+              "mean": 0.333,
+              "std": 0.0
+            },
+            "duration": {
+              "mean": 0.091,
+              "std": 0.0
+            },
+            "binary": {
+              "mean": 0.542,
+              "std": 0.0
+            },
+            "sequencing": {
+              "mean": 0.286,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 2.7,
+      "avg_tokens_per_q": 626,
+      "avg_prebuild_per_q": 0,
+      "avg_total_tokens_per_q": 626
+    }
+  },
+  "raw": {
+    "agent": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "The scene graph shows the person was sitting on or lying on a patterned couch with a pink blanket, and also sitting on a patterned sofa. The most consistent information is that the person was on a patterned couch while holding the blanket.\n\npatterned couch",
+          "answer_short": "patterned couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3809,
+          "tokens_llm": 3809,
+          "tokens_vl": 0,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "The scene graph contains no mention of a bed or sleeping-related activities. The entity summary lists 19 entities, none of which include \"bed\", \"mattress\", \"sleeping\", or similar terms.\n\nSince \"sitting in a bed\" does not occur at all in the video (duration = 0 seconds), while there are multiple blanket-related activities with positive durations (e.g., holding a pink blanket for 16.1 seconds, lying on a pink blanket for 7.9 seconds), the person was sitting in a bed for a shorter amount of time.\n\nsitting in a bed",
+          "answer_short": "sitting in a bed",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7200,
+          "tokens_llm": 7200,
+          "tokens_vl": 0,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "The scene graph query shows several triplets about the person's relationships with objects, but none indicate the person \"going beneath\" anything. The relations include \"sitting on couch,\" \"located in front of television,\" \"holding baby,\" \"covering baby,\" and \"blanket is under person.\" \n\nThe question asks whether \"a television was the first thing they went beneath\" while snuggling with the object they were in first. From the evidence:\n- The person was initially on/in the couch (multiple triplets show \"sitting on couch\" or \"lying_on couch\")\n- They are \"located in front of television,\" not beneath it\n- There's no triplet showing the person going beneath the television or any other object\n- The only \"beneath\" relationship is the blanket being under the person, not the person being under something\n\nSince there's no evidence of the person going beneath the television or any object, and the television is described as being in front of them rather than beneath them, the answer should be \"no.\"\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 4,
+          "tokens": 12837,
+          "tokens_llm": 12083,
+          "tokens_vl": 754,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "03PRW-2660",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "Were they touching both a blanket and the first thing they went behind before starting to put on a shoe?",
+          "answer": "Looking at the scene graph results, I can see references to footwear items in the entity summary: \"a pair of black slippers\" and \"a pair of black flip-flops\". However, the triplets don't show any actions involving these footwear items - no one is putting them on, wearing them, or interacting with them.\n\nThe question asks about \"the first thing they went behind before starting to put on a shoe,\" but the scene graph contains no information about:\n- Anyone going behind anything\n- Anyone putting on shoes\n- Any sequence of events related to shoe-putting\n\nThe scene graph shows the person lying on, sitting on, and holding a pink blanket, watching television, and being in various positions on furniture, but there's no evidence of shoe-related activities or going behind objects.\n\nSince the scene graph doesn't contain the necessary information to answer the question about touching both a blanket and \"the first thing they went behind before starting to put on a shoe,\" and there's no evidence of shoe-putting activities at all, the answer must be that this scenario didn't occur in the video.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 7788,
+          "tokens_llm": 7788,
+          "tokens_vl": 0,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "The inspection at timestamp 7.0 shows the person behind is sitting on the couch and appears to be observing or assisting. Since the question asks what the person behind was doing first after snuggling, and the scene graph and frame inspections consistently show the person behind as sitting (both in the initial description and confirmed in the second inspection), the answer should be \"sitting\".\n\nsitting",
+          "answer_short": "sitting",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 5,
+          "tokens": 21578,
+          "tokens_llm": 20834,
+          "tokens_vl": 744,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "03PRW-15899",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "Before sitting in the object they were leaning on, what was the person wearing?",
+          "answer": "The scene graph shows a triplet: \"a person wearing a black shirt and shorts\" sitting on \"a patterned couch with a pink blanket\". This directly answers what the person was wearing before sitting on the object they were leaning on (the couch). The description specifies they were wearing a black shirt and shorts.\n\nblack shirt and shorts",
+          "answer_short": "black shirt and shorts",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3820,
+          "tokens_llm": 3820,
+          "tokens_vl": 0,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "03PRW-7667",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Did they put on a shoe or eat some food for a longer amount of time?",
+          "answer": "The scene graph and frame inspections do not provide evidence of either putting on a shoe or eating food.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 5,
+          "tokens": 13726,
+          "tokens_llm": 12172,
+          "tokens_vl": 1554,
+          "prebuild_share": 1083.1
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 5145,
+          "tokens_llm": 4844,
+          "tokens_vl": 301,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "The inspection at timestamp 10.0 seconds confirms the person is watching television. Since the person is sitting on the couch from t_start=0.0 to t_end=19.2 seconds and again from t_start=33.0 to t_end=41.2 seconds, and is holding a remote control and looking at the television during this time, the television watching activity likely occurs during these sitting periods.\n\nThe total duration for television watching is therefore 19.2 + (41.2 - 33.0) = 27.4 seconds.\n\nFor eating, the person is holding a yellow plate with food from t_start=0.0 to t_end=41.2 seconds, which is 41.2 seconds.\n\nComparing the two durations: television watching (27.4 seconds) is shorter than eating (41.2 seconds).\n\nTherefore, the person was watching television for a shorter amount of time.\n\nwatching television",
+          "answer_short": "watching television",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 9696,
+          "tokens_llm": 9414,
+          "tokens_vl": 282,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "The scene graph shows that the person was leaning on a couch during the time period from 0.0 to 3.0 seconds. Since this is the only \"leaning on\" relationship in the graph and it occurs before any cup-related actions (taking or putting), the object they were leaning on was the couch.\n\ncouch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3399,
+          "tokens_llm": 3399,
+          "tokens_vl": 0,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "02DPI-12205",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Did they laugh at something or hold a cup of something for a longer amount of time?",
+          "answer": "Based on my inspections, I found evidence of cup-holding at timestamps 10.99s and 13.75s, but not at 2.70s or 24.74s. I did not find any evidence of laughing at timestamps 5.46s, 10.99s, 19.21s, or 24.74s.\n\nThe cup-holding appears to occur between approximately 10-14 seconds, which is about 4 seconds duration. Since no laughing was observed in any of the frames I checked, and the question asks which activity lasted longer, the cup-holding clearly lasted longer than laughing (which didn't occur at all in the observed frames).\n\ncup",
+          "answer_short": "cup",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 8,
+          "tokens": 23749,
+          "tokens_llm": 21845,
+          "tokens_vl": 1904,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "The scene graph shows that \"a man wearing a red sleeveless shirt\" was sitting on \"a black leather couch\" during multiple time intervals, including while holding the yellow plate with food (which has a time range of 0.0 to 41.2 seconds). The sitting_on relation for the black leather couch overlaps with the holding relation for the food.\n\nblack leather couch",
+          "answer_short": "black leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5958,
+          "tokens_llm": 5958,
+          "tokens_vl": 0,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "02DPI-3907",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "Before starting to watch a laptop or something on a laptop, did they put down anything?",
+          "answer": "The inspection at timestamp 19.21 shows the person is holding a plate of food and not placing any object down. Since the scene graph and frame inspections don't show evidence of the person putting down anything before watching something on the laptop, and the available information only shows them holding objects (plate, cup) throughout the timeline, the answer is that they did not put down anything.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 10403,
+          "tokens_llm": 9726,
+          "tokens_vl": 677,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "02DPI-11007",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While eating some food, what did they lean on?",
+          "answer": "a black leather couch",
+          "answer_short": "a black leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3273,
+          "tokens_llm": 3273,
+          "tokens_vl": 0,
+          "prebuild_share": 951.7
+        },
+        {
+          "id": "07BSH-7",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "Was a vacuum one of the things they were interacting with?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3390,
+          "tokens_llm": 3390,
+          "tokens_vl": 0,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "07BSH-659",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Which did they take, a vacuum or a bag?",
+          "answer": "The scene graph shows that a person with long hair wearing dark clothing was using a vacuum cleaner from time 0.0 to 28.6 seconds, and then carrying a white plastic bag from 28.6 to 30.8 seconds. Since the question asks \"Which did they take, a vacuum or a bag?\", and the person is shown carrying the bag at the end of the sequence, the answer is the bag.\n\nbag",
+          "answer_short": "bag",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3451,
+          "tokens_llm": 3451,
+          "tokens_vl": 0,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "07BSH-655",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they tidying while taking a bag from somewhere?",
+          "answer": "vacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3059,
+          "tokens_llm": 3059,
+          "tokens_vl": 0,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "07BSH-645",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Before taking a bag from somewhere, which object were they holding?",
+          "answer": "The scene graph confirms that the person was using a vacuum cleaner from t=0.0 to t=28.6, and then started carrying a white plastic bag at t=28.6. Therefore, the object they were holding before taking the bag was the vacuum cleaner.\n\nvacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 5753,
+          "tokens_llm": 5753,
+          "tokens_vl": 0,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "07BSH-663",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "In the video, were they tidying the floor first?",
+          "answer": "The inspection at timestamp 2.2 seconds confirms the person is vacuuming the floor, which is a form of tidying the floor. Since the first frame at timestamp 0.0 already shows the person using the vacuum cleaner (likely starting the cleaning process), and there's no evidence of other activities before this, it appears they were tidying the floor first.\n\nTo be thorough, let me check if there's any activity before timestamp 0.0, but since 0.0 is the start of the video, that's not possible. Therefore, the initial action observed is tidying the floor with the vacuum cleaner.\n\nThe answer is yes.\n\n\nyes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 8442,
+          "tokens_llm": 7725,
+          "tokens_vl": 717,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "07BSH-671",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "duration",
+          "question": "Do they take a longer amount of time holding a bag or tidying something on the floor?",
+          "answer": "The scene graph shows:\n- \"holding a bag\" (carrying a white plastic bag) occurs from t=28.6 to t=30.8 seconds → duration = 2.2 seconds\n- \"tidying something on the floor\" is implied by \"using a vacuum cleaner\" from t=0.0 to t=28.6 seconds → duration = 28.6 seconds\n\nSo tidying takes much longer than holding the bag.\n\ntidying something on the floor",
+          "answer_short": "tidying something on the floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3495,
+          "tokens_llm": 3495,
+          "tokens_vl": 0,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "07BSH-944",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they touching after tidying something on the thing they stood on?",
+          "answer": "vacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 4,
+          "tokens": 10064,
+          "tokens_llm": 9761,
+          "tokens_vl": 303,
+          "prebuild_share": 906.3
+        },
+        {
+          "id": "00607-11039",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Was the person walking something before or after tidying up a table?",
+          "answer": "Based on the inspections:\n- At timestamp 0.0 seconds, there is a person walking\n- At timestamp 2.17 seconds, there is a person tidying up a table\n- At timestamp 4.33 seconds, there is no walking (person is crouching)\n\nTherefore, the person was walking before tidying up the table.\n\nbefore",
+          "answer_short": "before",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 6,
+          "tokens": 28013,
+          "tokens_llm": 27133,
+          "tokens_vl": 880,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "00607-10534",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "While tidying something on the thing they stood on, what did they go in front of?",
+          "answer": "table",
+          "answer_short": "table",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5923,
+          "tokens_llm": 5609,
+          "tokens_vl": 314,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "00607-6097",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "In the video, were they behind a broom first?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 6603,
+          "tokens_llm": 6281,
+          "tokens_vl": 322,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "00607-9762",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Did they touch a doorway but not the object they were tidying first while holding the thing they put down?",
+          "answer": "The scene graph only shows one doorway interaction: entering doorway_1 at 14.6-15.3 seconds. There are no other doorway interactions recorded.\n\nSince the person entered the doorway while holding a small object (not the dustpan), and later put down the dustpan while holding it (around 30.6 seconds), there is no evidence that they touched a doorway while holding the thing they put down (the black dustpan).\n\nThe question asks whether they touched a doorway but not the object they were tidying first while holding the thing they put down. Since they never touched a doorway while holding the dustpan, the condition cannot be satisfied.\n\nTherefore, the answer is \"no\".\n\n\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 6,
+          "tokens": 22843,
+          "tokens_llm": 21892,
+          "tokens_vl": 951,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "00607-11025",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "In the video, which was the person tidying last, the floor or the object they were in front of first?",
+          "answer": "Now I have evidence that at 2.17 seconds the person was tidying the table (an object they were in front of), and at 4.33 seconds they were tidying the floor. Since 4.33 seconds comes after 2.17 seconds, the floor was tidied later.\n\nThe question asks: \"which was the person tidying last, the floor or the object they were in front of first?\"\n\nFrom the frames inspected:\n- At 2.17 seconds: person tidying the table (object they were in front of)\n- At 4.33 seconds: person tidying the floor\n\nTherefore, the floor was tidied last.\n\nfloor",
+          "answer_short": "floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 5,
+          "tokens": 16224,
+          "tokens_llm": 14952,
+          "tokens_vl": 1272,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "00607-6485",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Did the person interact with the object they were behind first before or after walking through a doorway?",
+          "answer": "Now I know the person was behind a table at timestamp 2.17. Let me check if there was interaction with that table during that time period.\n\nLooking at the earlier query results, I see \"person tidying up table\" with t_start 2.17, t_end 5.17, which matches this timeframe. So the person interacted with the table (which they were behind) during 2.17-5.17.\n\nThe walking towards doorway occurs later at 15.28-18.28.\n\nTherefore, the person interacted with the object they were behind (the table) before walking through the doorway.\n\nbefore",
+          "answer_short": "before",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 4,
+          "tokens": 17479,
+          "tokens_llm": 17219,
+          "tokens_vl": 260,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "00607-861",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Does someone interact with a pillow?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 5479,
+          "tokens_llm": 5162,
+          "tokens_vl": 317,
+          "prebuild_share": 1033.6
+        },
+        {
+          "id": "06LBQ-3359",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was the person tidying something while closing the object they were opening?",
+          "answer": "The scene graph contains no triplets indicating \"tidying\" behavior, nor any evidence of opening and closing objects. The actions described are limited to holding, putting down, bending over, squatting, and facing cardboard boxes, but there's no mention of opening/closing or tidying activities.\n\nBased on the available evidence from the scene graph, the answer is:\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 11399,
+          "tokens_llm": 11399,
+          "tokens_vl": 0,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "06LBQ-19",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a box one of the things they were interacting with?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3681,
+          "tokens_llm": 3681,
+          "tokens_vl": 0,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "06LBQ-1568",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "Between holding a vacuum and opening a box, which object were they standing on?",
+          "answer": "The scene graph queries haven't directly revealed what the person was standing on during vacuum use or box opening. The entity summary mentions \"a blue handheld vacuum cleaner\" but no explicit information about standing on objects while using it. However, the triplets show boxes being placed on \"a small rectangular object,\" and the entity list includes \"a small rectangular object\" as one of the 12 entities.\n\nSince the question asks specifically about what they were standing on between holding a vacuum and opening a box, and the only object mentioned in relation to boxes is \"a small rectangular object,\" this is likely the answer. Let me verify by checking if there's any direct evidence of the person standing on this object.\n\nThe scene graph shows \"a cardboard box\" being \"placed_on\" \"a small rectangular object,\" which suggests this small rectangular object is a surface or platform. Given the context of vacuuming and box handling, this is most likely a step stool or similar object that would be stood upon.\n\nsmall rectangular object",
+          "answer_short": "small rectangular object",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 7497,
+          "tokens_llm": 7497,
+          "tokens_vl": 0,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "06LBQ-1678",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a vacuum the first thing they were in front of?",
+          "answer": "The person was first in front of a cardboard box, not a vacuum. Let me verify if the vacuum appears later and whether it was ever the first thing they were in front of.\n\nSince the initial frame shows the person in front of a cardboard box, and the question asks if the vacuum was the *first* thing they were in front of, the answer is no.\n\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5502,
+          "tokens_llm": 5231,
+          "tokens_vl": 271,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "06LBQ-1566",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "While holding a vacuum, what was the person standing on?",
+          "answer": "floor",
+          "answer_short": "floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7501,
+          "tokens_llm": 7224,
+          "tokens_vl": 277,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "06LBQ-3888",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "What was the person opening after holding the object they were on the side of first?",
+          "answer": "The inspection at timestamp 18.1 confirms that the cardboard box is open. Given that the person was holding a cardboard box first (t_start=0.0, t_end=2.2) and later we see them bending over and squatting near \"a cardboard box on the floor\" (t_start=18.1, t_end=24.9), and the frame inspection shows the box is open, the answer to \"What was the person opening after holding the object they were on the side of first?\" is the cardboard box.\n\nThe question mentions \"the object they were on the side of first,\" but the scene graph doesn't show any \"beside\" relationships. However, the person was holding a cardboard box first, and that's what they opened. The entity summary explicitly lists \"an open cardboard box on the floor,\" confirming this.\n\ncardboard box",
+          "answer_short": "cardboard box",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 4,
+          "tokens": 17332,
+          "tokens_llm": 17075,
+          "tokens_vl": 257,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "06LBQ-1571",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "After tidying something on the floor, what did they go behind?",
+          "answer": "The scene graph shows the person was crouching on the floor (29.4-32.4s) and had interactions with a cardboard box on the floor. The most relevant triplet showing movement behind something would be \"standing in front of cardboard box\" (0.0-3.0s), but that's before the tidying action.\n\nLet me check if there's information about what they went behind after tidying. The graph mentions \"a person wearing a pink hoodie and glasses\" interacting with \"a cardboard box on the floor\" and being \"located_at a living room with a couch and a table\". Since the question asks what they went behind after tidying, and the scene graph shows the person was near a cardboard box on the floor, the most likely object they went behind would be the cardboard box.\n\nHowever, let me verify if there's more specific information about going behind something after tidying. The crouching on floor (29.4-32.4s) appears to be the tidying action, and the scene graph doesn't explicitly show what they went behind immediately after. But given the context and the entities present, the cardboard box is the most prominent object they were interacting with.\n\ncardboard box",
+          "answer_short": "cardboard box",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 4031,
+          "tokens_llm": 4031,
+          "tokens_vl": 0,
+          "prebuild_share": 929.4
+        },
+        {
+          "id": "00T1E-12219",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person leaning on something after closing the object they were watching?",
+          "answer": "The laptop is not visible at 5.05 seconds, which suggests it may have been closed or moved. Since the person was operating the laptop until 3.8 seconds and the laptop is no longer visible by 5.05 seconds, it's reasonable to infer the laptop was closed or put away.\n\nThe person is then seen leaning on the bed at 11.42 seconds, which is after the laptop operation period ended at 3.8 seconds.\n\nTherefore, the answer is yes - the person was leaning on something (the bed) after closing the object they were watching (the laptop).\n\n\nyes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 5,
+          "tokens": 21776,
+          "tokens_llm": 21002,
+          "tokens_vl": 774,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "00T1E-8998",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "What did they go on the side of between lying on a bed and walking through a doorway?",
+          "answer": "The scene graph doesn't contain explicit information about walking through a doorway. However, since the question specifically asks about what they went on the side of between lying on a bed and walking through a doorway, and the only side-related object in the scene graph is \"a patterned curtain on the left side of the room\", this must be the answer.\n\nThe curtain is described as being \"on the left side of the room\" and located at \"wall_1\", which would be a natural feature someone might go alongside when moving toward or through a doorway.\n\nTherefore, the answer is the curtain.\n\ncurtain",
+          "answer_short": "curtain",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 10121,
+          "tokens_llm": 10121,
+          "tokens_vl": 0,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "00T1E-8985",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "Which object did the person wear after watching a laptop or something on a laptop?",
+          "answer": "black hoodie",
+          "answer_short": "black hoodie",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3788,
+          "tokens_llm": 3788,
+          "tokens_vl": 0,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "00T1E-18652",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While closing the object they were watching, which object did the person lean on?",
+          "answer": "The scene graph shows that the person was leaning on a bed while closing something, with the triplet \"person --[leaning on]--> bed\" having a confidence of 0.75 and occurring between timestamps 11.42 and 14.42 seconds.\n\nbed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3900,
+          "tokens_llm": 3900,
+          "tokens_vl": 0,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "00T1E-18692",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While lying on the object they were leaning on, which object were they behind?",
+          "answer": "laptop",
+          "answer_short": "laptop",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 11605,
+          "tokens_llm": 11314,
+          "tokens_vl": 291,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "00T1E-12182",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Before closing the object they were watching, did they dress the object they were wearing?",
+          "answer": "The inspection at timestamp 2.52 shows the person is already lying on the bed and using the laptop — no dressing activity observed.\n\nSince \"dressing\" is an action of putting on clothing, and all frames show the person already wearing clothing (black jacket, blue jeans, blue slippers), there's no evidence that dressing occurred before closing the laptop.\n\nAlso, the question phrasing \"did they dress the object they were wearing?\" is semantically odd — one doesn't dress an object they're wearing; one dresses *themselves* (i.e., puts on clothing). This suggests possible misphrasing, but based on standard interpretation, dressing refers to the act of putting on clothes, not acting upon the clothes themselves.\n\nGiven no evidence of dressing behavior before laptop closing, the answer is \"no\".\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 9213,
+          "tokens_llm": 8528,
+          "tokens_vl": 685,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "00T1E-1409",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person sitting on the object they were dressing?",
+          "answer": "The scene graph shows the person lying on the bed and wearing clothing items, but there's no explicit information about the person dressing while sitting on the bed. The triplets show the person \"is wearing\" various clothing items, but don't specify the action of dressing or the position during dressing. The only sitting-related information is one triplet showing \"a person wearing a black hoodie and blue shoes\" sitting on \"a bed with a black and white checkered bedspread\", but this doesn't connect to the dressing action.\n\nSince the question specifically asks if the person was sitting on the object they were dressing, and the scene graph doesn't provide evidence of dressing happening while sitting on the bed, I need to determine if there's any evidence that the person was dressing on the bed at all.\n\nThe scene graph shows the person wearing clothing items but doesn't specify where the dressing occurred. There's no triplet that connects dressing action to the bed as the surface they were sitting on during dressing.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7280,
+          "tokens_llm": 7280,
+          "tokens_vl": 0,
+          "prebuild_share": 929.9
+        },
+        {
+          "id": "02SKC-87276",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "sequencing",
+          "question": "Was the person opening a bag before or after smiling at something?",
+          "answer": "The person is smiling at 15.0 seconds. Now I need to determine when the person opened the bag.\n\nLooking at the scene graph, the person is holding the purple bag from 21.4-24.4s and 25.7-32.2s, and looking at it from 21.4-24.4s. The earliest interaction with the bag starts at 21.4 seconds, which is after the smiling at 15.0 seconds.\n\nTherefore, the person smiled before opening the bag.\n\nbefore",
+          "answer_short": "before",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 7,
+          "tokens": 28941,
+          "tokens_llm": 27189,
+          "tokens_vl": 1752,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "02SKC-34542",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Was the person lying on a bed or holding a blanket for a shorter amount of time?",
+          "answer": "Let me calculate the total duration for each activity:\n\nFor \"person lying on bed\":\n- 4.27 to 7.27 = 3.0 seconds\n- 10.7 to 13.7 = 3.0 seconds  \n- 23.57 to 26.57 = 3.0 seconds\n- 30.0 to 33.0 = 3.0 seconds\nTotal = 12.0 seconds\n\nFor \"person holding/covering with blanket\" (looking at the lifting and covering actions):\n- 2.1 to 4.3 = 2.2 seconds (lifting)\n- 4.3 to 6.4 = 2.1 seconds (covering)\nTotal = 4.3 seconds\n\nThe person was holding/covering with a blanket for a shorter amount of time than lying on the bed.\n\nholding a blanket",
+          "answer_short": "holding a blanket",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3874,
+          "tokens_llm": 3874,
+          "tokens_vl": 0,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "02SKC-34170",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "While lying on a bed, of all the things the person was behind, was the last the object they were taking first?",
+          "answer": "The inspection at timestamp 4.27 seconds shows the person is lying on the bed and resting, with no objects being taken. The scene graph confirms the person is behind the curtain (since the bed is behind the curtain), and the only object associated with them is the blanket they're under or covered with.\n\nSince there are no \"taking\" actions recorded in the scene graph or observed in the frame inspection, the person wasn't taking any objects while lying on the bed. Therefore, there is no \"first object they were taking\" to compare with the \"last object they were behind.\"\n\nThe question asks if \"the last the object they were behind\" equals \"the object they were taking first,\" but since they weren't taking any objects, this comparison cannot be made - there is no first object being taken.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 7246,
+          "tokens_llm": 6892,
+          "tokens_vl": 354,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "02SKC-32743",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While smiling at something, what was the person putting down?",
+          "answer": "pillow",
+          "answer_short": "pillow",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 6379,
+          "tokens_llm": 6079,
+          "tokens_vl": 300,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "02SKC-34548",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Did they snuggle with a blanket or hold a phone for a shorter amount of time?",
+          "answer": "The scene graph and frame inspections show multiple instances of snuggling with a blanket (with total duration of at least 12+ seconds across various activities), but no evidence of anyone holding a phone. The inspections at timestamps 4.27, 15.0, 19.3, and 32.17 all confirm either no phone is present or the phone is resting nearby but not being held.\n\nSince there's no evidence of phone-holding activity in the video, the duration of holding a phone is effectively zero seconds, which is shorter than any duration of snuggling with a blanket.\n\nTherefore, they held a phone for a shorter amount of time.\n\nno",
+          "answer_short": "held a phone",
+          "scores": {
+            "llm": 1.0,
+            "exact": 0.0
+          },
+          "tool_calls": 6,
+          "tokens": 20178,
+          "tokens_llm": 18966,
+          "tokens_vl": 1212,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "02SKC-34345",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "Did they go beneath the object they were on the side of first last between taking a bag from somewhere and throwing a bag somewhere?",
+          "answer": "The inspection at 27.87 seconds confirms the person is not throwing the purple bag and is lying on a bed with no indication of going beneath any object they were previously beside. The scene graph also lacks evidence of throwing or moving beneath objects. Since the question asks about a sequence that isn't supported by the available data, the answer must be \"no\".\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 3,
+          "tokens": 10452,
+          "tokens_llm": 10082,
+          "tokens_vl": 370,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "02SKC-32683",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While holding a bag, which object did the person go beneath?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 10533,
+          "tokens_llm": 10197,
+          "tokens_vl": 336,
+          "prebuild_share": 1007.3
+        },
+        {
+          "id": "07QNG-22479",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "sequencing",
+          "question": "What was the person holding before going from standing to sitting but after putting their paper somewhere?",
+          "answer": "The person is sitting from the very beginning (timestamp 0.0), holding a pen with paper in front of them. This contradicts the premise of \"going from standing to sitting.\" Let me re-examine the scene graph triplets for any evidence of standing.\n\nLooking back at the triplets, I see:\n- \"a person wearing a black and red shirt and black pants\" — \"sitting_on\" — \"a small room with white walls and overhead cabinets\" (t_start: 0.0, t_end: 11.0)\n- \"a person wearing a black and red shirt and black pants\" — \"sitting_on\" — \"a bed with a green patterned bedspread\" (t_start: 47.7, t_end: 55.0)\n\nAll sitting references. There's no \"standing\" relation in the graph. The only object held explicitly is the \"pen in the person's hand\" (t_start: 14.7, t_end: 25.7).\n\nGiven the question’s phrasing and the evidence, the person was holding a pen after putting their paper somewhere and before sitting — but all observed frames show them sitting while holding the pen and writing on paper.\n\nThe most consistent object held across timestamps is the pen. The scene graph explicitly states \"a pen in the person's hand\" as an object they're sitting on (likely a mislabeling meaning \"holding\"), and inspection confirms they're holding a pen.\n\nSo the answer is \"pen\".\n\npen",
+          "answer_short": "pen",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 4,
+          "tokens": 15265,
+          "tokens_llm": 14257,
+          "tokens_vl": 1008,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "07QNG-25190",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person sitting in a bed or holding a cup of something for a shorter amount of time?",
+          "answer": "The inspection at timestamp 2.0 seconds (which used frame t_00003.67) revealed that there is a \"red cup\" entity, but it's not being held by anyone in that frame. Since the scene graph shows the person sitting on a bed from 47.7 to 55.0 seconds (7.3 seconds duration), and no information about holding a cup has been found in any of the inspected frames or scene graph triplets, I can conclude that the person was sitting in a bed for a longer duration than holding a cup of something (which appears to be zero seconds based on the available evidence).\n\nThe sitting-on-bed activity lasts from 47.7 to 55.0 seconds, which is 7.3 seconds. There's no evidence of the person holding a cup at any time, so the duration of holding a cup would be 0 seconds.\n\nTherefore, the person was sitting in a bed for a longer amount of time than holding a cup of something.\n\nholding a cup",
+          "answer_short": "holding a cup",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 7,
+          "tokens": 34191,
+          "tokens_llm": 33140,
+          "tokens_vl": 1051,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "07QNG-23238",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "Before starting to hold a dish, did they go in front of a bed or a paper?",
+          "answer": "The scene graph shows the person was in front of a paper (with triplets like \"person has in front of them paper\" from t=0.0 to t=3.0, and \"person is writing on paper\" from t=3.67 to t=6.67), but there's no evidence of the person going in front of a bed before holding a dish. The bed-related actions (\"person is sitting on bed\") occur later at t=11.01-14.01 and t=25.69-28.69.\n\nSince the question asks about what happened *before* holding a dish, and the only relevant pre-dish activity shown is with the paper, the answer is \"paper\".\n\npaper",
+          "answer_short": "paper",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 4041,
+          "tokens_llm": 4041,
+          "tokens_vl": 0,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "07QNG-22990",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "In the video, did they go on the side of a paper or the last thing they went in front of?",
+          "answer": "The person is sitting in front of the paper, not on the side of it. The question asks whether they went on the side of a paper or the last thing they went in front of. Since the scene graph and frame inspection confirm the person is in front of the paper, and there's no evidence of them being on the side of the paper, the answer is that they went in front of the paper.\n\nThe phrase \"the last thing they went in front of\" appears to refer to the paper itself, as that's the only object mentioned in relation to being in front of in the scene graph.\n\nTherefore, the answer is: the last thing they went in front of.\n\nno",
+          "answer_short": "the last thing they went in front of",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 6764,
+          "tokens_llm": 6501,
+          "tokens_vl": 263,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "07QNG-7117",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between standing up and holding a book, did they drink from something?",
+          "answer": "The inspection at timestamp 20.0 shows that someone is not drinking from the red cup - they are writing on paper instead.\n\nSince the scene graph contains no evidence of standing up, drinking, or temporal relationships between these actions, and the frame inspection shows no drinking activity, the answer is that there's no evidence they drank from something between standing up and holding a book.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 3,
+          "tokens": 10208,
+          "tokens_llm": 9931,
+          "tokens_vl": 277,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "07QNG-24230",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between sitting in a bed and going from standing to sitting, was a dish the first thing they took?",
+          "answer": "The inspection at timestamp 25.69 shows the person is interacting with paper during the transition, but still no dish is mentioned. Since neither inspection revealed a dish, and the scene graph doesn't contain any information about dishes, it appears that a dish was not involved in the transition from standing to sitting.\n\nThe question asks whether \"a dish was the first thing they took\" between sitting in a bed and going from standing to sitting. Based on all available evidence, there's no indication of a dish being taken at all during this sequence.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 4,
+          "tokens": 15978,
+          "tokens_llm": 15400,
+          "tokens_vl": 578,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "07QNG-25180",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person watching television or sitting in a bed for a shorter amount of time?",
+          "answer": "Now I have the time intervals for both activities:\n\n- Person sitting on bed: \n  - First instance: 11.01 to 14.01 seconds (3.0 seconds)\n  - Second instance: 25.69 to 28.69 seconds (3.0 seconds)\n  - Total: 6.0 seconds\n\n- Person looking at computer monitor:\n  - First instance: 11.01 to 14.01 seconds (3.0 seconds)\n  - Second instance: 25.69 to 28.69 seconds (3.0 seconds)\n  - Total: 6.0 seconds\n\nBoth activities have the same duration of 6.0 seconds. However, the question asks which activity was for a shorter amount of time. Since they are equal, neither is shorter.\n\nBut wait, let me double-check if there are any other instances or if I missed something. The scene graph shows both activities occurring in the same time intervals (11.01-14.01 and 25.69-28.69), suggesting the person is simultaneously sitting on the bed and looking at the computer monitor during those periods. This would mean the durations are identical.\n\nSince both activities last exactly the same amount of time (6.0 seconds total), neither is shorter than the other.\n\nThe question asks \"Was the person watching television or sitting in a bed for a shorter amount of time?\" Since they are equal, the answer is that neither was shorter.\n\nBut the question expects a comparison, so I need to state which one was shorter. Since they're equal, technically neither is shorter, but the question format suggests choosing one. Let me verify if there's any other evidence.\n\nLooking back at the triplets, the \"sitting on bed\" and \"looking at computer monitor\" both have identical time intervals, so their durations are exactly the same.\n\nTherefore, neither activity was shorter than the other.\n\nThe answer should be that they were equal, but since the question asks \"which was shorter\", and they're equal, the correct response is that neither was shorter. However, the format requires a single word or short phrase, and for yes/no questions it's 'yes' or 'no'. This isn't a yes/no question, but a comparison.\n\nGiven the evidence shows equal durations, the answer is that they were the same duration, so neither was shorter. But the question specifically asks \"which was shorter\", implying one must be selected. Since the durations are identical, there is no shorter activity.\n\nThe most accurate answer is that they were equal, but the format requires a short phrase. Looking at the instructions, for comparisons like this, I should state the one with shorter duration, but since they're equal, I should say \"neither\" or \"equal\". However, the instructions don't specify for this case.\n\nGiven the evidence shows identical durations, the answer is that neither was shorter, so the response should be \"neither\".\n\nBut let me check if I missed any other instances. The scene graph only shows these two time intervals for both activities, so the durations are identical.\n\nTherefore, the answer is that neither activity was shorter.\n\nHowever, the question asks \"Was the person watching television or sitting in a bed for a shorter amount of time?\" - this is asking to identify which one was shorter. Since they're equal, the answer is that neither was shorter.\n\nThe most appropriate short phrase would be \"neither\".\n\nBut let me confirm once more: sitting on bed = 3 + 3 = 6 seconds, looking at computer monitor = 3 + 3 = 6 seconds. Yes, equal.\n\nSo the answer is \"neither\".\n\nWait, but the question says \"watching television\", not \"looking at computer monitor\". Is watching a computer monitor equivalent to watching television? In common usage, yes, as both are screen-based viewing activities. The entity summary mentions \"a computer monitor displaying a video\", which is functionally equivalent to watching television.\n\nTherefore, the durations are equal.\n\nThe answer is \"neither\".\n\nBut the format requires a single word or short phrase. \"neither\" is appropriate.\n\nActually, re-reading the question: \"Was the person watching television or sitting in a bed for a shorter amount of time?\" This is phrased as an either/or question expecting one to be shorter. Since they're equal, the answer is that neither was shorter.\n\nSo the final answer is \"neither\".\n\nHowever, let me check if there's any other triplet I missed that might show a different duration. Looking at all the triplets returned, there are no other instances of either activity.\n\nTherefore, the answer is \"neither\".\n\nBut the instructions say for yes/no questions answer 'yes' or 'no'. This isn't yes/no, so \"neither\" is acceptable.\n\nActually, perhaps the question expects me to calculate and state which one, and since they're equal, maybe \"equal\". But \"neither\" is more precise.\n\nGiven the options, \"neither\" is the correct answer.\n\nSo the final answer is \"neither\".",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 4,
+          "tokens": 17385,
+          "tokens_llm": 17105,
+          "tokens_vl": 280,
+          "prebuild_share": 983.6
+        },
+        {
+          "id": "01THT-419",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was a pillow one of the things they were interacting with?",
+          "answer": "The scene graph query didn't find any triplets related to pillows or interactions with pillows. Since the scene graph is pre-built and contains 14 entities but no mention of pillows, and the query returned no results, it appears a pillow was not one of the things they were interacting with.\n\nno",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3171,
+          "tokens_llm": 3171,
+          "tokens_vl": 0,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "01THT-1023",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "Which object were they putting down?",
+          "answer": "large blue bowl",
+          "answer_short": "large blue bowl",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5069,
+          "tokens_llm": 4814,
+          "tokens_vl": 255,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "01THT-1015",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "In the video, which object were they holding?",
+          "answer": "two bowls",
+          "answer_short": "two bowls",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5154,
+          "tokens_llm": 4859,
+          "tokens_vl": 295,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "01THT-892",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was the person working on anything?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3663,
+          "tokens_llm": 3663,
+          "tokens_vl": 0,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "01THT-1050",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "What was the person doing for the longest amount of time?",
+          "answer": "holding a black bowl",
+          "answer_short": "holding a black bowl",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3686,
+          "tokens_llm": 3686,
+          "tokens_vl": 0,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "01THT-1052",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "sequencing",
+          "question": "Were they interacting with a table before or after putting something on a table?",
+          "answer": "The inspection at timestamp 0.0 shows a person interacting with the countertop and placing an object on it. This suggests the action of putting something on the countertop is happening during this interaction.\n\nSince the question asks whether they were interacting with a table (countertop) before or after putting something on it, and the frame shows both actions occurring simultaneously (interacting with and placing), the answer would be that they were interacting with the countertop while putting something on it.\n\nHowever, the question specifically asks for \"before or after\", implying a sequence. Since we only have evidence of them doing both at the same time in this frame, and no other frames have been inspected to show a sequence, the most accurate answer based on available evidence is that they were interacting with the countertop while putting something on it.\n\nBut the question requires a choice between \"before\" or \"after\". Given that the frame shows simultaneous interaction and placement, and no evidence of interaction occurring separately before or after, the logical conclusion is that the interaction includes the act of putting something on it.\n\nThe answer should be \"while\" but since the question only offers \"before or after\", and the evidence shows the interaction encompasses the placement, the closest answer is that they were interacting with it during the placement.\n\nHowever, the strict answer format requires choosing between \"before\" or \"after\". Since the frame shows them placing something as part of the interaction, the interaction isn't separate from the placement - it's concurrent. But if forced to choose, the interaction begins before the placement is complete, so \"before\" would be the more accurate temporal relationship.\n\nActually, re-reading the question: \"Were they interacting with a table before or after putting something on a table?\" The frame shows them interacting with the countertop AND putting something on it simultaneously, so neither \"before\" nor \"after\" is strictly correct. But since the interaction is the broader activity that contains the placement, the interaction starts before the placement is completed.\n\nGiven the constraints of the answer format and the evidence, the most appropriate answer is:\n\nbefore",
+          "answer_short": "before",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 2,
+          "tokens": 6272,
+          "tokens_llm": 5957,
+          "tokens_vl": 315,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "01THT-1018",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "While doing the action they did the longest, which object were they holding?",
+          "answer": "Looking at the updated query results, I notice a new triplet that wasn't in the first response: \"a person wearing glasses and a gray sweatshirt\" \"holding\" \"a black bowl\" from \"t_start\": 8.1 to \"t_end\": 30.6, which is 22.5 seconds! This is much longer than the other actions.\n\nThis appears to be the longest action - holding a black bowl from 8.1 to 30.6 seconds (22.5 seconds).\n\nThe question asks \"which object were they holding?\" during their longest action, and this triplet clearly shows they were holding \"a black bowl\" for the longest duration.\n\nLet me verify this is indeed the longest by checking the duration: 30.6 - 8.1 = 22.5 seconds, which is significantly longer than any other action (the next longest was 3.0 seconds).\n\nSo the answer should be \"black bowl\".\n\ndark blue bowl",
+          "answer_short": "black bowl",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 9489,
+          "tokens_llm": 9489,
+          "tokens_vl": 0,
+          "prebuild_share": 958.0
+        },
+        {
+          "id": "015XE-296",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, what did they carry?",
+          "answer": "a small object",
+          "answer_short": "a small object",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 2,
+          "tokens": 5091,
+          "tokens_llm": 4826,
+          "tokens_vl": 265,
+          "prebuild_share": 936.7
+        },
+        {
+          "id": "015XE-298",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, which object did the person hold?",
+          "answer": "a bright ceiling light",
+          "answer_short": "a bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3592,
+          "tokens_llm": 3592,
+          "tokens_vl": 0,
+          "prebuild_share": 936.7
+        },
+        {
+          "id": "015XE-172",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "While taking a picture of something, was the person carrying something?",
+          "answer": "The scene graph shows the person was holding an object (with timestamp 2.18-5.18 seconds) and also holding a bright ceiling light (2.2-6.6 seconds). Since the question asks whether the person was carrying something while taking a picture, and the graph confirms the person was holding an object during that time period, the answer is yes.\n\nyes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3744,
+          "tokens_llm": 3744,
+          "tokens_vl": 0,
+          "prebuild_share": 936.7
+        },
+        {
+          "id": "015XE-233",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "Was the person playing on something?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3575,
+          "tokens_llm": 3575,
+          "tokens_vl": 0,
+          "prebuild_share": 936.7
+        },
+        {
+          "id": "015XE-238",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "In the video, was the person closing anything?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 1,
+          "tokens": 3579,
+          "tokens_llm": 3579,
+          "tokens_vl": 0,
+          "prebuild_share": 936.7
+        },
+        {
+          "id": "015XE-297",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "While standing up, what was the person carrying?",
+          "answer": "The scene graph shows that \"a person wearing a blue and white plaid shirt\" was \"holding\" \"a bright ceiling light\" from timestamp 2.2 to 6.6 seconds. Since the question asks what the person was carrying while standing up, and the holding relation starts at 2.2 seconds (which likely corresponds to the standing up action), the object being carried is a bright ceiling light.\n\nbright ceiling light",
+          "answer_short": "bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3739,
+          "tokens_llm": 3739,
+          "tokens_vl": 0,
+          "prebuild_share": 936.7
+        },
+        {
+          "id": "015XE-295",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "sequencing",
+          "question": "What was the person interacting with while standing up?",
+          "answer": "a bright ceiling light",
+          "answer_short": "a bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 1,
+          "tokens": 3590,
+          "tokens_llm": 3590,
+          "tokens_vl": 0,
+          "prebuild_share": 936.7
+        }
+      ]
+    ],
+    "rag_only": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "a patterned couch",
+          "answer_short": "a patterned couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1107,
+          "tokens_llm": 1107,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "snuggling",
+          "answer_short": "snuggling",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1113,
+          "tokens_llm": 1113,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1113,
+          "tokens_llm": 1113,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "03PRW-2660",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "Were they touching both a blanket and the first thing they went behind before starting to put on a shoe?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1113,
+          "tokens_llm": 1113,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "television set on a wooden stand",
+          "answer_short": "television set on a wooden stand",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1115,
+          "tokens_llm": 1115,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "03PRW-15899",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "Before sitting in the object they were leaning on, what was the person wearing?",
+          "answer": "black shirt and shorts",
+          "answer_short": "black shirt and shorts",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1111,
+          "tokens_llm": 1111,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "03PRW-7667",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Did they put on a shoe or eat some food for a longer amount of time?",
+          "answer": "neither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1110,
+          "tokens_llm": 1110,
+          "tokens_vl": 0,
+          "prebuild_share": 1213.9
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 675,
+          "tokens_llm": 675,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "eating",
+          "answer_short": "eating",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 681,
+          "tokens_llm": 681,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "a dark brown leather couch",
+          "answer_short": "a dark brown leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 689,
+          "tokens_llm": 689,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "02DPI-12205",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Did they laugh at something or hold a cup of something for a longer amount of time?",
+          "answer": "neither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 684,
+          "tokens_llm": 684,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "a dark brown leather couch",
+          "answer_short": "a dark brown leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 680,
+          "tokens_llm": 680,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "02DPI-3907",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "Before starting to watch a laptop or something on a laptop, did they put down anything?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 683,
+          "tokens_llm": 683,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "02DPI-11007",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While eating some food, what did they lean on?",
+          "answer": "a dark brown leather couch",
+          "answer_short": "a dark brown leather couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 680,
+          "tokens_llm": 680,
+          "tokens_vl": 0,
+          "prebuild_share": 981.1
+        },
+        {
+          "id": "07BSH-7",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "Was a vacuum one of the things they were interacting with?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 386,
+          "tokens_llm": 386,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "07BSH-659",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Which did they take, a vacuum or a bag?",
+          "answer": "a bag",
+          "answer_short": "a bag",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 386,
+          "tokens_llm": 386,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "07BSH-655",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they tidying while taking a bag from somewhere?",
+          "answer": "vacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 389,
+          "tokens_llm": 389,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "07BSH-645",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Before taking a bag from somewhere, which object were they holding?",
+          "answer": "a vacuum cleaner",
+          "answer_short": "a vacuum cleaner",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 389,
+          "tokens_llm": 389,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "07BSH-663",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "In the video, were they tidying the floor first?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 386,
+          "tokens_llm": 386,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "07BSH-671",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "duration",
+          "question": "Do they take a longer amount of time holding a bag or tidying something on the floor?",
+          "answer": "holding a bag",
+          "answer_short": "holding a bag",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 395,
+          "tokens_llm": 395,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "07BSH-944",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they touching after tidying something on the thing they stood on?",
+          "answer": "a vacuum cleaner",
+          "answer_short": "a vacuum cleaner",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 392,
+          "tokens_llm": 392,
+          "tokens_vl": 0,
+          "prebuild_share": 904.1
+        },
+        {
+          "id": "00607-11039",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Was the person walking something before or after tidying up a table?",
+          "answer": "not specified",
+          "answer_short": "not specified",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1357,
+          "tokens_llm": 1357,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "00607-10534",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "While tidying something on the thing they stood on, what did they go in front of?",
+          "answer": "a wooden cabinet with items on top",
+          "answer_short": "a wooden cabinet",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1367,
+          "tokens_llm": 1367,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "00607-6097",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "In the video, were they behind a broom first?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1354,
+          "tokens_llm": 1354,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "00607-9762",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Did they touch a doorway but not the object they were tidying first while holding the thing they put down?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1364,
+          "tokens_llm": 1364,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "00607-11025",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "In the video, which was the person tidying last, the floor or the object they were in front of first?",
+          "answer": "floor",
+          "answer_short": "floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1366,
+          "tokens_llm": 1366,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "00607-6485",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Did the person interact with the object they were behind first before or after walking through a doorway?",
+          "answer": "after",
+          "answer_short": "after",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1361,
+          "tokens_llm": 1361,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "00607-861",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Does someone interact with a pillow?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1349,
+          "tokens_llm": 1349,
+          "tokens_vl": 0,
+          "prebuild_share": 999.0
+        },
+        {
+          "id": "06LBQ-3359",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was the person tidying something while closing the object they were opening?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 945,
+          "tokens_llm": 945,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "06LBQ-19",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a box one of the things they were interacting with?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 943,
+          "tokens_llm": 943,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "06LBQ-1568",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "Between holding a vacuum and opening a box, which object were they standing on?",
+          "answer": "neither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 948,
+          "tokens_llm": 948,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "06LBQ-1678",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a vacuum the first thing they were in front of?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 943,
+          "tokens_llm": 943,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "06LBQ-1566",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "While holding a vacuum, what was the person standing on?",
+          "answer": "nothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 943,
+          "tokens_llm": 943,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "06LBQ-3888",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "What was the person opening after holding the object they were on the side of first?",
+          "answer": "nothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 948,
+          "tokens_llm": 948,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "06LBQ-1571",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "After tidying something on the floor, what did they go behind?",
+          "answer": "a cardboard box",
+          "answer_short": "a cardboard box",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 947,
+          "tokens_llm": 947,
+          "tokens_vl": 0,
+          "prebuild_share": 898.3
+        },
+        {
+          "id": "00T1E-12219",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person leaning on something after closing the object they were watching?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1018,
+          "tokens_llm": 1018,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "00T1E-8998",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "What did they go on the side of between lying on a bed and walking through a doorway?",
+          "answer": "hallway",
+          "answer_short": "hallway",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1024,
+          "tokens_llm": 1024,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "00T1E-8985",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "Which object did the person wear after watching a laptop or something on a laptop?",
+          "answer": "blue shoes",
+          "answer_short": "blue shoes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1021,
+          "tokens_llm": 1021,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "00T1E-18652",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While closing the object they were watching, which object did the person lean on?",
+          "answer": "a bed with a black and white checkered bedspread",
+          "answer_short": "a bed",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1030,
+          "tokens_llm": 1030,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "00T1E-18692",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While lying on the object they were leaning on, which object were they behind?",
+          "answer": "a bed with a black and white checkered bedspread",
+          "answer_short": "a bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1030,
+          "tokens_llm": 1030,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "00T1E-12182",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Before closing the object they were watching, did they dress the object they were wearing?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1021,
+          "tokens_llm": 1021,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "00T1E-1409",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person sitting on the object they were dressing?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1015,
+          "tokens_llm": 1015,
+          "tokens_vl": 0,
+          "prebuild_share": 906.1
+        },
+        {
+          "id": "02SKC-87276",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "sequencing",
+          "question": "Was the person opening a bag before or after smiling at something?",
+          "answer": "not enough information",
+          "answer_short": "not enough information",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 914,
+          "tokens_llm": 914,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "02SKC-34542",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Was the person lying on a bed or holding a blanket for a shorter amount of time?",
+          "answer": "holding",
+          "answer_short": "holding",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 917,
+          "tokens_llm": 917,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "02SKC-34170",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "While lying on a bed, of all the things the person was behind, was the last the object they were taking first?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 924,
+          "tokens_llm": 924,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "02SKC-32743",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While smiling at something, what was the person putting down?",
+          "answer": "purple pouch",
+          "answer_short": "purple pouch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 912,
+          "tokens_llm": 912,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "02SKC-34548",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Did they snuggle with a blanket or hold a phone for a shorter amount of time?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 918,
+          "tokens_llm": 918,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "02SKC-34345",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "Did they go beneath the object they were on the side of first last between taking a bag from somewhere and throwing a bag somewhere?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 925,
+          "tokens_llm": 925,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "02SKC-32683",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While holding a bag, which object did the person go beneath?",
+          "answer": "a colorful blanket",
+          "answer_short": "a colorful blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 914,
+          "tokens_llm": 914,
+          "tokens_vl": 0,
+          "prebuild_share": 1002.9
+        },
+        {
+          "id": "07QNG-22479",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "sequencing",
+          "question": "What was the person holding before going from standing to sitting but after putting their paper somewhere?",
+          "answer": "a red cup",
+          "answer_short": "a red cup",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1417,
+          "tokens_llm": 1417,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "07QNG-25190",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person sitting in a bed or holding a cup of something for a shorter amount of time?",
+          "answer": "holding a cup of something",
+          "answer_short": "holding a cup of something",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1421,
+          "tokens_llm": 1421,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "07QNG-23238",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "Before starting to hold a dish, did they go in front of a bed or a paper?",
+          "answer": "bed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1416,
+          "tokens_llm": 1416,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "07QNG-22990",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "In the video, did they go on the side of a paper or the last thing they went in front of?",
+          "answer": "neither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1421,
+          "tokens_llm": 1421,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "07QNG-7117",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between standing up and holding a book, did they drink from something?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 1411,
+          "tokens_llm": 1411,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "07QNG-24230",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between sitting in a bed and going from standing to sitting, was a dish the first thing they took?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1418,
+          "tokens_llm": 1418,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "07QNG-25180",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person watching television or sitting in a bed for a shorter amount of time?",
+          "answer": "neither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 1415,
+          "tokens_llm": 1415,
+          "tokens_vl": 0,
+          "prebuild_share": 1026.3
+        },
+        {
+          "id": "01THT-419",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was a pillow one of the things they were interacting with?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 830,
+          "tokens_llm": 830,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "01THT-1023",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "Which object were they putting down?",
+          "answer": "a large light blue bowl",
+          "answer_short": "a large light blue bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 829,
+          "tokens_llm": 829,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "01THT-1015",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "In the video, which object were they holding?",
+          "answer": "a large light blue bowl",
+          "answer_short": "a large light blue bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 832,
+          "tokens_llm": 832,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "01THT-892",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was the person working on anything?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 825,
+          "tokens_llm": 825,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "01THT-1050",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "What was the person doing for the longest amount of time?",
+          "answer": "holding",
+          "answer_short": "holding",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 830,
+          "tokens_llm": 830,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "01THT-1052",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "sequencing",
+          "question": "Were they interacting with a table before or after putting something on a table?",
+          "answer": "neither",
+          "answer_short": "neither",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 834,
+          "tokens_llm": 834,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "01THT-1018",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "While doing the action they did the longest, which object were they holding?",
+          "answer": "a smaller dark blue bowl",
+          "answer_short": "a smaller dark blue bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 837,
+          "tokens_llm": 837,
+          "tokens_vl": 0,
+          "prebuild_share": 941.1
+        },
+        {
+          "id": "015XE-296",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, what did they carry?",
+          "answer": "a bright ceiling light",
+          "answer_short": "a bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 855,
+          "tokens_llm": 855,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        },
+        {
+          "id": "015XE-298",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, which object did the person hold?",
+          "answer": "a bright ceiling light",
+          "answer_short": "a bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 857,
+          "tokens_llm": 857,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        },
+        {
+          "id": "015XE-172",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "While taking a picture of something, was the person carrying something?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 856,
+          "tokens_llm": 856,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        },
+        {
+          "id": "015XE-233",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "Was the person playing on something?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 850,
+          "tokens_llm": 850,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        },
+        {
+          "id": "015XE-238",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "In the video, was the person closing anything?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 853,
+          "tokens_llm": 853,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        },
+        {
+          "id": "015XE-297",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "While standing up, what was the person carrying?",
+          "answer": "a bright ceiling light",
+          "answer_short": "a bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 856,
+          "tokens_llm": 856,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        },
+        {
+          "id": "015XE-295",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "sequencing",
+          "question": "What was the person interacting with while standing up?",
+          "answer": "a bright ceiling light",
+          "answer_short": "a bright ceiling light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 856,
+          "tokens_llm": 856,
+          "tokens_vl": 0,
+          "prebuild_share": 936.4
+        }
+      ]
+    ],
+    "vlm_direct": [
+      [
+        {
+          "id": "03PRW-6691",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "While holding a blanket, what was the person leaning on?",
+          "answer": "couch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 696,
+          "tokens_llm": 0,
+          "tokens_vl": 696,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-7697",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 704,
+          "tokens_llm": 0,
+          "tokens_vl": 704,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-16839",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 704,
+          "tokens_llm": 0,
+          "tokens_vl": 704,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-2660",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "binary",
+          "question": "Were they touching both a blanket and the first thing they went behind before starting to put on a shoe?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 704,
+          "tokens_llm": 0,
+          "tokens_vl": 704,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-16522",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "sequencing",
+          "question": "What was the person behind first after snuggling with the object they were covered by?",
+          "answer": "tv",
+          "answer_short": "tv",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 700,
+          "tokens_llm": 0,
+          "tokens_vl": 700,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-15899",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "open",
+          "question": "Before sitting in the object they were leaning on, what was the person wearing?",
+          "answer": "hat",
+          "answer_short": "hat",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 699,
+          "tokens_llm": 0,
+          "tokens_vl": 699,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "03PRW-7667",
+          "video": "data/videos/charades/03PRW.mp4",
+          "category": "duration",
+          "question": "Did they put on a shoe or eat some food for a longer amount of time?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 700,
+          "tokens_llm": 0,
+          "tokens_vl": 700,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-3415",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "In the video, did they lean on something?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 573,
+          "tokens_llm": 0,
+          "tokens_vl": 573,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-12242",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Was the person eating some food or watching television for a shorter amount of time?",
+          "answer": "eating",
+          "answer_short": "eating",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 579,
+          "tokens_llm": 0,
+          "tokens_vl": 579,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-11026",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "sequencing",
+          "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+          "answer": "couch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 584,
+          "tokens_llm": 0,
+          "tokens_vl": 584,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-12205",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "duration",
+          "question": "Did they laugh at something or hold a cup of something for a longer amount of time?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 581,
+          "tokens_llm": 0,
+          "tokens_vl": 581,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-10906",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While holding some food, what did they sit on?",
+          "answer": "sofa",
+          "answer_short": "sofa",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-3907",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "binary",
+          "question": "Before starting to watch a laptop or something on a laptop, did they put down anything?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 581,
+          "tokens_llm": 0,
+          "tokens_vl": 581,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02DPI-11007",
+          "video": "data/videos/charades/02DPI.mp4",
+          "category": "open",
+          "question": "While eating some food, what did they lean on?",
+          "answer": "couch",
+          "answer_short": "couch",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-7",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "Was a vacuum one of the things they were interacting with?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 755,
+          "tokens_llm": 0,
+          "tokens_vl": 755,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-659",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Which did they take, a vacuum or a bag?",
+          "answer": "vacuum",
+          "answer_short": "vacuum",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 755,
+          "tokens_llm": 0,
+          "tokens_vl": 755,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-655",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they tidying while taking a bag from somewhere?",
+          "answer": "vacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 758,
+          "tokens_llm": 0,
+          "tokens_vl": 758,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-645",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "open",
+          "question": "Before taking a bag from somewhere, which object were they holding?",
+          "answer": "vacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 0.5,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 758,
+          "tokens_llm": 0,
+          "tokens_vl": 758,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-663",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "binary",
+          "question": "In the video, were they tidying the floor first?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 755,
+          "tokens_llm": 0,
+          "tokens_vl": 755,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-671",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "duration",
+          "question": "Do they take a longer amount of time holding a bag or tidying something on the floor?",
+          "answer": "tidying something on the floor",
+          "answer_short": "tidying something on the floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 767,
+          "tokens_llm": 0,
+          "tokens_vl": 767,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07BSH-944",
+          "video": "data/videos/charades/07BSH.mp4",
+          "category": "sequencing",
+          "question": "Which object were they touching after tidying something on the thing they stood on?",
+          "answer": "vacuum cleaner",
+          "answer_short": "vacuum cleaner",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 761,
+          "tokens_llm": 0,
+          "tokens_vl": 761,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-11039",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Was the person walking something before or after tidying up a table?",
+          "answer": "after",
+          "answer_short": "after",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 577,
+          "tokens_llm": 0,
+          "tokens_vl": 577,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-10534",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "While tidying something on the thing they stood on, what did they go in front of?",
+          "answer": "table",
+          "answer_short": "table",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 582,
+          "tokens_llm": 0,
+          "tokens_vl": 582,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-6097",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "In the video, were they behind a broom first?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-9762",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Did they touch a doorway but not the object they were tidying first while holding the thing they put down?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 585,
+          "tokens_llm": 0,
+          "tokens_vl": 585,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-11025",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "open",
+          "question": "In the video, which was the person tidying last, the floor or the object they were in front of first?",
+          "answer": "object they were in front of first",
+          "answer_short": "object they were in front of first",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 593,
+          "tokens_llm": 0,
+          "tokens_vl": 593,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-6485",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "sequencing",
+          "question": "Did the person interact with the object they were behind first before or after walking through a doorway?",
+          "answer": "after",
+          "answer_short": "after",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 582,
+          "tokens_llm": 0,
+          "tokens_vl": 582,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00607-861",
+          "video": "data/videos/charades/00607.mp4",
+          "category": "binary",
+          "question": "Does someone interact with a pillow?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 570,
+          "tokens_llm": 0,
+          "tokens_vl": 570,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-3359",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was the person tidying something while closing the object they were opening?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 577,
+          "tokens_llm": 0,
+          "tokens_vl": 577,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-19",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a box one of the things they were interacting with?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-1568",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "Between holding a vacuum and opening a box, which object were they standing on?",
+          "answer": "box",
+          "answer_short": "box",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 579,
+          "tokens_llm": 0,
+          "tokens_vl": 579,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-1678",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "binary",
+          "question": "Was a vacuum the first thing they were in front of?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-1566",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "While holding a vacuum, what was the person standing on?",
+          "answer": "floor",
+          "answer_short": "floor",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-3888",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "sequencing",
+          "question": "What was the person opening after holding the object they were on the side of first?",
+          "answer": "box",
+          "answer_short": "box",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 580,
+          "tokens_llm": 0,
+          "tokens_vl": 580,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "06LBQ-1571",
+          "video": "data/videos/charades/06LBQ.mp4",
+          "category": "open",
+          "question": "After tidying something on the floor, what did they go behind?",
+          "answer": "box",
+          "answer_short": "box",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 577,
+          "tokens_llm": 0,
+          "tokens_vl": 577,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-12219",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person leaning on something after closing the object they were watching?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 577,
+          "tokens_llm": 0,
+          "tokens_vl": 577,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-8998",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "What did they go on the side of between lying on a bed and walking through a doorway?",
+          "answer": "shoes",
+          "answer_short": "shoes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 583,
+          "tokens_llm": 0,
+          "tokens_vl": 583,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-8985",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "sequencing",
+          "question": "Which object did the person wear after watching a laptop or something on a laptop?",
+          "answer": "shoes",
+          "answer_short": "shoes",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 580,
+          "tokens_llm": 0,
+          "tokens_vl": 580,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-18652",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While closing the object they were watching, which object did the person lean on?",
+          "answer": "bed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 579,
+          "tokens_llm": 0,
+          "tokens_vl": 579,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-18692",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "open",
+          "question": "While lying on the object they were leaning on, which object were they behind?",
+          "answer": "bed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 579,
+          "tokens_llm": 0,
+          "tokens_vl": 579,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-12182",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Before closing the object they were watching, did they dress the object they were wearing?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 580,
+          "tokens_llm": 0,
+          "tokens_vl": 580,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "00T1E-1409",
+          "video": "data/videos/charades/00T1E.mp4",
+          "category": "binary",
+          "question": "Was the person sitting on the object they were dressing?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 574,
+          "tokens_llm": 0,
+          "tokens_vl": 574,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-87276",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "sequencing",
+          "question": "Was the person opening a bag before or after smiling at something?",
+          "answer": "after",
+          "answer_short": "after",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 756,
+          "tokens_llm": 0,
+          "tokens_vl": 756,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-34542",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Was the person lying on a bed or holding a blanket for a shorter amount of time?",
+          "answer": "bed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 761,
+          "tokens_llm": 0,
+          "tokens_vl": 761,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-34170",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "While lying on a bed, of all the things the person was behind, was the last the object they were taking first?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 768,
+          "tokens_llm": 0,
+          "tokens_vl": 768,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-32743",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While smiling at something, what was the person putting down?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 756,
+          "tokens_llm": 0,
+          "tokens_vl": 756,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-34548",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "duration",
+          "question": "Did they snuggle with a blanket or hold a phone for a shorter amount of time?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 762,
+          "tokens_llm": 0,
+          "tokens_vl": 762,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-34345",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "binary",
+          "question": "Did they go beneath the object they were on the side of first last between taking a bag from somewhere and throwing a bag somewhere?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 769,
+          "tokens_llm": 0,
+          "tokens_vl": 769,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "02SKC-32683",
+          "video": "data/videos/charades/02SKC.mp4",
+          "category": "open",
+          "question": "While holding a bag, which object did the person go beneath?",
+          "answer": "blanket",
+          "answer_short": "blanket",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 757,
+          "tokens_llm": 0,
+          "tokens_vl": 757,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-22479",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "sequencing",
+          "question": "What was the person holding before going from standing to sitting but after putting their paper somewhere?",
+          "answer": "pen",
+          "answer_short": "pen",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 581,
+          "tokens_llm": 0,
+          "tokens_vl": 581,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-25190",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person sitting in a bed or holding a cup of something for a shorter amount of time?",
+          "answer": "bed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 583,
+          "tokens_llm": 0,
+          "tokens_vl": 583,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-23238",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "Before starting to hold a dish, did they go in front of a bed or a paper?",
+          "answer": "paper",
+          "answer_short": "paper",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 582,
+          "tokens_llm": 0,
+          "tokens_vl": 582,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-22990",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "open",
+          "question": "In the video, did they go on the side of a paper or the last thing they went in front of?",
+          "answer": "side of a paper",
+          "answer_short": "side of a paper",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 589,
+          "tokens_llm": 0,
+          "tokens_vl": 589,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-7117",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between standing up and holding a book, did they drink from something?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 577,
+          "tokens_llm": 0,
+          "tokens_vl": 577,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-24230",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "binary",
+          "question": "Between sitting in a bed and going from standing to sitting, was a dish the first thing they took?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 584,
+          "tokens_llm": 0,
+          "tokens_vl": 584,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "07QNG-25180",
+          "video": "data/videos/charades/07QNG.mp4",
+          "category": "duration",
+          "question": "Was the person watching television or sitting in a bed for a shorter amount of time?",
+          "answer": "bed",
+          "answer_short": "bed",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 580,
+          "tokens_llm": 0,
+          "tokens_vl": 580,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-419",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was a pillow one of the things they were interacting with?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-1023",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "Which object were they putting down?",
+          "answer": "bowl",
+          "answer_short": "bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 571,
+          "tokens_llm": 0,
+          "tokens_vl": 571,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-1015",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "open",
+          "question": "In the video, which object were they holding?",
+          "answer": "bowl",
+          "answer_short": "bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 574,
+          "tokens_llm": 0,
+          "tokens_vl": 574,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-892",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "binary",
+          "question": "Was the person working on anything?",
+          "answer": "yes",
+          "answer_short": "yes",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 570,
+          "tokens_llm": 0,
+          "tokens_vl": 570,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-1050",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "What was the person doing for the longest amount of time?",
+          "answer": "eating",
+          "answer_short": "eating",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 575,
+          "tokens_llm": 0,
+          "tokens_vl": 575,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-1052",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "sequencing",
+          "question": "Were they interacting with a table before or after putting something on a table?",
+          "answer": "after",
+          "answer_short": "after",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 578,
+          "tokens_llm": 0,
+          "tokens_vl": 578,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "01THT-1018",
+          "video": "data/videos/charades/01THT.mp4",
+          "category": "duration",
+          "question": "While doing the action they did the longest, which object were they holding?",
+          "answer": "bowl",
+          "answer_short": "bowl",
+          "scores": {
+            "llm": 0.5,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 579,
+          "tokens_llm": 0,
+          "tokens_vl": 579,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-296",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, what did they carry?",
+          "answer": "nothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 572,
+          "tokens_llm": 0,
+          "tokens_vl": 572,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-298",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "In the video, which object did the person hold?",
+          "answer": "nothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 574,
+          "tokens_llm": 0,
+          "tokens_vl": 574,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-172",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "While taking a picture of something, was the person carrying something?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 576,
+          "tokens_llm": 0,
+          "tokens_vl": 576,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-233",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "Was the person playing on something?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 570,
+          "tokens_llm": 0,
+          "tokens_vl": 570,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-238",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "binary",
+          "question": "In the video, was the person closing anything?",
+          "answer": "no",
+          "answer_short": "no",
+          "scores": {
+            "llm": 1.0,
+            "exact": 1.0
+          },
+          "tool_calls": 0,
+          "tokens": 573,
+          "tokens_llm": 0,
+          "tokens_vl": 573,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-297",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "open",
+          "question": "While standing up, what was the person carrying?",
+          "answer": "nothing",
+          "answer_short": "nothing",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 573,
+          "tokens_llm": 0,
+          "tokens_vl": 573,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "015XE-295",
+          "video": "data/videos/charades/015XE.mp4",
+          "category": "sequencing",
+          "question": "What was the person interacting with while standing up?",
+          "answer": "light",
+          "answer_short": "light",
+          "scores": {
+            "llm": 0.0,
+            "exact": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 573,
+          "tokens_llm": 0,
+          "tokens_vl": 573,
+          "prebuild_share": 0.0
+        }
+      ]
+    ]
+  }
+}

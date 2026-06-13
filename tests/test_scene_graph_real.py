@@ -115,7 +115,7 @@ def test_scene_graph_json_output():
     print("\nToken cost estimate (qwen-vl-plus-latest, 4 frames @ 1280px):")
     print("  Input : ~4 × 1500 + 600 (prompt) ≈ 6600 tokens  ≈ ¥0.053")
     print("  Output: ~500 tokens                              ≈ ¥0.004")
-    print("  Total : ≈ ¥0.057 / call  (参考 DashScope 官网价格确认)")
+    print("  Total : ≈ ¥0.057 / call  (verify against DashScope pricing)")
 
     assert len(sg_dict["entities"]) > 0
     assert len(sg_dict["triplets"]) > 0
@@ -124,7 +124,7 @@ def test_scene_graph_json_output():
 @dashscope_required
 @video_available
 def test_inspect_frame_real_dashscope():
-    """inspect_frame with real VLM updates scene graph and returns Chinese answer."""
+    """inspect_frame with real VLM updates scene graph and returns an answer."""
     from src.memory.session import VideoSession
     from src.tools.keyframe import make_extract_keyframes
     from src.tools.frame_inspector import make_inspect_frame
@@ -137,7 +137,7 @@ def test_inspect_frame_real_dashscope():
     inspect = make_inspect_frame(session)
     result = json.loads(inspect.invoke({
         "timestamp": first_ts,
-        "question": "图中有哪些人物？他们在做什么？",
+        "question": "What people are in the frame? What are they doing?",
     }))
 
     print(f"\n[inspect answer] {result['answer']}")

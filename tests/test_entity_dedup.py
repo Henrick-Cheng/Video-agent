@@ -39,30 +39,30 @@ def test_same_label_not_duplicated() -> None:
     from src.scene_graph.builder import _cross_dedup_with_graph
 
     existing: dict[str, Entity] = {
-        "骑着骡子打鸟": Entity("骑着骡子打鸟", "person"),
+        "man in red jacket": Entity("man in red jacket", "person"),
     }
-    new_entities = [_make_entity_dict("骑着骡子打鸟", "person")]
+    new_entities = [_make_entity_dict("man in red jacket", "person")]
 
     truly_new, remap = _cross_dedup_with_graph(new_entities, existing, threshold=0.85)
 
     assert len(truly_new) == 0, "Exact match should be merged, not added as new"
-    assert remap.get("骑着骡子打鸟") == "骑着骡子打鸟"
+    assert remap.get("man in red jacket") == "man in red jacket"
 
 
 def test_similar_label_merged() -> None:
-    """Labels like '骑着骡子打鸟' and '角色骑着骡子打鸟' should be merged."""
+    """Labels like 'man in red jacket' and 'the man in red jacket' should be merged."""
     from src.scene_graph.builder import _cross_dedup_with_graph
 
     existing: dict[str, Entity] = {
-        "骑着骡子打鸟": Entity("骑着骡子打鸟", "person"),
+        "man in red jacket": Entity("man in red jacket", "person"),
     }
-    # VLM adds a prefix "角色" — should still be similar enough
-    new_entities = [_make_entity_dict("骑着骡子打鸟角色", "person")]
+    # VLM adds a "the " prefix — should still be similar enough
+    new_entities = [_make_entity_dict("the man in red jacket", "person")]
 
     truly_new, remap = _cross_dedup_with_graph(new_entities, existing, threshold=0.75)
 
     assert len(truly_new) == 0, "Similar label should be merged with existing"
-    assert "骑着骡子打鸟角色" in remap
+    assert "the man in red jacket" in remap
 
 
 def test_different_label_not_merged() -> None:
@@ -70,14 +70,14 @@ def test_different_label_not_merged() -> None:
     from src.scene_graph.builder import _cross_dedup_with_graph
 
     existing: dict[str, Entity] = {
-        "骑着骡子打鸟": Entity("骑着骡子打鸟", "person"),
+        "man in red jacket": Entity("man in red jacket", "person"),
     }
-    new_entities = [_make_entity_dict("鱿鱼不是鱼", "person")]
+    new_entities = [_make_entity_dict("dog on the floor", "person")]
 
     truly_new, remap = _cross_dedup_with_graph(new_entities, existing, threshold=0.85)
 
     assert len(truly_new) == 1, "Different entity should not be merged"
-    assert "鱿鱼不是鱼" not in remap
+    assert "dog on the floor" not in remap
 
 
 def test_different_type_not_merged() -> None:
@@ -85,9 +85,9 @@ def test_different_type_not_merged() -> None:
     from src.scene_graph.builder import _cross_dedup_with_graph
 
     existing: dict[str, Entity] = {
-        "游戏大厅": Entity("游戏大厅", "place"),
+        "living room": Entity("living room", "place"),
     }
-    new_entities = [_make_entity_dict("游戏大厅", "object")]
+    new_entities = [_make_entity_dict("living room", "object")]
 
     truly_new, remap = _cross_dedup_with_graph(new_entities, existing, threshold=0.85)
 
@@ -104,15 +104,15 @@ def test_cross_batch_dedup_reduces_graph_size() -> None:
 
     g = SceneGraph()
     # Batch 1 adds the canonical name
-    g.add_entity("骑着骡子打鸟", "person", first_seen=0.0, last_seen=5.0)
-    g.add_triplet(Triplet("骑着骡子打鸟", "站在", "游戏大厅", 0.0, 5.0))
+    g.add_entity("man in red jacket", "person", first_seen=0.0, last_seen=5.0)
+    g.add_triplet(Triplet("man in red jacket", "standing_on", "living room", 0.0, 5.0))
 
     person_count_before = len([
         n for n, e in g.entities.items() if e.entity_type == "person"
     ])
 
     # Batch 2 finds the same person with a slightly different label
-    batch2_entities = [_make_entity_dict("角色'骑着骡子打鸟'", "person", 5.0, 10.0)]
+    batch2_entities = [_make_entity_dict("a man in red jacket", "person", 5.0, 10.0)]
     truly_new, remap = _cross_dedup_with_graph(
         batch2_entities, g.entities, threshold=0.75
     )
@@ -137,14 +137,14 @@ def test_attributes_merged_on_dedup() -> None:
     """When an entity is merged, its attributes should be added to the existing one."""
     from src.scene_graph.builder import _cross_dedup_with_graph
 
-    existing_ent = Entity("骑着骡子打鸟", "person", attributes={"color": "黄色T恤"})
-    existing: dict[str, Entity] = {"骑着骡子打鸟": existing_ent}
+    existing_ent = Entity("man in red jacket", "person", attributes={"color": "yellow shirt"})
+    existing: dict[str, Entity] = {"man in red jacket": existing_ent}
 
     new_entities = [{
-        "id":         "骑着骡子打鸟",
+        "id":         "man in red jacket",
         "type":       "person",
-        "label":      "骑着骡子打鸟",
-        "attributes": {"weapon": "绿色武器"},
+        "label":      "man in red jacket",
+        "attributes": {"holding": "green tool"},
         "first_seen": 0.0,
         "last_seen":  10.0,
     }]
@@ -152,6 +152,6 @@ def test_attributes_merged_on_dedup() -> None:
     truly_new, _ = _cross_dedup_with_graph(new_entities, existing, threshold=0.85)
 
     assert len(truly_new) == 0
-    assert existing_ent.attributes.get("weapon") == "绿色武器", (
+    assert existing_ent.attributes.get("holding") == "green tool", (
         "Merged entity attributes should be propagated to existing entity"
     )

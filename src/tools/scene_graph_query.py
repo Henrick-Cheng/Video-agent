@@ -30,7 +30,7 @@ def make_query_scene_graph(session: "VideoSession"):
 
         Args:
             question: Natural-language question used to guide retrieval,
-                      e.g. "自行车旁边的人在做什么？"
+                      e.g. "What is the person next to the bicycle doing?"
 
         Returns:
             JSON with keys:

@@ -33,9 +33,10 @@ logger = logging.getLogger(__name__)
 # ── System prompt ─────────────────────────────────────────────────────────────
 
 _SYSTEM_PROMPT = (
-    "你是专业的视频内容理解专家。请仔细分析给定的视频帧序列，"
-    "识别所有实体和实体间关系，以指定 JSON 格式输出场景图。"
-    "只输出 JSON，不要添加任何解释文字。"
+    "You are an expert in video content understanding. Carefully analyze the "
+    "given sequence of video frames, identify all entities and the relations "
+    "between them, and output a scene graph in the specified JSON format. "
+    "Output only JSON, with no explanatory text."
 )
 
 
@@ -47,7 +48,7 @@ def _format_existing_entities(existing: dict[str, "Entity"]) -> str:
         return ""
     items = list(existing.items())[:20]
     lines = [f"  - {name} ({e.entity_type})" for name, e in items]
-    extra = f"\n  ... (共 {len(existing)} 个)" if len(existing) > 20 else ""
+    extra = f"\n  ... ({len(existing)} total)" if len(existing) > 20 else ""
     return "\n".join(lines) + extra
 
 
@@ -59,32 +60,33 @@ def _build_prompt(
 ) -> str:
     ts_str = ", ".join(f"{t:.1f}s" for t in timestamps)
     focus_hint = (
-        f"\n【重点关注】以下实体: {', '.join(focus_entities)}\n"
+        f"\n[Focus] Pay special attention to these entities: {', '.join(focus_entities)}\n"
         if focus_entities else ""
     )
-    vocab_str = "、".join(relation_vocab[:50])
+    vocab_str = ", ".join(relation_vocab[:50])
 
     existing_hint = ""
     if existing_entities:
         existing_hint = (
-            f"\n【已知实体】以下实体已在本视频中发现，如果检测到相同或高度相似的实体，"
-            f"请在 label 字段中直接复用完全相同的名称，不要重新命名：\n"
+            f"\n[Known entities] The following entities have already been found in "
+            f"this video. If you detect the same or a highly similar entity, reuse "
+            f"the exact same name in the label field — do not rename it:\n"
             f"{_format_existing_entities(existing_entities)}\n"
         )
 
-    return f"""请分析上方 {len(timestamps)} 帧视频画面（时间戳: {ts_str}）。{focus_hint}{existing_hint}
-识别所有可见的实体（人物 person、物体 object、场所 place）以及实体之间的关系。
+    return f"""Analyze the {len(timestamps)} video frames above (timestamps: {ts_str}).{focus_hint}{existing_hint}
+Identify all visible entities (person, object, place) and the relations between them.
 
-【关系词表】只能从以下词汇中选择关系标签，禁止自造：
+[Relation vocabulary] Choose relation labels ONLY from the following list; do not invent new ones:
 {vocab_str}
 
-【输出格式】只输出以下结构的 JSON，不要添加任何其他字段或说明：
+[Output format] Output ONLY JSON with the following structure, no extra fields or commentary:
 {{
   "entities": [
     {{
       "id": "person_1",
       "type": "person|object|place",
-      "label": "简短中文描述",
+      "label": "short English description",
       "attributes": {{"key": "value"}},
       "first_seen": {ts_str.split(',')[0].strip().rstrip('s')},
       "last_seen": {ts_str.split(',')[0].strip().rstrip('s')}
@@ -93,7 +95,7 @@ def _build_prompt(
   "relations": [
     {{
       "subject": "person_1",
-      "relation": "骑乘",
+      "relation": "riding",
       "object": "bicycle_1",
       "t_start": {ts_str.split(',')[0].strip().rstrip('s')},
       "t_end": {ts_str.split(',')[0].strip().rstrip('s')},
@@ -102,11 +104,11 @@ def _build_prompt(
   ]
 }}
 
-规则：
-1. 同一实体在不同帧使用相同 id；id 格式：类型_序号，如 person_1
-2. confidence 为 0.0–1.0 的浮点数
-3. 若无实体或关系，对应列表填 []
-4. 只输出 JSON，不要有任何前缀或后缀文字"""
+Rules:
+1. Use the same id for the same entity across frames; id format: type_index, e.g. person_1
+2. confidence is a float in 0.0-1.0
+3. If there are no entities or relations, use an empty list []
+4. Output only JSON, with no prefix or suffix text"""
 
 
 # ── Parsing ───────────────────────────────────────────────────────────────────
@@ -573,4 +575,117 @@ def build_frames(
         "edges_added":   stats["edges_added"],
         "batches_ok":    batches_ok,
         "batches_fail":  batches_fail,
+    }
+
+
+# ── Segment build (v2 lazy memory) ────────────────────────────────────────────
+# One explored window → dense caption (L1 evidence) + triplets (L2 index).
+# Unlike build_frames, the VLM keeps its full description of the window: the
+# caption is the payload, triplets index into it via source="seg:<id>".
+
+_SEGMENT_PROMPT_SUFFIX = """\
+
+Additionally, BEFORE the JSON, write 3-5 sentences densely describing what \
+happens in this window: actions in order, their apparent purpose or manner, \
+any visible on-screen text/captions/signs (quote them exactly), and notable \
+attributes. Enumerate EVERY visible object, including small hand-held items \
+(phone, cup, dish, paper, bag...). This description is stored as evidence, \
+so be specific and factual — do not speculate beyond what is visible.{question_hint}
+
+Then output the JSON object as specified, adding a "description" key holding \
+that same description string."""
+
+
+def build_segment(
+    session: "VideoSession",
+    frames: list,
+    vl_client: "VLClient",
+    question: str = "",
+    merge_window_sec: float = 3.0,
+    confidence_threshold: float = 0.75,
+) -> dict:
+    """
+    Build one L1 segment from already-extracted *frames* (sorted FrameMeta).
+
+    Single VL call: dense caption + entities/relations. Triplets are written
+    to the graph with source="seg:<segment_id>"; the caption is stored on the
+    session.Segment so retrieval can surface it alongside triplet hits.
+    """
+    frames = [f for f in frames if f.path and Path(f.path).exists()]
+    if not frames:
+        return {"segment_id": "", "caption": "", "nodes_added": 0,
+                "edges_added": 0, "ok": False}
+    frames.sort(key=lambda f: f.timestamp)
+    t0, t1 = frames[0].timestamp, frames[-1].timestamp
+
+    existing_entities = dict(session.scene_graph.entities)
+    timestamps = [f.timestamp for f in frames]
+    q_hint = (f"\nPay special attention to anything relevant to: {question}"
+              if question else "")
+    prompt = (
+        _build_prompt(timestamps, [], RELATION_VOCAB, existing_entities)
+        + _SEGMENT_PROMPT_SUFFIX.format(question_hint=q_hint)
+    )
+
+    raw = vl_client.call_multi([f.path for f in frames], prompt, _SYSTEM_PROMPT)
+    parsed = _parse_vlm_output(raw)
+    if parsed is None:
+        return {"segment_id": "", "caption": "", "nodes_added": 0,
+                "edges_added": 0, "ok": False}
+
+    caption = str(parsed.get("description") or "").strip()
+    if not caption:
+        # Level-3 parse fallback lost non-array keys — salvage any leading
+        # free text before the JSON as the caption.
+        brace = raw.find("{")
+        caption = raw[:brace].strip() if brace > 0 else ""
+
+    entities = parsed.get("entities") or []
+    relations = parsed.get("relations") or []
+
+    unique_entities, id_remap = _dedup_entities(entities)
+    for rel in relations:
+        rel["subject"] = id_remap.get(rel.get("subject", ""), rel.get("subject", ""))
+        rel["object"] = id_remap.get(rel.get("object", ""), rel.get("object", ""))
+
+    truly_new, label_remap = _cross_dedup_with_graph(unique_entities, existing_entities)
+    for rel in relations:
+        rel["subject"] = label_remap.get(rel["subject"], rel["subject"])
+        rel["object"] = label_remap.get(rel["object"], rel["object"])
+
+    merged = [r for r in _merge_relations(relations, merge_window_sec)
+              if r.get("confidence", 1.0) >= confidence_threshold]
+
+    seg = session.add_segment(
+        t_start=t0, t_end=t1, caption=caption, question=question,
+        frame_ids=[f.frame_id for f in frames],
+    )
+
+    id_to_label = {e["id"]: e["label"] for e in truly_new}
+    new_nodes = [
+        {"name": e["label"], "type": e.get("type", "object"),
+         "attributes": e.get("attributes", {}),
+         "first_seen": e.get("first_seen", t0), "last_seen": e.get("last_seen", t1)}
+        for e in truly_new if e.get("label")
+    ]
+    new_edges = [
+        {"subject": id_to_label.get(r["subject"], r["subject"]),
+         "relation": r["relation"],
+         "object": id_to_label.get(r["object"], r["object"]),
+         "t_start": r["t_start"],
+         "t_end": r["t_end"] if r["t_end"] > r["t_start"] else r["t_start"] + merge_window_sec,
+         "confidence": r["confidence"],
+         "source": f"seg:{seg.segment_id}"}
+        for r in merged
+        if r.get("subject") and r.get("object") and r.get("relation")
+    ]
+    stats = session.update_scene_graph(new_nodes, new_edges)
+
+    return {
+        "segment_id": seg.segment_id,
+        "t_start": t0, "t_end": t1,
+        "caption": caption,
+        "nodes_added": stats["nodes_added"],
+        "edges_added": stats["edges_added"],
+        "ok": True,
     }

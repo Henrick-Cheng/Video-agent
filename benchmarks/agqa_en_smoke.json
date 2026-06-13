@@ -1,0 +1,122 @@
+[
+  {
+    "id": "03PRW-6691",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "open",
+    "question": "While holding a blanket, what was the person leaning on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "While holding a blanket, what was the person leaning on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "03PRW-7697",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "duration",
+    "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+    "reference_answer": "sitting in a bed",
+    "key_facts": [
+      "sitting in a bed"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+      "en_answer": "sitting in a bed"
+    }
+  },
+  {
+    "id": "03PRW-16839",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "binary",
+    "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "03PRW-16522",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "sequencing",
+    "question": "What was the person behind first after snuggling with the object they were covered by?",
+    "reference_answer": "food",
+    "key_facts": [
+      "food"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "What was the person behind first after snuggling with the object they were covered by?",
+      "en_answer": "food"
+    }
+  },
+  {
+    "id": "02DPI-3415",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "binary",
+    "question": "In the video, did they lean on something?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "In the video, did they lean on something?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "02DPI-12242",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "duration",
+    "question": "Was the person eating some food or watching television for a shorter amount of time?",
+    "reference_answer": "watching television",
+    "key_facts": [
+      "watching television"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "Was the person eating some food or watching television for a shorter amount of time?",
+      "en_answer": "watching television"
+    }
+  },
+  {
+    "id": "02DPI-11026",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "sequencing",
+    "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "02DPI-10906",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "open",
+    "question": "While holding some food, what did they sit on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "While holding some food, what did they sit on?",
+      "en_answer": "bed"
+    }
+  }
+]

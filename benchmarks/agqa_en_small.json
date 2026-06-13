@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "03PRW-6691",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "open",
+    "question": "While holding a blanket, what was the person leaning on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "While holding a blanket, what was the person leaning on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "02DPI-3415",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "binary",
+    "question": "In the video, did they lean on something?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "In the video, did they lean on something?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "07BSH-7",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "binary",
+    "question": "Was a vacuum one of the things they were interacting with?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "Was a vacuum one of the things they were interacting with?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "00607-11039",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "sequencing",
+    "question": "Was the person walking something before or after tidying up a table?",
+    "reference_answer": "after",
+    "key_facts": [
+      "after"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "Was the person walking something before or after tidying up a table?",
+      "en_answer": "after"
+    }
+  },
+  {
+    "id": "06LBQ-3359",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "binary",
+    "question": "Was the person tidying something while closing the object they were opening?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "Was the person tidying something while closing the object they were opening?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "00T1E-12219",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "binary",
+    "question": "Was the person leaning on something after closing the object they were watching?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "Was the person leaning on something after closing the object they were watching?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "00607-10534",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "open",
+    "question": "While tidying something on the thing they stood on, what did they go in front of?",
+    "reference_answer": "doorway",
+    "key_facts": [
+      "doorway"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "While tidying something on the thing they stood on, what did they go in front of?",
+      "en_answer": "doorway"
+    }
+  },
+  {
+    "id": "06LBQ-19",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "binary",
+    "question": "Was a box one of the things they were interacting with?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "Was a box one of the things they were interacting with?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "02SKC-87276",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "sequencing",
+    "question": "Was the person opening a bag before or after smiling at something?",
+    "reference_answer": "after",
+    "key_facts": [
+      "after"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "Was the person opening a bag before or after smiling at something?",
+      "en_answer": "after"
+    }
+  },
+  {
+    "id": "07QNG-22479",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "sequencing",
+    "question": "What was the person holding before going from standing to sitting but after putting their paper somewhere?",
+    "reference_answer": "dish",
+    "key_facts": [
+      "dish"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "What was the person holding before going from standing to sitting but after putting their paper somewhere?",
+      "en_answer": "dish"
+    }
+  },
+  {
+    "id": "01THT-419",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "binary",
+    "question": "Was a pillow one of the things they were interacting with?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "Was a pillow one of the things they were interacting with?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "02SKC-34542",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "duration",
+    "question": "Was the person lying on a bed or holding a blanket for a shorter amount of time?",
+    "reference_answer": "holding a blanket",
+    "key_facts": [
+      "holding a blanket"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "Was the person lying on a bed or holding a blanket for a shorter amount of time?",
+      "en_answer": "holding a blanket"
+    }
+  },
+  {
+    "id": "015XE-296",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "open",
+    "question": "In the video, what did they carry?",
+    "reference_answer": "phone",
+    "key_facts": [
+      "phone"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "In the video, what did they carry?",
+      "en_answer": "phone"
+    }
+  },
+  {
+    "id": "06LBQ-1568",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "sequencing",
+    "question": "Between holding a vacuum and opening a box, which object were they standing on?",
+    "reference_answer": "floor",
+    "key_facts": [
+      "floor"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "Between holding a vacuum and opening a box, which object were they standing on?",
+      "en_answer": "floor"
+    }
+  },
+  {
+    "id": "06LBQ-1678",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "binary",
+    "question": "Was a vacuum the first thing they were in front of?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "Was a vacuum the first thing they were in front of?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "01THT-1023",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "open",
+    "question": "Which object were they putting down?",
+    "reference_answer": "dish",
+    "key_facts": [
+      "dish"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "Which object were they putting down?",
+      "en_answer": "dish"
+    }
+  },
+  {
+    "id": "02DPI-12242",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "duration",
+    "question": "Was the person eating some food or watching television for a shorter amount of time?",
+    "reference_answer": "watching television",
+    "key_facts": [
+      "watching television"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "Was the person eating some food or watching television for a shorter amount of time?",
+      "en_answer": "watching television"
+    }
+  },
+  {
+    "id": "00607-6097",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "binary",
+    "question": "In the video, were they behind a broom first?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "In the video, were they behind a broom first?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "01THT-1015",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "open",
+    "question": "In the video, which object were they holding?",
+    "reference_answer": "dish",
+    "key_facts": [
+      "dish"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "In the video, which object were they holding?",
+      "en_answer": "dish"
+    }
+  },
+  {
+    "id": "02DPI-11026",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "sequencing",
+    "question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "Before putting a cup somewhere but after taking a cup from somewhere, which object were they leaning on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "02DPI-12205",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "duration",
+    "question": "Did they laugh at something or hold a cup of something for a longer amount of time?",
+    "reference_answer": "laughing at something",
+    "key_facts": [
+      "laughing at something"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "Did they laugh at something or hold a cup of something for a longer amount of time?",
+      "en_answer": "laughing at something"
+    }
+  },
+  {
+    "id": "00T1E-8998",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "sequencing",
+    "question": "What did they go on the side of between lying on a bed and walking through a doorway?",
+    "reference_answer": "laptop",
+    "key_facts": [
+      "laptop"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "What did they go on the side of between lying on a bed and walking through a doorway?",
+      "en_answer": "laptop"
+    }
+  },
+  {
+    "id": "03PRW-7697",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "duration",
+    "question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+    "reference_answer": "sitting in a bed",
+    "key_facts": [
+      "sitting in a bed"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?",
+      "en_answer": "sitting in a bed"
+    }
+  },
+  {
+    "id": "07BSH-659",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "open",
+    "question": "Which did they take, a vacuum or a bag?",
+    "reference_answer": "bag",
+    "key_facts": [
+      "bag"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "Which did they take, a vacuum or a bag?",
+      "en_answer": "bag"
+    }
+  },
+  {
+    "id": "015XE-298",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "open",
+    "question": "In the video, which object did the person hold?",
+    "reference_answer": "phone",
+    "key_facts": [
+      "phone"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "In the video, which object did the person hold?",
+      "en_answer": "phone"
+    }
+  },
+  {
+    "id": "02SKC-34170",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "binary",
+    "question": "While lying on a bed, of all the things the person was behind, was the last the object they were taking first?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "While lying on a bed, of all the things the person was behind, was the last the object they were taking first?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "07BSH-655",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "sequencing",
+    "question": "Which object were they tidying while taking a bag from somewhere?",
+    "reference_answer": "floor",
+    "key_facts": [
+      "floor"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "Which object were they tidying while taking a bag from somewhere?",
+      "en_answer": "floor"
+    }
+  },
+  {
+    "id": "00T1E-8985",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "sequencing",
+    "question": "Which object did the person wear after watching a laptop or something on a laptop?",
+    "reference_answer": "shoe",
+    "key_facts": [
+      "shoe"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "Which object did the person wear after watching a laptop or something on a laptop?",
+      "en_answer": "shoe"
+    }
+  },
+  {
+    "id": "01THT-892",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "binary",
+    "question": "Was the person working on anything?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "Was the person working on anything?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "015XE-172",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "binary",
+    "question": "While taking a picture of something, was the person carrying something?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "While taking a picture of something, was the person carrying something?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "02DPI-10906",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "open",
+    "question": "While holding some food, what did they sit on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "While holding some food, what did they sit on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "03PRW-16839",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "binary",
+    "question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "While snuggling with the object they were in first, was a television the first thing they went beneath?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "03PRW-2660",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "binary",
+    "question": "Were they touching both a blanket and the first thing they went behind before starting to put on a shoe?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "Were they touching both a blanket and the first thing they went behind before starting to put on a shoe?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "00T1E-18652",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "open",
+    "question": "While closing the object they were watching, which object did the person lean on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "While closing the object they were watching, which object did the person lean on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "00T1E-18692",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "open",
+    "question": "While lying on the object they were leaning on, which object were they behind?",
+    "reference_answer": "laptop",
+    "key_facts": [
+      "laptop"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "While lying on the object they were leaning on, which object were they behind?",
+      "en_answer": "laptop"
+    }
+  },
+  {
+    "id": "07QNG-25190",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "duration",
+    "question": "Was the person sitting in a bed or holding a cup of something for a shorter amount of time?",
+    "reference_answer": "holding a cup of something",
+    "key_facts": [
+      "holding a cup of something"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "Was the person sitting in a bed or holding a cup of something for a shorter amount of time?",
+      "en_answer": "holding a cup of something"
+    }
+  },
+  {
+    "id": "00607-9762",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "binary",
+    "question": "Did they touch a doorway but not the object they were tidying first while holding the thing they put down?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "Did they touch a doorway but not the object they were tidying first while holding the thing they put down?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "06LBQ-1566",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "open",
+    "question": "While holding a vacuum, what was the person standing on?",
+    "reference_answer": "floor",
+    "key_facts": [
+      "floor"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "While holding a vacuum, what was the person standing on?",
+      "en_answer": "floor"
+    }
+  },
+  {
+    "id": "02DPI-3907",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "binary",
+    "question": "Before starting to watch a laptop or something on a laptop, did they put down anything?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "Before starting to watch a laptop or something on a laptop, did they put down anything?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "01THT-1050",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "duration",
+    "question": "What was the person doing for the longest amount of time?",
+    "reference_answer": "sitting at a table",
+    "key_facts": [
+      "sitting at a table"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "What was the person doing for the longest amount of time?",
+      "en_answer": "sitting at a table"
+    }
+  },
+  {
+    "id": "015XE-233",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "binary",
+    "question": "Was the person playing on something?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "Was the person playing on something?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "03PRW-16522",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "sequencing",
+    "question": "What was the person behind first after snuggling with the object they were covered by?",
+    "reference_answer": "food",
+    "key_facts": [
+      "food"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "What was the person behind first after snuggling with the object they were covered by?",
+      "en_answer": "food"
+    }
+  },
+  {
+    "id": "06LBQ-3888",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "sequencing",
+    "question": "What was the person opening after holding the object they were on the side of first?",
+    "reference_answer": "box",
+    "key_facts": [
+      "box"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "What was the person opening after holding the object they were on the side of first?",
+      "en_answer": "box"
+    }
+  },
+  {
+    "id": "02SKC-32743",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "open",
+    "question": "While smiling at something, what was the person putting down?",
+    "reference_answer": "blanket",
+    "key_facts": [
+      "blanket"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "While smiling at something, what was the person putting down?",
+      "en_answer": "blanket"
+    }
+  },
+  {
+    "id": "015XE-238",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "binary",
+    "question": "In the video, was the person closing anything?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "In the video, was the person closing anything?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "00T1E-12182",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "binary",
+    "question": "Before closing the object they were watching, did they dress the object they were wearing?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "Before closing the object they were watching, did they dress the object they were wearing?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "02SKC-34548",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "duration",
+    "question": "Did they snuggle with a blanket or hold a phone for a shorter amount of time?",
+    "reference_answer": "holding a phone",
+    "key_facts": [
+      "holding a phone"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "Did they snuggle with a blanket or hold a phone for a shorter amount of time?",
+      "en_answer": "holding a phone"
+    }
+  },
+  {
+    "id": "07BSH-645",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "open",
+    "question": "Before taking a bag from somewhere, which object were they holding?",
+    "reference_answer": "vacuum",
+    "key_facts": [
+      "vacuum"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "Before taking a bag from somewhere, which object were they holding?",
+      "en_answer": "vacuum"
+    }
+  },
+  {
+    "id": "07QNG-23238",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "open",
+    "question": "Before starting to hold a dish, did they go in front of a bed or a paper?",
+    "reference_answer": "paper",
+    "key_facts": [
+      "paper"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "Before starting to hold a dish, did they go in front of a bed or a paper?",
+      "en_answer": "paper"
+    }
+  },
+  {
+    "id": "01THT-1052",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "sequencing",
+    "question": "Were they interacting with a table before or after putting something on a table?",
+    "reference_answer": "before",
+    "key_facts": [
+      "before"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "Were they interacting with a table before or after putting something on a table?",
+      "en_answer": "before"
+    }
+  },
+  {
+    "id": "00607-11025",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "open",
+    "question": "In the video, which was the person tidying last, the floor or the object they were in front of first?",
+    "reference_answer": "floor",
+    "key_facts": [
+      "floor"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "In the video, which was the person tidying last, the floor or the object they were in front of first?",
+      "en_answer": "floor"
+    }
+  },
+  {
+    "id": "015XE-297",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "open",
+    "question": "While standing up, what was the person carrying?",
+    "reference_answer": "phone",
+    "key_facts": [
+      "phone"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "While standing up, what was the person carrying?",
+      "en_answer": "phone"
+    }
+  },
+  {
+    "id": "00607-6485",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "sequencing",
+    "question": "Did the person interact with the object they were behind first before or after walking through a doorway?",
+    "reference_answer": "before",
+    "key_facts": [
+      "before"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "Did the person interact with the object they were behind first before or after walking through a doorway?",
+      "en_answer": "before"
+    }
+  },
+  {
+    "id": "03PRW-15899",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "open",
+    "question": "Before sitting in the object they were leaning on, what was the person wearing?",
+    "reference_answer": "shoe",
+    "key_facts": [
+      "shoe"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "Before sitting in the object they were leaning on, what was the person wearing?",
+      "en_answer": "shoe"
+    }
+  },
+  {
+    "id": "07QNG-22990",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "open",
+    "question": "In the video, did they go on the side of a paper or the last thing they went in front of?",
+    "reference_answer": "paper",
+    "key_facts": [
+      "paper"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "In the video, did they go on the side of a paper or the last thing they went in front of?",
+      "en_answer": "paper"
+    }
+  },
+  {
+    "id": "07QNG-7117",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "binary",
+    "question": "Between standing up and holding a book, did they drink from something?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "Between standing up and holding a book, did they drink from something?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "015XE-295",
+    "video": "data/videos/charades/015XE.mp4",
+    "category": "sequencing",
+    "question": "What was the person interacting with while standing up?",
+    "reference_answer": "phone",
+    "key_facts": [
+      "phone"
+    ],
+    "_source": {
+      "video_id": "015XE",
+      "en_question": "What was the person interacting with while standing up?",
+      "en_answer": "phone"
+    }
+  },
+  {
+    "id": "06LBQ-1571",
+    "video": "data/videos/charades/06LBQ.mp4",
+    "category": "open",
+    "question": "After tidying something on the floor, what did they go behind?",
+    "reference_answer": "box",
+    "key_facts": [
+      "box"
+    ],
+    "_source": {
+      "video_id": "06LBQ",
+      "en_question": "After tidying something on the floor, what did they go behind?",
+      "en_answer": "box"
+    }
+  },
+  {
+    "id": "00T1E-1409",
+    "video": "data/videos/charades/00T1E.mp4",
+    "category": "binary",
+    "question": "Was the person sitting on the object they were dressing?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "00T1E",
+      "en_question": "Was the person sitting on the object they were dressing?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "07QNG-24230",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "binary",
+    "question": "Between sitting in a bed and going from standing to sitting, was a dish the first thing they took?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "Between sitting in a bed and going from standing to sitting, was a dish the first thing they took?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "07QNG-25180",
+    "video": "data/videos/charades/07QNG.mp4",
+    "category": "duration",
+    "question": "Was the person watching television or sitting in a bed for a shorter amount of time?",
+    "reference_answer": "watching television",
+    "key_facts": [
+      "watching television"
+    ],
+    "_source": {
+      "video_id": "07QNG",
+      "en_question": "Was the person watching television or sitting in a bed for a shorter amount of time?",
+      "en_answer": "watching television"
+    }
+  },
+  {
+    "id": "02SKC-34345",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "binary",
+    "question": "Did they go beneath the object they were on the side of first last between taking a bag from somewhere and throwing a bag somewhere?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "Did they go beneath the object they were on the side of first last between taking a bag from somewhere and throwing a bag somewhere?",
+      "en_answer": "no"
+    }
+  },
+  {
+    "id": "02SKC-32683",
+    "video": "data/videos/charades/02SKC.mp4",
+    "category": "open",
+    "question": "While holding a bag, which object did the person go beneath?",
+    "reference_answer": "phone",
+    "key_facts": [
+      "phone"
+    ],
+    "_source": {
+      "video_id": "02SKC",
+      "en_question": "While holding a bag, which object did the person go beneath?",
+      "en_answer": "phone"
+    }
+  },
+  {
+    "id": "07BSH-663",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "binary",
+    "question": "In the video, were they tidying the floor first?",
+    "reference_answer": "yes",
+    "key_facts": [
+      "yes"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "In the video, were they tidying the floor first?",
+      "en_answer": "yes"
+    }
+  },
+  {
+    "id": "01THT-1018",
+    "video": "data/videos/charades/01THT.mp4",
+    "category": "duration",
+    "question": "While doing the action they did the longest, which object were they holding?",
+    "reference_answer": "dish",
+    "key_facts": [
+      "dish"
+    ],
+    "_source": {
+      "video_id": "01THT",
+      "en_question": "While doing the action they did the longest, which object were they holding?",
+      "en_answer": "dish"
+    }
+  },
+  {
+    "id": "07BSH-671",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "duration",
+    "question": "Do they take a longer amount of time holding a bag or tidying something on the floor?",
+    "reference_answer": "tidying something on the floor",
+    "key_facts": [
+      "tidying something on the floor"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "Do they take a longer amount of time holding a bag or tidying something on the floor?",
+      "en_answer": "tidying something on the floor"
+    }
+  },
+  {
+    "id": "07BSH-944",
+    "video": "data/videos/charades/07BSH.mp4",
+    "category": "sequencing",
+    "question": "Which object were they touching after tidying something on the thing they stood on?",
+    "reference_answer": "bag",
+    "key_facts": [
+      "bag"
+    ],
+    "_source": {
+      "video_id": "07BSH",
+      "en_question": "Which object were they touching after tidying something on the thing they stood on?",
+      "en_answer": "bag"
+    }
+  },
+  {
+    "id": "03PRW-7667",
+    "video": "data/videos/charades/03PRW.mp4",
+    "category": "duration",
+    "question": "Did they put on a shoe or eat some food for a longer amount of time?",
+    "reference_answer": "eating some food",
+    "key_facts": [
+      "eating some food"
+    ],
+    "_source": {
+      "video_id": "03PRW",
+      "en_question": "Did they put on a shoe or eat some food for a longer amount of time?",
+      "en_answer": "eating some food"
+    }
+  },
+  {
+    "id": "02DPI-11007",
+    "video": "data/videos/charades/02DPI.mp4",
+    "category": "open",
+    "question": "While eating some food, what did they lean on?",
+    "reference_answer": "bed",
+    "key_facts": [
+      "bed"
+    ],
+    "_source": {
+      "video_id": "02DPI",
+      "en_question": "While eating some food, what did they lean on?",
+      "en_answer": "bed"
+    }
+  },
+  {
+    "id": "00607-861",
+    "video": "data/videos/charades/00607.mp4",
+    "category": "binary",
+    "question": "Does someone interact with a pillow?",
+    "reference_answer": "no",
+    "key_facts": [
+      "no"
+    ],
+    "_source": {
+      "video_id": "00607",
+      "en_question": "Does someone interact with a pillow?",
+      "en_answer": "no"
+    }
+  }
+]

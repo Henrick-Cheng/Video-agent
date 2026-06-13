@@ -75,7 +75,7 @@ OpenCV (`opencv-python`)，decord（可选），vLLM（生产）
 
 ### 真实测试结果（test1.mp4，14 秒游戏录屏）
 
-视频内容：某 FPS 游戏（疑似《堡垒之夜》）战队档案界面 + 角色大厅
+视频内容：某 FPS 游戏（《和平精英》）战队档案界面 + 角色大厅
 
 运行命令：
 ```bash
@@ -878,3 +878,160 @@ AGQA 官方 repo / 下载只提供 **HDF5 视觉特征，不含原始视频**；
 | 5 | **P1 #4-#6**：embedding 检索 / 去重一起做，写对照 ablation | ~1-2 天 | 检索 miss 大幅减少 + 实体合并更稳健 |
 
 > 我的判断：**P0 三条都是低风险、高确定性产出**，做完才知道项目下一步的瓶颈到底在哪。在不清楚瓶颈前直接上 P1 的大改动（FAISS / 长视频）有点像凭信念优化。**先 P0 跑完拿到三个数据点**，再做 P1 的选择题。
+
+---
+
+## 第十二阶段：全英文迁移 + 双评分（LLM-judge / exact-match）—— 进行中（2026-06）
+
+> **背景**：项目同时用于简历与硕士论文。博士后明确要求：(1) 论文用公开数据集 AGQA，(2) 管线改**英文**，(3) AGQA 评测**用 exact-match**（对标已发表 SOTA，自定义 LLM-judge 不可发表）。经核对，"中文"不是项目的认知承重墙——简历五条 bullet 无一依赖中文，中文只是查询的表层语言。故决定：**全英文，放弃"中文产品"定位**（不做跨语言实验，博士后未要求）。
+
+### 已完成
+
+| 工作 | 内容 | 状态 |
+|------|------|------|
+| **A. 语言全栈迁移** | `relation_vocab`(50 词)/`stopwords`/`retriever`(jieba→空格+词形还原)/`builder`/`vl_client`/`react_agent`/mock 全部英文化；`test_query_chinese`→`test_query_english`，其余测试中文 fixture 清理 | ✅ pytest 38 passed / 12 skipped，无回归 |
+| **B. 双评分基础设施** | `run_benchmark.py`:`_judge`→`_judge_llm`+`_judge_exact`；`--scorers llm,exact` 一次跑双列；judge endpoint 可配（`JUDGE_*` 环境变量，留口给 GPT judge） | ✅ |
+| **答案模式开关** | `--answer-mode {short,verbose}`：short=短答案约束(EM 用)；verbose=产品默认冗长引证(LLM-judge 对照用，摁住"答案格式"变量) | ✅ |
+| **数据** | 生成 `benchmarks/agqa_en_small.json`（英文原问 + 英文原答，取自 `_source.en_*`，无需重译） | ✅ |
+
+### 遇到的坑（冒烟驱动，每个都是真 bug）
+
+1. **VL 模型 403** —— `qwen-vl-plus-latest` 等 `-latest` VL 别名在本账号 access_denied，稳定名 `qwen-vl-plus` 可用（文本 `qwen-plus-latest` 不受影响）。改 `configs/default.yaml` 一行。
+2. **EM token 散点假阳** —— 词袋匹配把答案里散落的 gold 词判对；改严格归一化相等。
+3. **EM substring-on-verbose 假阳** —— 长答案里偶然/否定式带到 gold 词（"no **bed** activities" 判对 `bed`）；加长度护栏。
+4. **短答案约束压垮工具调用** / **vlm 返 JSON** —— 分别用"强制先 query"和 `json_mode=False` 修。
+5. **agent 最终答案仍冗长**（产品 prompt"引用证据"压过 eval 指令）→ 给 eval 单独 agent system prompt + 短答案抽取步骤。
+
+### 核心发现 ①：EM 与生成式 Agent 错配（详见 `docs/em_vs_agent_analysis.md`）
+
+EM 是给 AGQA 原生**封闭词表 / 判别模型**（单 token 输出）设计的；本项目是**生成式 ReAct Agent**（推理叙述）。逼短答案压垮工具、事后抽取在 open/"X or Y" 题上**不可靠**。**铁证**（03PRW duration，gold=`sitting in a bed`）：agent 原文结论是"没有 bed，是 couch"（答错），抽取器看到问题里"X or Y"两选项**挑了和 gold 一致的那个** → EM=1.0 假阳，LLM-judge=0.0 判对。结论：**binary 的 EM 可信；open/duration/sequencing 的 EM 含双向抽取噪声，只能作保守参考。** 口径建议：LLM-judge 作主指标，EM 作"对标 AGQA 协议"的保守下界 + 全程披露。**待博士后定口径，EM 全量暂不跑。**
+
+### 核心发现 ②：英文 LLM-judge 对照 —— 头条又被数据打脸（2026-06-06，verbose，70 题 × 1 轮）
+
+与 Phase 11 旧中文（3 轮）同题、同视频、同方法、同 judge、同 verbose 答案格式，**仅换管线语言**：
+
+| 方法 | 旧中文(3轮) | 英文(1轮) | |
+|------|-----------|----------|---|
+| agent | 0.364 | **0.436** | ↑ |
+| rag_only | 0.186 | **0.321** | ↑ |
+| vlm_direct | 0.326 | **0.450** | ↑ |
+
+**三方法全涨**（英文 GT 更干净 + Qwen-VL 在西方场景英文 prompt 更顺）。**但 Phase 11 头条"agent 整体反超 vlm_direct"在英文下翻车**：vlm_direct 0.450 > agent 0.436（差 0.014，窄）。vlm 涨得多，agent 过场景图瓶颈涨幅吃亏。
+
+**然而结构化故事反而更硬**——分类上 agent 赢它该赢的：
+
+| 分类 | agent | vlm_direct | |
+|------|-------|-----------|---|
+| **duration** | **0.500** | 0.318 | ✅ agent **1.6×**，t_start/t_end 优势，语言无关 |
+| **binary** | **0.625** | 0.542 | ✅ agent 胜 |
+| open | 0.333 | **0.476** | vlm 胜（dense 感知） |
+| sequencing | 0.214 | **0.357** | vlm 胜 |
+
+token：agent 2860 vs vlm 6188 ≈ **46%**（verbose 模式，约一半成本）。
+
+### 核心发现 ③：token 估算有语言偏差，旧"1/4 token"卖点被灌了水
+
+英文化后 agent 占 vlm_direct 的 token 从 **23%（旧中文）涨到 46%（英文）**，看起来"没以前省了"。深挖发现这**不是 agent 真变费了，是估算器对语言不公平**：
+
+- **vlm_direct token = 帧数 × 1500 + 文本/3**，几乎全是**图像 token（4×1500=6000），写死、与语言无关** → 稳定分母（zh 6041 / en 6188，几乎不变）。
+- **agent token = 整段 ReAct 对话的 `字符数 ÷ 3`**，是**纯文本估算**。而 `字符÷3` 对中英文严重不一致:**中文** 1 token ≈ 1-2 字 → `÷3` **大幅低估**(真实约 2-3×);**英文** 1 token ≈ 4 字符 → `÷3` 接近真实甚至略高。
+
+所以 vlm 分母不动、agent 分子从 1368→2860 翻倍,**全是估算偏差单方向地灌进 agent 分子**:旧中文的 1368 是**虚低**,英文 2860 才接近真相。
+
+**诚实结论**:**"agent 只用 vlm_direct 1/4 token" 这个旧卖点,一直被语言偏差的估算器 + 不含预建成本双重灌水。** 英文下的 ~46%("约一半")更接近真实;若再把 agent 的预建场景图 VLM 成本按题摊进去,优势可能进一步缩小。修法见下方待办(真实 usage + 预建摊销)——这是 Phase 11 就埋下、Phase 12 实锤的隐患。token 效率应**降级为次要 bonus**,主线压在结构化时序推理上。
+
+### 与睡前预测的诚实复盘
+
+睡前我对用户说"同一宽松指标，定性结论大概率保住"——**部分说对、部分打脸**:绝对数全涨没崩（对），但**整体排序翻转**(打脸)。这是项目第三次"预测被实测打脸"（Phase 10 vlm_direct 重测翻盘、Phase 11 短视频 agent 反胜、本次英文 vlm 又反超）。**教训仍是实测优先。**
+
+**对简历/论文的诚实改写**：
+- ❌ 不能再说"agent 在 AGQA 整体反超 vlm_direct"（英文翻车）。
+- ✅ 改说"agent 在**结构化时序推理类（duration 1.6×、binary）稳定胜出**，token 成本约直接 VLM 一半；单帧 dense 感知类（open/sequencing）不及直接 VLM"——这**完全贴合项目本来定位**，且有英文+干净 GT 撑着，比旧中文头条更经得起审稿。
+
+### 待办（Phase 12 未完）
+
+1. **英文 LLM-judge 对照补到 runs=3**（出可发表 ±std；当前 agent-vs-vlm 仅差 0.014，在噪声内，3 轮可能任一方向）。
+2. **EM 口径待博士后拍板**（保守下界 + LLM-judge 主指标 + 披露 ⟺ 纯 EM 强约束封闭词表）；定了再跑 EM 全量。
+3. **简历 benchmark bullet 按上面诚实口径改**（先重测再改，别搬旧"23% token / 整体反超"）。
+4. token 口径重建（真实 usage + 预建摊销，论文会被审稿人盯）。
+5. 中文文档（README / benchmark_agqa）暂保持中文，待整体英文化决定。
+
+> 报告产物：`docs/benchmark_en_llmjudge.md`（英文对照）、`docs/em_vs_agent_analysis.md`（EM 错配分析）、`docs/benchmark_en_smoke.json`（逐题原始记录）。代码均未 commit，工作树停在 `10aed53` 之上，`git stash -u` 可逆。
+
+## 第十三阶段：token 口径重建 + 分层应答 + MMBench-Video 迁移（2026-06-12）
+
+**背景**：面试两大质疑（①agent 与 workflow 区别不大；②token 测评不严谨）+ 博士后拍板解开 EM 死结：**只用 LLM-as-judge，转开放问答数据集，点名 MMBench-Video**（要求复刻在该数据集上报结果论文的评测协议）。
+
+### 完成的事
+
+1. **token 口径重建**（待办 4 清账）：新建 `src/perception/usage.py` 全局 UsageLedger（线程安全），VLClient 每次响应记真实 `usage`（图像 token 含在 prompt_tokens）；agent 按轮求和 `usage_metadata`（重发历史如实计费）；预建实测并按题摊销；报表三列 Tokens/Q (answer) / +Prebuild/Q / =Total/Q + 自动 break-even 行；删除错误的 est_cost_rmb。
+2. **分层应答 `agent_tiered`**：图文本注入上下文（>30 三元组只注入实体摘要），工具可选，**模型运行时自主决定是否升级**——非硬编码路由，直接回应"与 workflow 无异"质疑。冒烟抓到"缺证当证否"bug（图缺 lean 事实直接答 no），加第 6 条规则（缺证必先 inspect 验证）修复。预建帧数改时长自适应（1 帧/15s，夹 [8,24]）。
+3. **MMBench-Video 迁移**：13.4GB 下载解包（609 视频）；分层抽样 150 题（TR/HL 加密，seed=42）；官方 VLMEvalKit judge 协议逐字复刻（0-3 语义相似度，scorer="mmbv"，judge 经 JUDGE_* 可切；测试 qwen-max / 论文 gpt-4-turbo 重评缓存答案）；手工样例自检 5/5。
+
+### 核心发现 ①：真实计费把旧 token 故事彻底反转（比 Phase 12 预估的更狠）
+
+冒烟（8 题）实测：agent 边际 7154 tok/Q（97% 是文本 LLM——ReAct 每轮重发历史）vs vlm_direct **639**（真实 qwen-vl-plus 计费 ~130-175 tok/帧@480p，旧估算 1500/帧虚高 ~10×）。两个估算误差方向相反、双双偏袒 agent：**旧"1/4 token"卖点符号都反了，正式退役**。token 效率从卖点降级为需要刻画边界的成本模型。
+
+### 核心发现 ②：AGQA 70 题（短答案模式 runs=1）agent 双口径反超 + 自适应证据
+
+agent **0.450**（EM 0.429）> vlm_direct 0.371（0.357）> rag_only 0.343（0.314）；duration **0.500 vs 0.136（3.7×）**。工具调用随题型自适应：open 1.81 → binary 2.42 → sequencing 3.21 → duration 3.64（范围 1-8）——**努力精确投在优势题型上，固定 workflow 给不出这种分布**（面试问题①的硬证据）。成本：agent 边际 9315 + 摊销 971 vs vlm 626（短视频 ~16×）；rag_only 边际 953 **高于** vlm 626 → **短视频上多轮摊销机制死亡**。
+
+### 核心发现 ③：MMBench-Video 150 题——舒适区从"长视频"修正为四个具体条件
+
+总分 vlm_direct@8帧 1.447 > agent 1.193 > tiered 1.053 > rag 0.787（0-3 制）。但：
+
+- **HL 幻觉维度图方法 4-5× 碾压**（tiered 2.733 / rag 2.400 / agent 2.200 vs vlm **0.533**）——"答案必须接地"的架构属性，最硬的一条优势。
+- **"长视频 vlm 塌缩"假设在 ≤6min 被证伪**：vlm@8帧三个时长桶平直（1.52/1.36/1.46）。但 agent 得分随预建投入增长（>180s 桶 24 帧图，1.48 追平 vlm 1.46）——斜率差暗示 10min+ 可能交叉（未测，下轮动机）。
+- **多轮假设条件成立**：长视频上图方法边际反转（tiered 4721 / rag 985 < vlm 6752）→ break-even rag 2.3 题/视频、tiered 6.3 题/视频、完整 agent 永不。结论："轮次越多越省"当且仅当长视频+多题会话+低边际策略。
+- **tiered 过度自信短板**：TR 0.300 vs agent 0.833——22/30 题直答没升级，"图有相关但不充分证据"时升级判据失灵。
+- **硬边界：旁白依赖**（"according to the video"类）纯视觉管线够不着，TR 全线失分共因。**下轮最高杠杆改进：ASR/字幕入图**。
+
+### 待办（Phase 13 未完）
+
+1. judge 切 gpt-4-turbo 对缓存答案重评（论文口径，零推理成本）；
+2. AGQA + mmbv 补 runs=3 出 ±std；
+3. ASR/字幕通道入图（TR 失分主因，架构无需改）；
+4. tiered 升级判据细化（"图有证据"→"图能支撑该题型推理"）；
+5. 10min+ 长视频实验验证斜率交叉外推；
+6. 简历/论文叙事按"四条件舒适区"口径改写（HL 幻觉抵抗提为第一卖点）。
+
+> 报告产物：`docs/benchmark_tokens_smoke.md`（口径冒烟）、`docs/benchmark_tokens_full.md`（AGQA 70 题诊断）、`docs/benchmark_mmbv.md`（150 题标准报表）、`docs/benchmark_mmbv_analysis.md`（舒适区交叉分析）。本阶段代码与数据均已 commit。判断失误复盘：睡前预测"长视频是 agent 舒适区"——半对半错（成本边际反转对了，准确率塌缩错了），第四次被实测纠偏，教训仍是实测优先。
+
+## 第十四阶段：v2 架构重设计 —— lazy 多粒度记忆 + 置信度驱动（2026-06-12/13）
+
+**背景**：近期面试遇到较多的问题围绕"场景图和 agent 到底带来了什么优势"展开，要求先调研前沿再改设计。调研（VideoAgent ECCV'24 / Graph-VideoAgent 2501.15953 / DoraemonGPT ICML'24 / Deep Video Discovery NeurIPS'25 / Agentic VLVU 2601.18157）收敛三条共识：①无人用纯三元组当记忆，主流=多粒度索引+caption 必留+按需细看；②编排主流是置信度自评迭代（每轮小预算+轮数上限）；③DVD 原文批评 "predefined workflows applied uniformly"（与面试官质疑一字不差）。诊断 v1 两大执行错误：**三元组当答案来源（应为索引）、全量预建（应为按需）**。
+
+### v2 设计（全部落地，commit 021cb9a）
+
+- **三层 lazy 记忆**：L0 全局层（8 帧摘要 + faster-whisper 本地转写，文件缓存）；L1 segment 层（agent 探索哪段建哪段：密集 caption + 三元组）；L2 三元组索引（source=seg:<id> 溯源，检索命中连带返回所属 caption + 旁白片段）。
+- **工具**：search_memory（免费三层联合检索）/ explore_segment（自选时间窗 ≤6 帧——**建图本身成为逐题 agent 决策**）/ inspect_frame（保留）。
+- **编排**：置信度自评 1-3，<3 才探索，≤2 次/轮、≤3 轮封顶；短视频首探全片；duration 题要求完整活动区间。
+- **新指标**：frames-touched/Q（账本逐 VL 调用记图像数）；**公平基线 vlm_transcript**（同帧数+旁白入 prompt，防"赢靠模态"质疑）。
+- 调试实录：qwen-plus 会把工具调用写成纯文本（tool_calls 为空）——根因是 prompt 里的函数签名诱导模式补全；修法=去调用语法+首步强制免费检索+伪调用重试兜底。
+
+### 验证结果
+
+**AGQA 70 题门（红线 duration ≥0.45）**：通过——duration **0.682**（v1 0.500，vlm 0.136，5×），整体 0.436≈v1 0.450，总成本 **5372 vs 10287（-48%）**。open 回退 0.381→0.190：半数是 Charades 词表错位（gold=bed，VLM 如实说 couch），半数是 caption 轻小物 → 已加强制物体枚举 prompt（mmbv 验证生效）。
+
+**MMBench-Video 150 题（主考场）**：**agent_v2 总分 1.933，首次整体反超全部基线**（详见 `docs/benchmark_mmbv_v2_analysis.md`）：
+
+1. **归因干净**：ASR 模态 +0.246（vlm 1.447→transcript 1.693），架构 +0.240（同模态 1.693→1.933）——各占一半，公平性设计兑现。
+2. **舒适区边界实测 ≈90 秒**（论文主图）：agent_v2 随时长单调上升 1.54→2.02→2.27，所有基线平直；<90s 输 0.27，90s+ 赢 0.5+。"长视频假设"修正版获证实。
+3. **3.1 帧/题 打赢 8 帧/题**：帧效率 -61% 同时总分 +0.24——"有指导的感知预算"实锤（文献 headline 指标级别）；81/150 仅免费检索直答，69 题自主升级。
+4. **HL 红线守住**：2.333（≥2.2 ✓），对同模态基线 2.1×；FP-C 2.4×（多帧窗口直接受益）；CP 0.8→2.2（L0 摘要红利）；TR 回升至 1.6 但微输基线（TR 增益主要来自模态）。
+5. 成本：15505 tok/Q（v1 -28%）但仍是基线 2.1×，时延 46.6s；**成本卖点不成立，卖点=帧效率+90s+ 准确率**。
+
+### 叙事定稿（论文/面试口径）
+
+v1→v2 = "把图从答案来源降级为证据目录，把建图从预处理升级为 agent 决策，把流程从写死次序换成置信度循环"——三项修正：mmbv 总分 +62%，成本 -28%，帧效率 3.1/题，幻觉抵抗保持 2×+。对面试两问的最终回应：①agent vs workflow——建图位置、探索窗口、停机时机全部运行时决策，81/150 直答 vs 69 题升级的分布即证据；②评测严谨性——真实计费+官方协议复刻+公平基线+归因分解。
+
+### 待办（Phase 14 未完）
+
+1. gpt-4-turbo 重评缓存答案（论文 judge 口径，零推理成本）；
+2. AGQA + mmbv runs=3 出 ±std；
+3. S1 多轮指代 / S2 时序定位两个亮点实验；
+4. LVBench 切片（小时级外推验证，EgoSchema 已撤）；
+5. AGQA open 的 Charades 词表错位：考虑在 short-answer 抽取时给 gold 词表提示（需评估是否引入偏置，谨慎）；
+6. 简历/论文叙事按上面口径改写。
+
+> 报告产物：`docs/benchmark_v2_agqa.md`、`docs/benchmark_mmbv_v2.md`、`docs/benchmark_mmbv_v2_analysis.md`。本阶段全部 commit。
