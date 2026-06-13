@@ -41,8 +41,12 @@ pyyaml>=6.0
 # ── Chinese NLP ───────────────────────────────────────────────────────────────
 jieba>=0.42                  # Chinese word segmentation for scene graph retrieval
 
+# ── Speech-to-text (L0 memory layer) ──────────────────────────────────────────
+faster-whisper>=1.0          # local ASR transcript; src/perception/asr.py degrades gracefully if absent
+
 # ── Benchmark data ────────────────────────────────────────────────────────────
 pandas>=2.0                  # parse AGQA question CSVs in build_agqa_benchmark.py
+huggingface_hub>=0.23        # download MMBench-Video dataset in build_mmbench_video.py
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 loguru>=0.7
