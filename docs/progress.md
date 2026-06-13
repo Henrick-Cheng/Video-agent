@@ -75,7 +75,7 @@ OpenCV (`opencv-python`)，decord（可选），vLLM（生产）
 
 ### 真实测试结果（test1.mp4，14 秒游戏录屏）
 
-视频内容：某 FPS 游戏（疑似《堡垒之夜》）战队档案界面 + 角色大厅
+视频内容：某 FPS 游戏（《和平精英》）战队档案界面 + 角色大厅
 
 运行命令：
 ```bash
@@ -999,7 +999,7 @@ agent **0.450**（EM 0.429）> vlm_direct 0.371（0.357）> rag_only 0.343（0.3
 
 ## 第十四阶段：v2 架构重设计 —— lazy 多粒度记忆 + 置信度驱动（2026-06-12/13）
 
-**背景**：用户质疑"场景图和 agent 到底带来了什么优势"，要求先调研前沿再改设计。调研（VideoAgent ECCV'24 / Graph-VideoAgent 2501.15953 / DoraemonGPT ICML'24 / Deep Video Discovery NeurIPS'25 / Agentic VLVU 2601.18157）收敛三条共识：①无人用纯三元组当记忆，主流=多粒度索引+caption 必留+按需细看；②编排主流是置信度自评迭代（每轮小预算+轮数上限）；③DVD 原文批评 "predefined workflows applied uniformly"（与面试官质疑一字不差）。诊断 v1 两大执行错误：**三元组当答案来源（应为索引）、全量预建（应为按需）**。
+**背景**：近期面试遇到较多的问题围绕"场景图和 agent 到底带来了什么优势"展开，要求先调研前沿再改设计。调研（VideoAgent ECCV'24 / Graph-VideoAgent 2501.15953 / DoraemonGPT ICML'24 / Deep Video Discovery NeurIPS'25 / Agentic VLVU 2601.18157）收敛三条共识：①无人用纯三元组当记忆，主流=多粒度索引+caption 必留+按需细看；②编排主流是置信度自评迭代（每轮小预算+轮数上限）；③DVD 原文批评 "predefined workflows applied uniformly"（与面试官质疑一字不差）。诊断 v1 两大执行错误：**三元组当答案来源（应为索引）、全量预建（应为按需）**。
 
 ### v2 设计（全部落地，commit 021cb9a）
 
