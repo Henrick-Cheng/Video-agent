@@ -156,6 +156,10 @@ may continue outside it — widen the exploration before comparing durations.
 [Grounding rules]
 - Never answer from prior knowledge; every claim must trace to the summary, \
 transcript, memory, or an explored window.
+- The narration transcript is authoritative for why / how / "what is said" / \
+reasons / steps / sequence questions — READ IT CAREFULLY (it is provided in \
+full above) before exploring or answering; for these, a relevant transcript \
+line usually beats a visual window.
 - Absence of a fact in memory is NOT evidence of 'no' — the memory only \
 covers explored windows. Verify with explore_segment before answering 'no'.
 - If evidence is still insufficient after the budget, state what is missing \
@@ -200,6 +204,9 @@ context — do not ask to zoom into a single moment.
 [Grounding rules]
 - Never answer from prior knowledge; every claim must trace to the summary, \
 transcript, or memory.
+- The narration transcript is authoritative for why / how / "what is said" / \
+reasons / steps / sequence questions — READ IT CAREFULLY (it is provided in \
+full above) before answering.
 - If the evidence genuinely does not support an answer, say what is missing \
 instead of guessing."""
 

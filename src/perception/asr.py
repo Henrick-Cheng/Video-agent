@@ -90,8 +90,14 @@ def transcribe(video_path: str, language: Optional[str] = None) -> list[dict]:
 def transcript_text(transcript: list[dict],
                     t_start: Optional[float] = None,
                     t_end: Optional[float] = None,
-                    max_chars: int = 4000) -> str:
-    """Render (a time window of) a transcript as timestamped lines."""
+                    max_chars: int = 12000) -> str:
+    """Render (a time window of) a transcript as timestamped lines.
+
+    When over budget, keep BOTH the head and the tail (dropping the middle):
+    narrative answers live as often at the end ("what is the final step")
+    as at the start, and head-only truncation silently lost them — the
+    Phase-14.1 'transcript-not-used' failure cluster. The 12000-char default
+    (~3k tokens) fits even ~6-minute MMBench-Video transcripts in full."""
     rows = transcript
     if t_start is not None or t_end is not None:
         lo = t_start if t_start is not None else float("-inf")
@@ -101,6 +107,28 @@ def transcript_text(transcript: list[dict],
         return ""
     lines = [f"[{r['t_start']:.0f}-{r['t_end']:.0f}s] {r['text']}" for r in rows]
     text = "\n".join(lines)
-    if len(text) > max_chars:
-        text = text[:max_chars] + "\n[... transcript truncated ...]"
-    return text
+    if len(text) <= max_chars:
+        return text
+
+    # Over budget → keep head + tail (drop the middle), splitting the budget
+    # ~60/40 and selecting whole lines from each end.
+    marker = "\n[... middle of transcript truncated ...]\n"
+    if max_chars <= len(marker):  # degenerate budget → simple head cut
+        return text[:max_chars]
+    head_budget = int((max_chars - len(marker)) * 0.6)
+    tail_budget = (max_chars - len(marker)) - head_budget
+
+    head, used = [], 0
+    for ln in lines:
+        if used + len(ln) + 1 > head_budget:
+            break
+        head.append(ln); used += len(ln) + 1
+
+    tail, used = [], 0
+    for ln in reversed(lines):
+        if used + len(ln) + 1 > tail_budget:
+            break
+        tail.append(ln); used += len(ln) + 1
+    tail.reverse()
+
+    return "\n".join(head) + marker + "\n".join(tail)
