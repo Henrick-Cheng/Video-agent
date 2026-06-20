@@ -80,6 +80,10 @@ def transcribe(video_path: str, language: Optional[str] = None) -> list[dict]:
             if s.text.strip()
         ]
         logger.info("ASR: %d segments from %s", len(out), video_path)
+        try:                                  # persist so repeat runs hit cache
+            cache.write_text(_json.dumps(out, ensure_ascii=False), encoding="utf-8")
+        except Exception as exc:
+            logger.warning("ASR cache write failed for %s: %s", cache, exc)
         return out
     except Exception as exc:
         logger.warning("ASR failed for %s: %s — continuing vision-only",
