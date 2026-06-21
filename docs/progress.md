@@ -1087,3 +1087,28 @@ v1→v2 = "把图从答案来源降级为证据目录，把建图从预处理升
 - 门控：好（不动）。路由：死（14.1 负）。🟢 旁白：~1 条（已修）。🟡 取证深度：死（14.2 负，能力天花板）。
 - **唯一剩下机械可修的是 🔴 长视频定位（3/10，全 >200s）→ locate_visual，但这是最贵的一项。**
 - 下一步二选一：(a) 投入 locate_visual 啃长视频残差；(b) 认 v2 = 1.933 为当前结果，转去做 runs=3 / gpt-4-turbo 重评 / 接线 main.py / 论文写作等消化性工作。
+
+## 第十四阶段补充 14.3：mmbv 收尾 —— runs=3 反超抗噪成立（2026-06-21）
+
+把 v2=1.933 固化成可信可引用结果，然后收掉 mmbv 线。
+
+### 主跑健壮性（被两次崩溃倒逼修的真 bug）
+- **ASR 缓存只读不写**（044f162）：transcribe 读缓存却从不写，每跑重复转写 136 视频 ×6。已修+136 视频预热满。
+- **客户端无重试 + L0 摘要未保护**（7cbc2c7）：一个瞬时 APIConnectionError（笔记本睡眠唤醒重连窗口）就炸掉整个 8h 跑。全客户端 max_retries=6+timeout，_prepare_l0 摘要失败降级不崩。第三次在 `caffeinate -i` 下跑完，1350/1350、0 连接错误。
+
+### runs=3 结果（qwen-max judge）—— 详见 `docs/benchmark_mmbv_final_analysis.md`
+| 方法 | 总分(0-3) | Frames/Q |
+|---|---|---|
+| **agent_v2** | **1.984 ± 0.101** | 3.1 |
+| vlm_transcript@8 | 1.727 ± 0.020 | 8.0 |
+| vlm_direct@8 | 1.478 ± 0.025 | 8.0 |
+
+- **反超抗噪为真**：gap 0.257 > std之和 0.121。
+- 归因复刻 runs=1：ASR 模态 +0.249 / 架构 +0.257（各半）。
+- HL 幻觉 2.422 vs 1.044 vs 0.622（2.3×/3.9×）；舒适区 ≈90s（<90s 持平、90s+ 领先）。
+- **标注天花板审计**(n=30)：supported 97% → 金标准基本干净，离满分的差距是真实能力差距非烂标注（PROXY 披露：LLM 判定偏宽松）。
+
+### mmbv 线收尾 + 结论
+- **🔴 locate_visual + D6 窄窗加密 = DROPPED**（已评估不划算，**非未来工作**）。便宜杠杆耗尽（14.1 路由证伪、14.2 取证深度证伪），残差 = VLM 能力天花板 + 长视频定位。
+- **要更强证据 = 换数据集复现，非榨本集残差**。下一迭代方向：EgoSchema / Video-MME long 复现同一反超。
+- 待办：gpt-4-turbo 重评（待 OpenAI key，`scripts/rejudge_gpt4.py` 就绪）；产物 `docs/benchmark_mmbv_final.{md,json}`、`benchmark_mmbv_final_analysis.md`、`docs/annotation_audit.json`。
