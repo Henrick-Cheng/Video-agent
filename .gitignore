@@ -58,3 +58,4 @@ logs/
 # Secrets
 .env.local
 configs/secrets.yaml
+data/asr_cache/
