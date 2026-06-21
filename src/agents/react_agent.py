@@ -156,6 +156,10 @@ may continue outside it — widen the exploration before comparing durations.
 [Grounding rules]
 - Never answer from prior knowledge; every claim must trace to the summary, \
 transcript, memory, or an explored window.
+- The narration transcript is authoritative for why / how / "what is said" / \
+reasons / steps / sequence questions — READ IT CAREFULLY (it is provided in \
+full above) before exploring or answering; for these, a relevant transcript \
+line usually beats a visual window.
 - Absence of a fact in memory is NOT evidence of 'no' — the memory only \
 covers explored windows. Verify with explore_segment before answering 'no'.
 - If evidence is still insufficient after the budget, state what is missing \
@@ -173,6 +177,38 @@ _V2_ANSWER_VERBOSE = """
 [Answer format]
 Give a concise, accurate answer (1-3 sentences). Mention timestamps when \
 relevant."""
+
+# No-explore variant (routing experiment): for reasoning/structural questions
+# the data shows zooming into one window LOSES the global picture and hurts.
+# Here the agent answers from the global summary + transcript + a free memory
+# search, with no window exploration available.
+_V2_SYSTEM_NOEXPLORE = """\
+You are a video question-answering agent. The user message provides: a global \
+summary of the video, its duration, the narration transcript (may be empty), \
+and any notes from windows explored for earlier questions.
+
+[Tools]
+- search_memory — free lookup over everything known so far (facts with \
+timestamps, notes from earlier windows, transcript).
+
+Tools are used ONLY through the tool-calling interface. Plain text in your \
+message is treated as your final answer — never write anything that looks \
+like a function call.
+
+[Procedure]
+1. You MUST start by CALLING the search_memory tool with the question.
+2. Answer from the global summary, the transcript, and the search result. \
+This is a holistic / reasoning question best answered from the whole-video \
+context — do not ask to zoom into a single moment.
+
+[Grounding rules]
+- Never answer from prior knowledge; every claim must trace to the summary, \
+transcript, or memory.
+- The narration transcript is authoritative for why / how / "what is said" / \
+reasons / steps / sequence questions — READ IT CAREFULLY (it is provided in \
+full above) before answering.
+- If the evidence genuinely does not support an answer, say what is missing \
+instead of guessing."""
 
 
 def build_l0_context(session: "VideoSession") -> str:
@@ -194,8 +230,15 @@ def build_l0_context(session: "VideoSession") -> str:
     return "\n".join(lines) + "\n\n"
 
 
-def build_agent_v2(session: "VideoSession", short_answer: bool = True) -> Any:
+def build_agent_v2(session: "VideoSession", short_answer: bool = True,
+                   explore: bool = True) -> Any:
     """Create the v2 agent: lazy memory toolset + confidence-driven prompt.
+
+    explore=True  : full toolset (search_memory + explore_segment + inspect_frame),
+                    confidence-driven loop.
+    explore=False : routing experiment — answer from L0 + a free memory search
+                    only (no window zooming). Used for structural/reasoning
+                    categories where exploration empirically hurts.
 
     Invoke with build_l0_context(session) + question as the user message.
     """
@@ -203,13 +246,18 @@ def build_agent_v2(session: "VideoSession", short_answer: bool = True) -> Any:
     from src.tools.memory_search import make_search_memory
     from src.tools.segment_inspector import make_explore_segment
 
-    tools = [
-        make_search_memory(session),
-        make_explore_segment(session),
-        make_inspect_frame(session),
-    ]
-    prompt = _V2_SYSTEM_CORE + (_V2_ANSWER_SHORT if short_answer
-                                else _V2_ANSWER_VERBOSE)
+    if explore:
+        tools = [
+            make_search_memory(session),
+            make_explore_segment(session),
+            make_inspect_frame(session),
+        ]
+        core = _V2_SYSTEM_CORE
+    else:
+        tools = [make_search_memory(session)]
+        core = _V2_SYSTEM_NOEXPLORE
+
+    prompt = core + (_V2_ANSWER_SHORT if short_answer else _V2_ANSWER_VERBOSE)
     agent = create_agent(_get_real_llm(), tools, system_prompt=prompt, debug=False)
     agent._va_max_iterations = get_settings().agent.max_iterations  # type: ignore[attr-defined]
     return agent

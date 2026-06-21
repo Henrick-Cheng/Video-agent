@@ -63,5 +63,8 @@ def test_transcript_text_windowing_and_truncation():
     assert "line 0" in full and "line 9" in full
     windowed = transcript_text(tr, t_start=4.0, t_end=6.0)
     assert "line 4" in windowed and "line 9" not in windowed
-    truncated = transcript_text(tr, max_chars=30)
+    # Over budget → head+tail preserved (both ends survive, middle dropped).
+    truncated = transcript_text(tr, max_chars=80)
     assert "truncated" in truncated
+    assert "line 0" in truncated and "line 9" in truncated  # head AND tail kept
+    assert "line 5" not in truncated                         # middle dropped

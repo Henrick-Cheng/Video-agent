@@ -182,15 +182,21 @@ def _prepare_l0(session) -> _TrialStats:
     paths = [f.path for fid in kf["frame_ids"]
              if (f := session.cached_frames.get(fid)) and f.path]
     if paths:
-        session.global_summary = get_vl_client().call_multi(
-            paths,
-            f"These {len(paths)} frames are uniformly sampled from a "
-            f"{session.duration_sec:.0f}-second video. Write a 3-5 sentence "
-            f"summary of what the video is about: setting, people, main "
-            f"activities and their rough order. Mention any prominent "
-            f"on-screen text. Factual only.",
-            json_mode=False,
-        ).strip()
+        try:
+            session.global_summary = get_vl_client().call_multi(
+                paths,
+                f"These {len(paths)} frames are uniformly sampled from a "
+                f"{session.duration_sec:.0f}-second video. Write a 3-5 sentence "
+                f"summary of what the video is about: setting, people, main "
+                f"activities and their rough order. Mention any prominent "
+                f"on-screen text. Factual only.",
+                json_mode=False,
+            ).strip()
+        except Exception as exc:
+            # A summary failure must not crash a multi-hour run — degrade to
+            # empty (the agent still has the transcript + exploration).
+            print(f"  [L0] summary failed ({exc}); continuing without summary")
+            session.global_summary = ""
 
     t0 = time.time()
     session.transcript = asr.transcribe(session.video_path)
@@ -209,11 +215,17 @@ _PSEUDO_CALL_RE = re.compile(r"^\s*\w+\s*\(.{0,400}\)\s*$", re.DOTALL)
 
 
 def _answer_agent_v2(session, question: str,
-                     short_answer: bool = True) -> tuple[str, int, _TrialStats]:
-    """v2: lazy memory + confidence-driven loop (see react_agent.build_agent_v2)."""
+                     short_answer: bool = True,
+                     allow_explore: bool = True) -> tuple[str, int, _TrialStats]:
+    """v2: lazy memory + confidence-driven loop (see react_agent.build_agent_v2).
+
+    allow_explore=False routes the question to the no-explore variant (answer
+    from L0 + free memory search only) — the structural-category routing
+    experiment.
+    """
     from src.agents.react_agent import build_agent_v2, build_l0_context
 
-    agent = build_agent_v2(session, short_answer=short_answer)
+    agent = build_agent_v2(session, short_answer=short_answer, explore=allow_explore)
     rl = getattr(agent, "_va_max_iterations", 6) * 5 + 10
     user_text = build_l0_context(session) + question
 
@@ -598,7 +610,7 @@ def _judge_client():
     cfg = get_settings()
     base = os.environ.get("JUDGE_BASE_URL", cfg.active_llm.base_url)
     key = os.environ.get("JUDGE_API_KEY") or cfg.dashscope_api_key or "token-abc"
-    return OpenAI(base_url=base, api_key=key)
+    return OpenAI(base_url=base, api_key=key, max_retries=6, timeout=60.0)
 
 
 def _judge_model() -> str:
@@ -825,6 +837,7 @@ def run_trial(
     scorers: tuple[str, ...] = SCORERS,
     short_answer: bool = True,
     vlm_frames: Optional[int] = None,
+    skip_explore_categories: frozenset = frozenset(),
 ) -> list[dict]:
     """Run all questions for one method in one trial. Returns per-question results.
 
@@ -893,7 +906,9 @@ def run_trial(
             if method == "agent":
                 answer, tool_calls, stats = _answer_agent(session, q, short_answer)
             elif method == "agent_v2":
-                answer, tool_calls, stats = _answer_agent_v2(session, q, short_answer)
+                allow_explore = qa["category"] not in skip_explore_categories
+                answer, tool_calls, stats = _answer_agent_v2(
+                    session, q, short_answer, allow_explore=allow_explore)
             elif method == "agent_tiered":
                 answer, tool_calls, stats = _answer_agent_tiered(session, q, short_answer)
             elif method == "rag_only":
@@ -1123,7 +1138,8 @@ def _break_even_lines(results_by_method: dict[str, dict],
 def _build_report(results_by_method: dict[str, dict], n_runs: int,
                   video_path: str, bench_path: str,
                   raw_by_method: Optional[dict[str, list[list[dict]]]] = None,
-                  scorers: tuple[str, ...] = SCORERS) -> str:
+                  scorers: tuple[str, ...] = SCORERS,
+                  skip_explore_cats: frozenset = frozenset()) -> str:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
     lines = [
         "# Benchmark Results",
@@ -1132,6 +1148,14 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
         f"|  Runs: {n_runs}  |  Generated: {ts}",
         "",
     ]
+    if skip_explore_cats:
+        lines += [
+            f"> ⚠️ **agent_v2 ORACLE routing**: categories {sorted(skip_explore_cats)} "
+            "were routed to the no-explore variant (answer from L0 + memory search "
+            "only) **using the gold dimension label**. This is an UPPER BOUND — a "
+            "deployable number requires a question-type classifier, not the gold label.",
+            "",
+        ]
 
     # ── Overall: one accuracy column per scorer ───────────────────────────────
     scorer_cols = " | ".join(
@@ -1270,9 +1294,18 @@ def main() -> None:
              "verbose: product-default answers (agent cites evidence, baselines give "
              "2-4 sentences) — use for an LLM-judge comparison against the old runs.",
     )
+    parser.add_argument(
+        "--skip-explore-categories", default="",
+        help="agent_v2 only: comma-separated L2 categories routed to the "
+             "no-explore variant (answer from L0 + memory search, no window "
+             "zooming). ROUTING USES THE GOLD CATEGORY LABEL = oracle/upper-bound; "
+             "a real classifier is needed for a deployable number. e.g. TR,FP-C,LR",
+    )
     args = parser.parse_args()
 
     short_answer = args.answer_mode == "short"
+    skip_explore_cats = frozenset(
+        c.strip() for c in args.skip_explore_categories.split(",") if c.strip())
     scorers = tuple(s.strip() for s in args.scorers.split(",") if s.strip())
     unknown = [s for s in scorers if s not in ALL_SCORERS]
     if unknown:
@@ -1320,6 +1353,8 @@ def main() -> None:
     print(f"  Runs     : {args.runs}")
     print(f"  Scorers  : {list(scorers)}")
     print(f"  Ans mode : {args.answer_mode}")
+    if skip_explore_cats:
+        print(f"  Skip-explore (ORACLE routing, upper bound): {sorted(skip_explore_cats)}")
     print(f"{'='*60}\n")
 
     for method in methods:
@@ -1331,7 +1366,8 @@ def main() -> None:
         for run_i in range(args.runs):
             print(f"\n  Run {run_i + 1}/{args.runs}")
             trial = run_trial(method, args.video, questions, scorers, short_answer,
-                              vlm_frames=args.vlm_frames)
+                              vlm_frames=args.vlm_frames,
+                              skip_explore_categories=skip_explore_cats)
             all_trials.append(trial)
             acc = _mean([_score_of(r, primary) for r in trial])
             print(f"  → Run accuracy ({primary}): {acc:.3f}")
@@ -1376,7 +1412,8 @@ def main() -> None:
 
     # ── Write markdown report ─────────────────────────────────────────────────
     report = _build_report(results_by_method, args.runs, video_label,
-                           args.benchmark, raw_by_method, scorers)
+                           args.benchmark, raw_by_method, scorers,
+                           skip_explore_cats=skip_explore_cats)
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(report, encoding="utf-8")

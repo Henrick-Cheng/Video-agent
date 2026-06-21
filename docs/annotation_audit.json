@@ -1,0 +1,193 @@
+{
+  "tally": {
+    "supported": 29,
+    "partial": 1,
+    "unsupported": 0,
+    "?": 0
+  },
+  "n": 30,
+  "seed": 11,
+  "rows": [
+    {
+      "id": "mmbv-1630",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "They would stop dancing until they find more milk chocolates"
+    },
+    {
+      "id": "mmbv-1960",
+      "category": "AR",
+      "verdict": "supported",
+      "gold": "Yes, he is homeless."
+    },
+    {
+      "id": "mmbv-1701",
+      "category": "FP-C",
+      "verdict": "supported",
+      "gold": "The little boy spilled water from the fish tank on the girl."
+    },
+    {
+      "id": "mmbv-1996",
+      "category": "AR",
+      "verdict": "supported",
+      "gold": "The function is to heat food."
+    },
+    {
+      "id": "mmbv-1838",
+      "category": "RR",
+      "verdict": "supported",
+      "gold": "Father-son relationship."
+    },
+    {
+      "id": "mmbv-0633",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "The first man failed."
+    },
+    {
+      "id": "mmbv-0617",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "547.60"
+    },
+    {
+      "id": "mmbv-1841",
+      "category": "AR",
+      "verdict": "supported",
+      "gold": "Because the length of the rope is inconsistent"
+    },
+    {
+      "id": "mmbv-1720",
+      "category": "LR",
+      "verdict": "supported",
+      "gold": "The diameter of a giraffe's eye is 0.8 times the diameter of"
+    },
+    {
+      "id": "mmbv-1994",
+      "category": "AR",
+      "verdict": "supported",
+      "gold": "Frictional force which opposes the relative sliding motion b"
+    },
+    {
+      "id": "mmbv-0418",
+      "category": "CP",
+      "verdict": "supported",
+      "gold": "She felt very excited and satisfied. "
+    },
+    {
+      "id": "mmbv-1627",
+      "category": "RR",
+      "verdict": "partial",
+      "gold": "They are student and teacher."
+    },
+    {
+      "id": "mmbv-1074",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "It initially went to the seashore to search for food when it"
+    },
+    {
+      "id": "mmbv-0497",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "It becomes instantly hard, causing the car to shake."
+    },
+    {
+      "id": "mmbv-0417",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "Because he knew there would be water falling from the sky."
+    },
+    {
+      "id": "mmbv-0167",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "It's a causal relationship. They see other people eating del"
+    },
+    {
+      "id": "mmbv-1392",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "Two"
+    },
+    {
+      "id": "mmbv-1981",
+      "category": "RR",
+      "verdict": "supported",
+      "gold": "No, the girl's phone is in contact with her notebook at the "
+    },
+    {
+      "id": "mmbv-0553",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "He lay down on the table in despair"
+    },
+    {
+      "id": "mmbv-0075",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "HCL Technologies."
+    },
+    {
+      "id": "mmbv-0324",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "The blogger pouring water on computer."
+    },
+    {
+      "id": "mmbv-0299",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "According to the subtitles, it is already 84,000 kilometers."
+    },
+    {
+      "id": "mmbv-0137",
+      "category": "FP-S",
+      "verdict": "supported",
+      "gold": "Yes, the food bloggers in this video have already eaten mapo"
+    },
+    {
+      "id": "mmbv-1926",
+      "category": "AR",
+      "verdict": "supported",
+      "gold": "Destroy tires."
+    },
+    {
+      "id": "mmbv-1590",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "Yes, the penguin has very long legs. But half of its legs ar"
+    },
+    {
+      "id": "mmbv-0435",
+      "category": "TR",
+      "verdict": "supported",
+      "gold": "The pork is stale. After he smells it, he feels nauseated an"
+    },
+    {
+      "id": "mmbv-1030",
+      "category": "FP-C",
+      "verdict": "supported",
+      "gold": "via video chat"
+    },
+    {
+      "id": "mmbv-1977",
+      "category": "RR",
+      "verdict": "supported",
+      "gold": "Yes, the black coffee machine is supported vertically by the"
+    },
+    {
+      "id": "mmbv-1368",
+      "category": "RR",
+      "verdict": "supported",
+      "gold": "The driver is sitting on his vehicle."
+    },
+    {
+      "id": "mmbv-0757",
+      "category": "CSR",
+      "verdict": "supported",
+      "gold": "In addition to ketchup and cornstarch, there are several oth"
+    }
+  ],
+  "ceiling_proxy": 0.983
+}
