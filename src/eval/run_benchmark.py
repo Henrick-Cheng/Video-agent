@@ -182,15 +182,21 @@ def _prepare_l0(session) -> _TrialStats:
     paths = [f.path for fid in kf["frame_ids"]
              if (f := session.cached_frames.get(fid)) and f.path]
     if paths:
-        session.global_summary = get_vl_client().call_multi(
-            paths,
-            f"These {len(paths)} frames are uniformly sampled from a "
-            f"{session.duration_sec:.0f}-second video. Write a 3-5 sentence "
-            f"summary of what the video is about: setting, people, main "
-            f"activities and their rough order. Mention any prominent "
-            f"on-screen text. Factual only.",
-            json_mode=False,
-        ).strip()
+        try:
+            session.global_summary = get_vl_client().call_multi(
+                paths,
+                f"These {len(paths)} frames are uniformly sampled from a "
+                f"{session.duration_sec:.0f}-second video. Write a 3-5 sentence "
+                f"summary of what the video is about: setting, people, main "
+                f"activities and their rough order. Mention any prominent "
+                f"on-screen text. Factual only.",
+                json_mode=False,
+            ).strip()
+        except Exception as exc:
+            # A summary failure must not crash a multi-hour run — degrade to
+            # empty (the agent still has the transcript + exploration).
+            print(f"  [L0] summary failed ({exc}); continuing without summary")
+            session.global_summary = ""
 
     t0 = time.time()
     session.transcript = asr.transcribe(session.video_path)
@@ -604,7 +610,7 @@ def _judge_client():
     cfg = get_settings()
     base = os.environ.get("JUDGE_BASE_URL", cfg.active_llm.base_url)
     key = os.environ.get("JUDGE_API_KEY") or cfg.dashscope_api_key or "token-abc"
-    return OpenAI(base_url=base, api_key=key)
+    return OpenAI(base_url=base, api_key=key, max_retries=6, timeout=60.0)
 
 
 def _judge_model() -> str:

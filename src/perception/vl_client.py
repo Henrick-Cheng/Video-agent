@@ -81,6 +81,8 @@ class VLClient:
         self._client = OpenAI(
             base_url=base_url or ep.base_url,
             api_key=resolved_key or "token-abc",
+            max_retries=6,   # survive transient blips (e.g. laptop sleep/wake)
+            timeout=90.0,
         )
 
     # ── image encoding ────────────────────────────────────────────────────────
@@ -320,4 +322,6 @@ def get_llm_client(backend: Optional[str] = None):
         api_key=api_key or "token-abc",
         temperature=cfg.models.llm.temperature,
         max_tokens=cfg.models.llm.max_tokens,
+        max_retries=6,    # survive transient blips on long unattended runs
+        timeout=90.0,
     )
