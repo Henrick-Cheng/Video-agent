@@ -47,30 +47,31 @@ flowchart TD
 
 **怎么做**：基于 LangGraph 的 Agent 走**置信度驱动**循环——先免费检索现有记忆并作答，自评置信度 1–3，不足时才自己挑一段视频用 `explore_segment` 细看（即时生成密集描述 + 三元组），轮数与探索次数有上限。场景图被重新定位为**证据的时序索引**（三元组指向它出自的那段完整描述），而非有损的答案压缩。
 
-**结果如何**：在公开长视频基准 **MMBench-Video**（150 题分层子集）上，v2 **首次整体反超**直接看帧的 VLM 基线（**1.933 vs 1.447**，0–3 分制）；归因干净——旁白模态贡献 +0.246，**架构本身再贡献 +0.240**（同模态公平基线对照）。优势随视频变长单调增强（舒适区边界 ≈90 秒），且**每题只看 3.1 帧** vs 基线固定 8 帧。
+**结果如何**：在公开长视频基准 **MMBench-Video**（150 题分层子集，**runs=3**）上，v2 **整体反超**直接看帧的 VLM 基线（**1.984±0.101 vs 1.478±0.025**，0–3 分制），且反超在噪声下稳健（差距 0.257 > 双方标准差之和 0.121）；归因干净——旁白模态贡献 +0.249，**架构本身再贡献 +0.257**（同模态公平基线对照）。优势随视频变长单调增强（舒适区边界 ≈90 秒），且**每题只看 3.1 帧** vs 基线固定 8 帧。
 
 > [!IMPORTANT]
-> **核心结果（MMBench-Video 150 题 · runs=1 · 初步）**
+> **核心结果（MMBench-Video 150 题 · runs=3 · mean ± std · 已收官）**
 >
 > | 方法 | 总分 (0–3) | Frames/Q | 说明 |
 > |------|-----------|----------|------|
-> | **agent_v2** | **1.933** | **3.1** | Lazy 记忆 + 置信度探索 |
-> | vlm_transcript@8 | 1.693 | 8.0 | 同帧数 + 旁白文字（公平基线） |
-> | vlm_direct@8 | 1.447 | 8.0 | 直接看 8 帧 |
-> | agent (v1) | 1.193 | — | 全量预建场景图（旧架构） |
+> | **agent_v2** | **1.984 ± 0.101** | **3.1** | Lazy 记忆 + 置信度探索 |
+> | vlm_transcript@8 | 1.727 ± 0.020 | 8.0 | 同帧数 + 旁白文字（公平基线） |
+> | vlm_direct@8 | 1.478 ± 0.025 | 8.0 | 直接看 8 帧 |
+> | agent (v1) | 1.193 | — | 全量预建场景图（旧架构 · runs=1） |
 >
-> - **归因干净**：ASR 模态 +0.246（vlm_direct→vlm_transcript），架构再 +0.240（同模态对照）——「赢只是因为多了个模态」被数据排除。
-> - **舒适区边界 ≈90 秒**：agent_v2 得分随时长单调上升（**1.54 / 2.02 / 2.27**），所有基线平直。
-> - **幻觉抵抗**：官方 HL 维度 2.333，是同模态基线的 **2.1×**——「答案必须接地到证据」的架构属性。
+> - **反超抗噪成立**：agent_v2 − vlm_transcript = 0.257 > 两者 std 之和 0.121，反超越过噪声带。
+> - **归因干净**：ASR 模态 +0.249（vlm_direct→vlm_transcript），架构再 +0.257（同模态对照）——「赢只是因为多了个模态」被数据排除。
+> - **舒适区边界 ≈90 秒**：90 秒内基本持平，90 秒以上明显领先（90–180s: 2.10 vs 1.55；>180s: 2.05 vs 1.87）。
+> - **幻觉抵抗**：官方 HL 维度 2.422±0.191，是同模态基线的 **2.3×**（vs vlm_direct 约 3.9×）——「答案必须接地到证据」的架构属性。
 > - **帧效率**：3.1 帧/题打赢 8 帧/题；150 题中 81 题靠免费检索直答、69 题自主升级探索——按需分配感知预算。
 >
-> ⚠️ **诚实披露**：结果为 **runs=1**、judge 为 `qwen-max`；论文级数字需 runs=3 ±std + 换 `gpt-4-turbo` 重评（已留缓存答案，零额外推理成本）。完整分析见 [`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md)。
+> ⚠️ **诚实披露**：judge 为 `qwen-max`（存在 Qwen 评 Qwen 自偏好）；标注审计（n=30）显示 97% gold 被证据支撑，离 3.0 的差距主要是模型能力而非烂标注。论文级 `gpt-4-turbo` 重评待 OpenAI key（已留缓存答案，零额外推理成本）。完整分析见 [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)。
 
 ---
 
 ## 为什么是 v2？—— 一次诚实的返修
 
-v1 用「时序场景图」做唯一工作记忆（全片预建 → 三元组 → 只查三元组作答）。在真实计费口径下复测，**v1 并没有对直接看帧取得决定性优势**——MMBench-Video 上 1.193 反而输给 vlm_direct 的 1.447。诊断出两个设计错误：
+v1 用「时序场景图」做唯一工作记忆（全片预建 → 三元组 → 只查三元组作答）。在真实计费口径下复测，**v1 并没有对直接看帧取得决定性优势**——MMBench-Video 上 1.193 反而输给 vlm_direct 的 1.478。诊断出两个设计错误：
 
 1. **三元组被当成「答案来源」，但它是有损瓶颈**。VLM 看帧时理解的画面文字、属性细节、事件因果，在「只输出 JSON 三元组 + 50 词关系闭表」这一步被丢光。纯三元组 RAG 只保住了直接看帧约一半的可答信号。
 2. **全量预建摊不掉**。每视频约 1 题时，开场就把全片建图的成本永远收不回。
@@ -108,7 +109,7 @@ Agent 不走固定流水线，而是：① 先用零成本的 `search_memory` �
 - **公平基线**：`vlm_transcript` = 同帧数 + 旁白文字进 prompt，把「多模态」与「架构」两个变量分开。
 - **新指标**：`frames-touched/Q`（每题真正送进视觉模型的帧数），衡量「有指导的感知预算」。
 
-报告：[`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md)（v2 主结果） · [`docs/benchmark_mmbv_analysis.md`](docs/benchmark_mmbv_analysis.md)（v1 对照） · [`docs/benchmark_v2_agqa.md`](docs/benchmark_v2_agqa.md)（AGQA 验证门：duration 0.682，5× vlm；总成本 −48%）。
+报告：[`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)（**runs=3 收官 · 权威结果**） · [`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md)（v2 runs=1 详析） · [`docs/benchmark_mmbv_analysis.md`](docs/benchmark_mmbv_analysis.md)（v1 对照） · [`docs/benchmark_v2_agqa.md`](docs/benchmark_v2_agqa.md)（AGQA 验证门：duration 0.682，5× vlm；总成本 −48%）。
 
 ---
 
@@ -141,7 +142,7 @@ python -m src.eval.build_mmbench_video --out benchmarks/mmbv_150.json --total 15
 JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
     --benchmark benchmarks/mmbv_150.json \
     --methods agent_v2,vlm_transcript --vlm-frames 8 \
-    --scorers mmbv --answer-mode verbose --runs 1
+    --scorers mmbv --answer-mode verbose --runs 3
 ```
 
 ---
@@ -152,7 +153,7 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 
 | 局限 | 说明 | 改进方向 |
 |------|------|---------|
-| **结果仍是 runs=1** | 单轮、judge 为 qwen-max（存在 Qwen 评 Qwen 自偏好风险） | 补 runs=3 出 ±std；换 gpt-4-turbo 对缓存答案重评 |
+| **judge 为 qwen-max** | runs=3 ±std 已出，但 judge 仍是 qwen-max（存在 Qwen 评 Qwen 自偏好风险） | 换 gpt-4-turbo 对缓存答案重评（脚本就绪，零推理成本，待 OpenAI key） |
 | **产品入口未接 v2** | `main.py` / Gradio 仍跑 v1 Agent，v2 目前仅评测路径跑通 | 把 v2 的三层记忆 + 置信度循环移植到产品 Agent |
 | **旁白依赖型问题的硬边界** | 「视频里说了什么」类答案在音轨里；纯视觉够不着，TR 维度的增益主要来自 ASR 而非架构 | ASR 已接入 L0；进一步做旁白×画面的时间对齐交叉检索 |
 | **置信度判据偶尔过度自信** | 「图里有相关但不充分证据」时会直接作答而不升级探索（AGQA TR 上可见） | 升级判据从「图里有没有」细化为「图能否支撑该题型所需推理」 |
@@ -165,10 +166,10 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 
 按性价比排序，完整分层见 [`docs/progress.md`](docs/progress.md) 第十四阶段末尾。
 
-1. **runs=3 + gpt-4-turbo 重评**（P0）— 出可发表的 ±std 与 SOTA 可比 judge，零额外推理成本（答案已缓存）。
-2. **产品入口接线 v2**（P0）— 把三层记忆 + 置信度循环移植到 `main.py` / Gradio。
-3. **亮点实验**（P1）— 多轮指代会话（agent 独有的跨问记忆）+ 时序定位精度（图独有的显式时间轴）。
-4. **长视频外推**（P1）— LVBench 小时级切片，验证「有指导的感知预算」在超长视频上的成本-准确率交叉。
+1. **第二基准复现**（P0）— mmbv 线已收官（runs=3 抗噪成立、便宜杠杆耗尽）；更强证据应在 EgoSchema / Video-MME long 上复现同一反超，而非榨本集残差。
+2. **gpt-4-turbo 重评**（P0）— 换 SOTA 可比 judge，零额外推理成本（答案已缓存），待 OpenAI key。
+3. **产品入口接线 v2**（P0）— 把三层记忆 + 置信度循环移植到 `main.py` / Gradio。
+4. **亮点实验**（P1）— 多轮指代会话（agent 独有的跨问记忆）+ 时序定位精度（图独有的显式时间轴）。
 5. **升级判据细化 + 旁白时间对齐**（P2）— 解决过度自信与旁白×画面交叉检索。
 
 ---
