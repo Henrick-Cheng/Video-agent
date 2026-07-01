@@ -210,8 +210,8 @@ def _prepare_l0(session) -> _TrialStats:
 
 # qwen-plus occasionally emits a tool call as plain text (no tool_calls field)
 # and the run ends with e.g. `search_memory("...")` as the "answer". Detect and
-# retry once with a corrective instruction.
-_PSEUDO_CALL_RE = re.compile(r"^\s*\w+\s*\(.{0,400}\)\s*$", re.DOTALL)
+# retry once with a corrective instruction. The detector is shared with the
+# product CLI — see react_agent.looks_like_pseudo_call.
 
 
 def _answer_agent_v2(session, question: str,
@@ -223,7 +223,8 @@ def _answer_agent_v2(session, question: str,
     from L0 + free memory search only) — the structural-category routing
     experiment.
     """
-    from src.agents.react_agent import build_agent_v2, build_l0_context
+    from src.agents.react_agent import (
+        build_agent_v2, build_l0_context, looks_like_pseudo_call)
 
     agent = build_agent_v2(session, short_answer=short_answer, explore=allow_explore)
     rl = getattr(agent, "_va_max_iterations", 6) * 5 + 10
@@ -231,7 +232,7 @@ def _answer_agent_v2(session, question: str,
 
     answer, tool_calls, stats = _invoke_and_account(agent, user_text, rl)
 
-    if answer and _PSEUDO_CALL_RE.match(answer):
+    if looks_like_pseudo_call(answer):
         print("         [retry] final message was a textual pseudo-call — re-asking")
         corrective = (
             f"{user_text}\n\nYour previous reply was plain text that LOOKED like "

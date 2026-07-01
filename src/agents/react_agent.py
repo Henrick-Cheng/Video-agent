@@ -20,12 +20,14 @@ Trace extraction:
 from __future__ import annotations
 
 import json
+import re
+from itertools import cycle
 from typing import TYPE_CHECKING, Any
 
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 
 from src.tools.frame_inspector import make_inspect_frame
 from src.tools.keyframe import make_extract_keyframes
@@ -58,6 +60,18 @@ fine-grained attributes) call inspect_frame
 nodes_added_to_graph > 0 you may call query_scene_graph again to fetch the new content"""
 
 
+# ── Pseudo-call detection ─────────────────────────────────────────────────────
+# A final message that is just "word(...)" — the model emitted a textual pseudo
+# tool-call instead of using the tool-calling interface. Shared by the benchmark
+# (run_benchmark._answer_agent_v2) and the product CLI (main._invoke_v2_with_retry).
+PSEUDO_CALL_RE = re.compile(r"^\s*\w+\s*\(.{0,400}\)\s*$", re.DOTALL)
+
+
+def looks_like_pseudo_call(text: str) -> bool:
+    """True if `text` looks like a bare textual tool-call rather than an answer."""
+    return bool(text) and bool(PSEUDO_CALL_RE.match(text))
+
+
 # ── Factory ───────────────────────────────────────────────────────────────────
 
 def build_agent(
@@ -75,7 +89,10 @@ def build_agent(
     Parameters
     ----------
     session        : VideoSession providing shared state across all tool calls.
-    use_mock       : If True, use a mock LLM that skips all tool calls.
+    use_mock       : If True, use a scripted offline LLM that drives the full
+                     tool loop (extract_keyframes -> query_scene_graph) and then
+                     returns a clearly-labeled [MOCK] placeholder — it fabricates
+                     no video content. For offline smoke tests / no API key.
     max_iterations : Stored as recursion_limit for LangGraph (pass at invoke time).
     verbose        : Enable debug-level step logging in LangGraph.
     system_prompt  : Override the default system prompt. The benchmark passes a
@@ -319,36 +336,48 @@ def _get_real_llm():
     return get_llm_client()
 
 
+# The mock deliberately makes NO claim about the video. It must stay visually
+# distinct from a real answer (the [MOCK] prefix) and must never emit anything
+# that looks like evidence — no scene-graph triplets, timestamps, or entities.
+# See tests/test_agent.py::test_mock_answer_is_labeled_and_fabrication_free.
+_MOCK_ANSWER = (
+    "[MOCK] Offline smoke run — the agent loop and all tools executed "
+    "end-to-end. This is a placeholder answer; it makes no claims about "
+    "the actual video content. See the reasoning trace for real tool output."
+)
+
+
+class _ScriptedToolCallingModel(GenericFakeChatModel):
+    """Fake chat model that replays a fixed script of AIMessages.
+
+    GenericFakeChatModel.bind_tools raises NotImplementedError; we override it
+    to return self so the scripted tool_calls flow through LangGraph unchanged
+    and get routed to the real tool nodes.
+    """
+
+    def bind_tools(self, tools: list, **kwargs: Any) -> "_ScriptedToolCallingModel":  # type: ignore[override]
+        return self
+
+
 def _get_mock_llm() -> BaseChatModel:
     """
-    A minimal mock ChatModel for offline testing.
+    Scripted offline LLM for smoke tests / no-API-key runs.
 
-    Overrides bind_tools to bypass tool-calling and immediately returns a
-    preset final answer as a plain AIMessage.
+    Unlike a canned final answer, this genuinely exercises the agent loop: it
+    emits two real tool calls (extract_keyframes -> query_scene_graph) that
+    LangGraph routes to the actual tools, then returns the [MOCK] placeholder.
+    Wrapped in itertools.cycle so interactive multi-turn sessions can replay
+    the script across turns without exhausting the iterator.
     """
-    class _DirectAnswerModel(BaseChatModel):
-        response: str = (
-            "Based on the scene graph: a person in a red jacket is riding a blue "
-            "bicycle through an intersection, and the traffic light is green. "
-            "Evidence: (person_A) --[riding]--> (bicycle) @ [0.0s, 3.0s]"
-        )
-
-        def _generate(
-            self,
-            messages: list,
-            stop: list[str] | None = None,
-            run_manager: Any = None,
-            **kwargs: Any,
-        ) -> ChatResult:
-            return ChatResult(
-                generations=[ChatGeneration(message=AIMessage(content=self.response))]
-            )
-
-        @property
-        def _llm_type(self) -> str:
-            return "direct_answer_mock"
-
-        def bind_tools(self, tools: list, **kwargs: Any) -> "_DirectAnswerModel":  # type: ignore[override]
-            return self  # ignore tools; always return the preset answer
-
-    return _DirectAnswerModel()
+    script = [
+        AIMessage(content="", tool_calls=[{
+            "name": "extract_keyframes",
+            "args": {"strategy": "uniform", "count": 4},
+            "id": "mock_call_1", "type": "tool_call"}]),
+        AIMessage(content="", tool_calls=[{
+            "name": "query_scene_graph",
+            "args": {"question": "What entities and relations are present?"},
+            "id": "mock_call_2", "type": "tool_call"}]),
+        AIMessage(content=_MOCK_ANSWER),
+    ]
+    return _ScriptedToolCallingModel(messages=cycle(script))

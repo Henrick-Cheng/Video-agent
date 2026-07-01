@@ -2,16 +2,16 @@
 main.py — Video Agent CLI entry point.
 
 Usage:
-    # Single question (real DashScope)
-    python main.py --video data/videos/test1.mp4 --question "视频里发生了什么?"
+    # Single question (real DashScope, v2 lazy-memory agent)
+    python main.py --video data/videos/test1.mp4 --question "What happens in the video?"
 
-    # Interactive multi-turn (reuses session/scene-graph across questions)
+    # Interactive multi-turn (reuses explored memory / windows across questions)
     python main.py --video data/videos/test1.mp4 --interactive
 
     # Override backend
     python main.py --video ... --question "..." --backend vllm
 
-    # Offline mock (no API key needed)
+    # Offline mock (no API key needed; runs the v1 scripted mock)
     python main.py --video ... --question "..." --mock
 """
 
@@ -69,10 +69,45 @@ def _print_trace(messages: list) -> None:
                 print(f"  Observation : {obs_str[:400]}")
 
 
-def _get_recursion_limit(agent) -> int:
-    """Derive LangGraph recursion_limit from agent's stored max_iterations."""
+def _get_recursion_limit(agent, v2: bool = False) -> int:
+    """Derive LangGraph recursion_limit from agent's stored max_iterations.
+
+    v2's confidence loop (search + up to 3 rounds x 2 explore + inspect) needs a
+    wider budget than v1's linear loop; matches _answer_agent_v2 in
+    src/eval/run_benchmark.py so the product path can't hit GraphRecursionError
+    on a run the benchmark would complete.
+    """
     iters = getattr(agent, "_va_max_iterations", 6)
-    return iters * 3 + 1  # each iteration = up to 3 graph steps
+    return iters * 5 + 10 if v2 else iters * 3 + 1
+
+
+def _invoke_v2_with_retry(agent, user_text: str, recursion_limit: int) -> dict:
+    """Invoke the agent once; if the final message is a textual pseudo tool-call
+    rather than an answer, re-ask once with a corrective instruction.
+
+    v2 models sometimes emit e.g. `search_memory("...")` as plain text instead
+    of calling the tool. Mirrors the benchmark's retry (run_benchmark.py). The
+    [MOCK] placeholder never matches, so the mock/v1 path passes through cleanly.
+    """
+    from src.agents.react_agent import looks_like_pseudo_call
+
+    result = agent.invoke(
+        {"messages": [("user", user_text)]},
+        config={"recursion_limit": recursion_limit},
+    )
+    answer = result["messages"][-1].content
+    if looks_like_pseudo_call(answer):
+        print("  [retry] final reply looked like a tool call — re-asking\n")
+        corrective = (
+            f"{user_text}\n\nYour previous reply was plain text that LOOKED like "
+            f"a tool call ({answer[:80]}); it was not executed. Either CALL the "
+            f"tool through the tool-calling interface, or give your final answer."
+        )
+        result = agent.invoke(
+            {"messages": [("user", corrective)]},
+            config={"recursion_limit": recursion_limit},
+        )
+    return result
 
 
 def run_single(video: str, question: str, mock: bool = False) -> str:
@@ -85,7 +120,8 @@ def run_single(video: str, question: str, mock: bool = False) -> str:
     session.add_query(question)
 
     print(f"\n{SEP}")
-    print(f"  Video Agent — Single Question Mode  (v2: lazy memory)")
+    label = "v1 offline mock" if mock else "v2: lazy memory"
+    print(f"  Video Agent — Single Question Mode  ({label})")
     print(SEP)
     print(f"  Video   : {video}")
     print(f"  Question: {question}")
@@ -106,10 +142,8 @@ def run_single(video: str, question: str, mock: bool = False) -> str:
 
     print("\n  Reasoning...\n")
 
-    result = agent.invoke(
-        {"messages": [("user", user_text)]},
-        config={"recursion_limit": _get_recursion_limit(agent)},
-    )
+    result = _invoke_v2_with_retry(
+        agent, user_text, _get_recursion_limit(agent, v2=not mock))
 
     _print_trace(result["messages"])
 
@@ -127,7 +161,10 @@ def run_single(video: str, question: str, mock: bool = False) -> str:
     print(SEP)
     print(f"\n  Scene graph : {len(sg.entities)} entities, {len(sg)} triplets")
     print(f"  Frames used : {len(session.cached_frames)}")
-    print(f"  Tool calls  : {tool_steps}\n")
+    print(f"  Tool calls  : {tool_steps}")
+    if not mock:
+        print(f"  Explored windows : {len(session.explored_windows())}")
+    print()
 
     return answer
 
@@ -153,10 +190,11 @@ def run_interactive(video: str, mock: bool = False) -> None:
         print("  Preparing memory (L0: summary + transcript)...")
         prepare_l0(session)
         agent = build_agent_v2(session, short_answer=False)
-    recursion_limit = _get_recursion_limit(agent)
+    recursion_limit = _get_recursion_limit(agent, v2=not mock)
 
     print(f"\n{SEP}")
-    print(f"  Video Agent — Interactive Mode  (type 'exit' to quit)")
+    label = "v1 offline mock" if mock else "v2: lazy memory"
+    print(f"  Video Agent — Interactive Mode  ({label}, type 'exit' to quit)")
     print(SEP)
     print(f"  Video   : {video}")
     print(f"  Session : {session.session_id}")
@@ -182,18 +220,16 @@ def run_interactive(video: str, mock: bool = False) -> None:
         # Recompute L0 context each turn so it reflects windows explored in
         # earlier turns (mock path has no L0 and answers from the question alone).
         user_text = question if mock else build_l0_context(session) + question
-        result = agent.invoke(
-            {"messages": [("user", user_text)]},
-            config={"recursion_limit": recursion_limit},
-        )
+        result = _invoke_v2_with_retry(agent, user_text, recursion_limit)
 
         _print_trace(result["messages"])
 
         sg = session.scene_graph
         tool_steps = sum(1 for m in result["messages"] if getattr(m, "type", "") == "tool")
+        windows = "" if mock else f" | {len(session.explored_windows())} windows"
         print(f"\n  Answer: {result['messages'][-1].content}")
         print(f"  (Scene graph: {len(sg.entities)} entities, {len(sg)} triplets "
-              f"| {tool_steps} tool calls)\n")
+              f"| {tool_steps} tool calls{windows})\n")
 
 
 def main() -> None:
