@@ -96,9 +96,9 @@ v1 用「时序场景图」做唯一工作记忆（全片预建 → 三元组 �
 
 Agent 不走固定流水线，而是：① 先用零成本的 `search_memory` 三层联合检索并尝试作答；② 自评置信度 1–3，不足才用 `explore_segment` 挑一段视频细看（每轮 ≤2 次、最多 3 轮）；③ 置信度达标或预算用尽即停。需要画面文字 / 精确计数时才用 `inspect_frame` 做单帧像素级精读。**缺证据时绝不把「图里没有」当成「答案是否」**——必须先探索验证再答。
 
-### 双后端部署
+### 后端抽象
 
-同一套代码，配置一行切换：**DashScope 云端**（`qwen-plus` + `qwen-vl-plus`，开发 / 无 GPU 的 macOS）、**本地 vLLM**（单卡 RTX 4090 上 `Qwen3-8B` + `Qwen2.5-VL-7B-AWQ` 共存于 24GB 显存）、**Mock 模式**（无需 API Key，供 CI / 离线开发）。配置走 `configs/default.yaml` + `.env` + 环境变量三级覆盖。faster-whisper 在本地转写、零 API 费用，缺失时优雅降级为纯视觉。
+同一套代码、配置一行切换后端：**DashScope 云端**（`qwen-plus` + `qwen-vl-plus`，本项目全部开发与评测的实跑后端）与 **Mock 模式**（无需 API Key，供 CI / 离线开发）。配置走 `configs/default.yaml` + `.env` + 环境变量三级覆盖。代码另预留 **本地 vLLM 后端**接口（`backend: vllm`，目标 `Qwen3-8B` + `Qwen2.5-VL-7B-AWQ`），但因无 GPU 环境**尚未实跑验证**。faster-whisper 在本地转写、零 API 费用，缺失时优雅降级为纯视觉。
 
 ---
 
