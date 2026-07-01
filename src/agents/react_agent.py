@@ -19,6 +19,7 @@ Trace extraction:
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any
 
 from langchain.agents import create_agent
@@ -209,6 +210,53 @@ reasons / steps / sequence questions — READ IT CAREFULLY (it is provided in \
 full above) before answering.
 - If the evidence genuinely does not support an answer, say what is missing \
 instead of guessing."""
+
+
+def prepare_l0(session: "VideoSession", verbose: bool = True) -> None:
+    """Product-side v2 per-video init: sparse-frame global summary (1 VL call)
+    + local ASR transcript. Mirrors the benchmark's _prepare_l0 but without
+    token accounting — this is the lightweight upfront cost that replaces v1's
+    full-graph prebuild (everything else is built on demand by the agent).
+
+    Idempotent: skips work if the summary/transcript are already populated, so
+    interactive mode pays it once and reuses it across questions.
+    """
+    from src.perception.vl_client import get_vl_client
+    from src.perception import asr
+    from src.tools.keyframe import make_extract_keyframes
+
+    if session.global_summary and session.transcript is not None \
+            and session.duration_sec:
+        return  # already prepared (e.g. a later turn in interactive mode)
+
+    from src.tools.keyframe import _open_video
+    backend, reader, fps, total = _open_video(session.video_path)
+    session.duration_sec = total / fps if fps else 0.0
+
+    kf = json.loads(make_extract_keyframes(session).invoke(
+        {"strategy": "uniform", "count": 8}))
+    paths = [f.path for fid in kf["frame_ids"]
+             if (f := session.cached_frames.get(fid)) and f.path]
+    if paths:
+        try:
+            session.global_summary = get_vl_client().call_multi(
+                paths,
+                f"These {len(paths)} frames are uniformly sampled from a "
+                f"{session.duration_sec:.0f}-second video. Write a 3-5 sentence "
+                f"summary of what the video is about: setting, people, main "
+                f"activities and their rough order. Mention any prominent "
+                f"on-screen text. Factual only.",
+                json_mode=False,
+            ).strip()
+        except Exception as exc:
+            if verbose:
+                print(f"  [L0] summary failed ({exc}); continuing without summary")
+            session.global_summary = ""
+
+    session.transcript = asr.transcribe(session.video_path)
+    if verbose:
+        print(f"  [L0] summary={'ok' if session.global_summary else 'EMPTY'}, "
+              f"asr={len(session.transcript)} lines (local)")
 
 
 def build_l0_context(session: "VideoSession") -> str:

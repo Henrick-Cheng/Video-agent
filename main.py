@@ -77,25 +77,37 @@ def _get_recursion_limit(agent) -> int:
 
 def run_single(video: str, question: str, mock: bool = False) -> str:
     """Run the agent on one question and print the full trace."""
-    from src.agents.react_agent import build_agent
+    from src.agents.react_agent import (
+        build_agent, build_agent_v2, build_l0_context, prepare_l0)
     from src.memory.session import VideoSession
 
     session = VideoSession(video_path=video)
     session.add_query(question)
-    agent = build_agent(session, use_mock=mock)
 
     print(f"\n{SEP}")
-    print(f"  Video Agent — Single Question Mode")
+    print(f"  Video Agent — Single Question Mode  (v2: lazy memory)")
     print(SEP)
     print(f"  Video   : {video}")
     print(f"  Question: {question}")
     print(f"  Session : {session.session_id}")
     print(f"  Backend : {'MOCK' if mock else 'DashScope/vLLM (see configs/default.yaml)'}")
     print(f"{SEP}\n")
-    print("  Reasoning...\n")
+
+    # v2: build the lightweight L0 base (summary + ASR) before answering; the
+    # mock LLM path keeps v1 (no API / no L0 needed for the offline smoke test).
+    if mock:
+        agent = build_agent(session, use_mock=True)
+        user_text = question
+    else:
+        print("  Preparing memory (L0: summary + transcript)...")
+        prepare_l0(session)
+        agent = build_agent_v2(session, short_answer=False)
+        user_text = build_l0_context(session) + question
+
+    print("\n  Reasoning...\n")
 
     result = agent.invoke(
-        {"messages": [("user", question)]},
+        {"messages": [("user", user_text)]},
         config={"recursion_limit": _get_recursion_limit(agent)},
     )
 
@@ -127,11 +139,20 @@ def run_interactive(video: str, mock: bool = False) -> None:
     The VideoSession is preserved across questions so the scene graph
     accumulates — later questions reuse earlier work.
     """
-    from src.agents.react_agent import build_agent
+    from src.agents.react_agent import (
+        build_agent, build_agent_v2, build_l0_context, prepare_l0)
     from src.memory.session import VideoSession
 
     session = VideoSession(video_path=video)
-    agent = build_agent(session, use_mock=mock)
+
+    # v2: build L0 once; the session (explored windows + memory) persists across
+    # turns, so later questions reuse earlier exploration. Mock keeps v1 offline.
+    if mock:
+        agent = build_agent(session, use_mock=True)
+    else:
+        print("  Preparing memory (L0: summary + transcript)...")
+        prepare_l0(session)
+        agent = build_agent_v2(session, short_answer=False)
     recursion_limit = _get_recursion_limit(agent)
 
     print(f"\n{SEP}")
@@ -140,7 +161,7 @@ def run_interactive(video: str, mock: bool = False) -> None:
     print(f"  Video   : {video}")
     print(f"  Session : {session.session_id}")
     print(f"  Backend : {'MOCK' if mock else 'DashScope/vLLM (see configs/default.yaml)'}")
-    print(f"  Tip     : Scene graph persists across questions.\n")
+    print(f"  Tip     : Memory (explored windows) persists across questions.\n")
 
     turn = 0
     while True:
@@ -158,8 +179,11 @@ def run_interactive(video: str, mock: bool = False) -> None:
         session.add_query(question)
         print(f"\n[Turn {turn}] Reasoning...\n")
 
+        # Recompute L0 context each turn so it reflects windows explored in
+        # earlier turns (mock path has no L0 and answers from the question alone).
+        user_text = question if mock else build_l0_context(session) + question
         result = agent.invoke(
-            {"messages": [("user", question)]},
+            {"messages": [("user", user_text)]},
             config={"recursion_limit": recursion_limit},
         )
 
