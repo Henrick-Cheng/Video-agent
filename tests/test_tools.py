@@ -54,7 +54,7 @@ def session_with_frames() -> VideoSession:
     return s
 
 
-def test_build_scene_graph(session_with_frames: VideoSession) -> None:
+def test_build_scene_graph(session_with_frames: VideoSession, mock_mode) -> None:
     tool = make_build_scene_graph(session_with_frames)
     frame_ids = ",".join(session_with_frames.cached_frames.keys())
     result = json.loads(tool.invoke({"frame_ids": frame_ids, "focus_entities": ""}))
@@ -65,10 +65,38 @@ def test_build_scene_graph(session_with_frames: VideoSession) -> None:
     assert len(session_with_frames.scene_graph) > 0
 
 
-def test_build_scene_graph_wildcard(session_with_frames: VideoSession) -> None:
+def test_build_scene_graph_wildcard(session_with_frames: VideoSession, mock_mode) -> None:
     tool = make_build_scene_graph(session_with_frames)
     result = json.loads(tool.invoke({"frame_ids": "*", "focus_entities": "person"}))
     assert len(session_with_frames.scene_graph) > 0
+
+
+def test_build_scene_graph_mock_is_honest(session_with_frames: VideoSession, mock_mode) -> None:
+    """Offline mock output must be labeled and never look like real VLM evidence."""
+    tool = make_build_scene_graph(session_with_frames)
+    raw = tool.invoke({"frame_ids": "*", "focus_entities": ""})
+    result = json.loads(raw)
+
+    assert result["_mode"] == "mock"
+    # the old fabrication ("person_A", source="vlm") must be gone
+    assert "person_A" not in raw
+    assert "red jacket" not in raw
+    assert '"source": "vlm"' not in raw
+    # synthetic entities are unmistakably mock
+    assert all(t["subject"].startswith("mock") for t in result["new_triplets"])
+
+
+def test_build_scene_graph_fails_loud_without_backend(session_with_frames: VideoSession) -> None:
+    """Real run (mock disabled) with no frames on disk must error, not fabricate."""
+    # frames in the fixture have no disk path; mock stays disabled here
+    tool = make_build_scene_graph(session_with_frames)
+    raw = tool.invoke({"frame_ids": "*", "focus_entities": ""})
+    result = json.loads(raw)
+
+    assert result["_mode"] == "error"
+    assert result["nodes_added"] == 0
+    assert len(session_with_frames.scene_graph) == 0
+    assert "person_A" not in raw  # no fabricated evidence leaked
 
 
 # ── query_scene_graph ─────────────────────────────────────────────────────────
@@ -121,7 +149,7 @@ def test_inspect_no_cached_frames(session: VideoSession) -> None:
     assert result["frame_id"] is None
 
 
-def test_inspect_back_propagates_entities(session: VideoSession) -> None:
+def test_inspect_back_propagates_entities(session: VideoSession, mock_mode) -> None:
     session.register_frames([FrameMeta("f30", timestamp=30.0, extracted=True)])
     graph_size_before = len(session.scene_graph)
 
@@ -134,7 +162,7 @@ def test_inspect_back_propagates_entities(session: VideoSession) -> None:
     assert len(session.scene_graph) > graph_size_before  # back-propagation
 
 
-def test_inspect_frame_fallback(session: VideoSession) -> None:
+def test_inspect_frame_fallback(session: VideoSession, mock_mode) -> None:
     # register a frame at ts=50, request ts=30 with tight tolerance
     session.register_frames([FrameMeta("f50", timestamp=50.0, extracted=True)])
 
@@ -143,3 +171,27 @@ def test_inspect_frame_fallback(session: VideoSession) -> None:
     result = json.loads(tool.invoke({"timestamp": 30.0, "question": "What is here?"}))
     # mock falls back to any available frame
     assert result["frame_id"] is not None
+
+
+def test_inspect_mock_is_honest(session: VideoSession, mock_mode) -> None:
+    """Offline inspect output must be labeled and free of fabricated evidence."""
+    session.register_frames([FrameMeta("f30", timestamp=30.0, extracted=True)])
+    tool = make_inspect_frame(session)
+    raw = tool.invoke({"timestamp": 30.0, "question": "What is here?"})
+    result = json.loads(raw)
+
+    assert "[MOCK]" in result["answer"]
+    assert "red jacket" not in raw
+    assert "person_A" not in raw
+
+
+def test_inspect_fails_loud_without_backend(session: VideoSession) -> None:
+    """Real run (mock disabled) on a frame not on disk must error, not fabricate."""
+    session.register_frames([FrameMeta("f30", timestamp=30.0, extracted=True)])
+    tool = make_inspect_frame(session)
+    raw = tool.invoke({"timestamp": 30.0, "question": "What is here?"})
+    result = json.loads(raw)
+
+    assert "error" in result
+    assert result["new_entities"] == []
+    assert "red jacket" not in raw

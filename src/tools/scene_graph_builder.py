@@ -5,7 +5,10 @@ Analyzes specified keyframes with the VLM and merges discovered triplets into
 the session's scene graph.
 
 Real mode: calls VLClient → DashScope or vLLM (configured in configs/default.yaml).
-Mock fallback: used when no frames have valid disk paths OR no API key is set.
+Offline mode (cfg.mock.enabled / --mock): honest synthetic output for pipeline
+smoke tests — clearly-labeled `mock_*` entities, source="mock".
+Real run with the backend unavailable (no API key / no frames on disk) fails
+loud with an error rather than silently fabricating evidence.
 """
 from __future__ import annotations
 
@@ -19,31 +22,42 @@ if TYPE_CHECKING:
     from src.memory.session import VideoSession
 
 
-# ── Mock helper (fallback only) ───────────────────────────────────────────────
+# ── Fail-loud + mock helpers ──────────────────────────────────────────────────
+
+def _fail_loud(reason: str) -> str:
+    """Return an error observation instead of fabricating scene-graph evidence.
+
+    The agent surfaces this to the user rather than answering from fake data.
+    """
+    return json.dumps({
+        "error":        f"build_scene_graph unavailable: {reason}",
+        "new_triplets": [],
+        "nodes_added":  0,
+        "edges_added":  0,
+        "_mode":        "error",
+    })
+
 
 def _mock_build(session: "VideoSession", frame_id_list: list[str], cfg) -> str:
+    """Honest synthetic output for explicit offline mode (cfg.mock.enabled).
+
+    Entities/relations use unmistakably synthetic names and source="mock" so
+    they can never be confused with, or pass as, real VLM evidence. This only
+    exercises the pipeline plumbing; it makes no claim about the video.
+    """
     mock_nodes = [
-        {"name": "person_A",      "type": "person",  "attributes": {"clothing": "red jacket"}},
-        {"name": "bicycle",       "type": "object",  "attributes": {"color": "blue"}},
-        {"name": "traffic_light", "type": "object",  "attributes": {"state": "green"}},
-        {"name": "road",          "type": "place",   "attributes": {}},
+        {"name": "mock_subject", "type": "person", "attributes": {"note": "synthetic"}},
+        {"name": "mock_object",  "type": "object", "attributes": {"note": "synthetic"}},
     ]
     mock_edges = []
     for fid in frame_id_list[:6]:
         frame = session.get_frame(fid)
         ts = frame.timestamp if frame else 0.0
         window = cfg.scene_graph.merge_window_sec
-        mock_edges += [
-            {"subject": "person_A", "relation": "riding",
-             "object": "bicycle",       "t_start": ts, "t_end": ts + window,
-             "confidence": 0.92, "source": "vlm"},
-            {"subject": "bicycle",  "relation": "located_at",
-             "object": "road",          "t_start": ts, "t_end": ts + window,
-             "confidence": 0.88, "source": "vlm"},
-            {"subject": "person_A", "relation": "approaching",
-             "object": "traffic_light", "t_start": ts, "t_end": ts + window * 2.5,
-             "confidence": 0.81, "source": "vlm"},
-        ]
+        mock_edges.append(
+            {"subject": "mock_subject", "relation": "mock_relation",
+             "object": "mock_object", "t_start": ts, "t_end": ts + window,
+             "confidence": 0.0, "source": "mock"})
     stats = session.update_scene_graph(mock_nodes, mock_edges)
     triplets_out = [
         {"subject": e["subject"], "relation": e["relation"], "object": e["object"]}
@@ -87,7 +101,7 @@ def make_build_scene_graph(session: "VideoSession"):
             - nodes_added   (int)
             - edges_added   (int)
             - graph_summary (str)         scene graph as text
-            - _mode         (str)         "real" | "mock"
+            - _mode         (str)         "real" | "mock" | "error"
         """
         from src.config import get_settings
         cfg = get_settings()
@@ -109,33 +123,47 @@ def make_build_scene_graph(session: "VideoSession"):
             cfg.dashscope_api_key if cfg.backend == "dashscope" else cfg.vllm_api_key
         )
 
-        if real_frame_ids and has_api_key and not cfg.mock.enabled:
-            # ── Real VLM path ──────────────────────────────────────────────
-            from src.perception.vl_client import get_vl_client
-            from src.scene_graph.builder import build_frames
+        # Explicit offline mode: honest synthetic output (never on a real run).
+        if cfg.mock.enabled:
+            return _mock_build(session, frame_id_list, cfg)
 
-            vl_client = get_vl_client()
-            stats = build_frames(
-                session=session,
-                frame_ids=real_frame_ids,
-                focus_entities=focus_list,
-                vl_client=vl_client,
-                merge_window_sec=cfg.scene_graph.merge_window_sec,
-                confidence_threshold=cfg.scene_graph.confidence_threshold,
-                batch_size=cfg.perception.batch_size,
-                max_parallel_batches=cfg.perception.max_parallel_batches,
-                cross_dedup_threshold=cfg.scene_graph.dedup_threshold,
-            )
-            return json.dumps({
-                "new_triplets":  stats["new_relations"],
-                "nodes_added":   stats["nodes_added"],
-                "edges_added":   stats["edges_added"],
-                "graph_summary": session.scene_graph.to_text(),
-                "_mode":         "real",
-                "_batches":      f"{stats['batches_ok']} ok / {stats['batches_fail']} failed",
-            })
+        # Real run: fail loud rather than silently fabricate evidence when the
+        # backend is unavailable. A fabricated scene graph tagged source="vlm"
+        # would be indistinguishable from real output and could contaminate
+        # answers / benchmarks.
+        if not has_api_key:
+            return _fail_loud(
+                f"no API key for backend '{cfg.backend}' — set the key in "
+                f"configs/default.yaml or the env, or enable offline mode "
+                f"(mock.enabled: true / --mock)")
+        if not real_frame_ids:
+            return _fail_loud(
+                "none of the given frame_ids resolve to a frame file on disk — "
+                "call extract_keyframes first, or check the video path")
 
-        # ── Mock fallback ──────────────────────────────────────────────────
-        return _mock_build(session, frame_id_list, cfg)
+        # ── Real VLM path ──────────────────────────────────────────────────
+        from src.perception.vl_client import get_vl_client
+        from src.scene_graph.builder import build_frames
+
+        vl_client = get_vl_client()
+        stats = build_frames(
+            session=session,
+            frame_ids=real_frame_ids,
+            focus_entities=focus_list,
+            vl_client=vl_client,
+            merge_window_sec=cfg.scene_graph.merge_window_sec,
+            confidence_threshold=cfg.scene_graph.confidence_threshold,
+            batch_size=cfg.perception.batch_size,
+            max_parallel_batches=cfg.perception.max_parallel_batches,
+            cross_dedup_threshold=cfg.scene_graph.dedup_threshold,
+        )
+        return json.dumps({
+            "new_triplets":  stats["new_relations"],
+            "nodes_added":   stats["nodes_added"],
+            "edges_added":   stats["edges_added"],
+            "graph_summary": session.scene_graph.to_text(),
+            "_mode":         "real",
+            "_batches":      f"{stats['batches_ok']} ok / {stats['batches_fail']} failed",
+        })
 
     return build_scene_graph

@@ -206,16 +206,16 @@ def test_inspect_frame_real_updates_scene_graph():
     assert len(session.scene_graph) >= graph_size_before
 
 
-def test_inspect_frame_mock_fallback_updates_graph():
+def test_inspect_frame_mock_fallback_updates_graph(mock_mode):
     """
-    When the VLM server is unavailable, inspect_frame uses mock data
+    In explicit offline mode, inspect_frame returns honest synthetic data
     and still back-propagates to the scene graph.
     """
     from src.memory.session import VideoSession, FrameMeta
     from src.tools.frame_inspector import make_inspect_frame
 
     session = VideoSession("/nonexistent/video.mp4")
-    # register a frame with no path (mock mode)
+    # register a frame with no path (offline mode)
     session.register_frames([FrameMeta("t_00030.00", timestamp=30.0, path=None)])
 
     inspect = make_inspect_frame(session)

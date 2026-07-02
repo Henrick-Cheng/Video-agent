@@ -19,9 +19,16 @@ plausible-looking filler; these rules are the contract that catches it.
 - **Mock / fallback paths must be explicitly labeled** (e.g. a `[MOCK]` prefix)
   and stay visually distinguishable from real output. They must **never
   fabricate domain data** — no scene-graph triplets (`--[rel]-->`), timestamps,
-  entities, or invented video content. The mock in `_get_mock_llm` drives the
-  real tool loop and returns a labeled placeholder; keep it that way. This rule
-  applies equally to any future v2 mock.
+  entities, `source:"vlm"`, or invented video content. The mock in
+  `_get_mock_llm` drives the real tool loop and returns a labeled placeholder;
+  keep it that way. This rule applies equally to any future v2 mock.
+- **A real run must fail loud, never silently fall back to fabricated data.**
+  Mock output is opt-in only (`cfg.mock.enabled` / `--mock`) and uses
+  unmistakably synthetic `mock_*` names with `source:"mock"`. When the backend
+  is unavailable on a real run, tools return `{"_mode": "error", ...}` with a
+  clear reason instead of inventing evidence — see `scene_graph_builder._fail_loud`
+  and `frame_inspector._fail_loud_inspect`. A silent fabricating fallback can
+  leak fake evidence into answers and benchmark scores.
 - **Every CLI mode / fallback path needs at least one end-to-end behavior
   test.** Assert behavior, not existence — `assert agent is not None` is not a
   test. See `tests/test_agent.py` mock-mode guards for the pattern.

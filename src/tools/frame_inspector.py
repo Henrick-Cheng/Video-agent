@@ -5,7 +5,9 @@ Directs the VLM to perform deep analysis of a specific video frame.
 New entities and relations discovered are back-propagated into the session's scene graph.
 
 Real mode: calls VLClient → DashScope or vLLM (configured in configs/default.yaml).
-Mock fallback: used when frame has no saved path (video not on disk).
+Offline mode (cfg.mock.enabled / --mock): honest synthetic output, source="mock".
+Real run with the backend unavailable (no API key / frame not on disk) fails loud
+with an error rather than silently fabricating an observation.
 """
 
 from __future__ import annotations
@@ -18,6 +20,39 @@ from langchain_core.tools import tool
 
 if TYPE_CHECKING:
     from src.memory.session import VideoSession
+
+
+def _mock_inspect(timestamp: float) -> dict:
+    """Honest synthetic inspection result for explicit offline mode.
+
+    Makes no claim about the frame; the label and `mock_*` name keep it from
+    ever passing as a real observation.
+    """
+    return {
+        "answer": (
+            f"[MOCK] Synthetic inspector output at t={timestamp:.1f}s — no vision "
+            f"model was called. Enable a real backend for actual frame analysis."
+        ),
+        "entities_found": ["mock_subject", "mock_object"],
+        "relations_found": [
+            {"subject": "mock_subject", "relation": "mock_relation",
+             "object": "mock_object"},
+        ],
+    }
+
+
+def _fail_loud_inspect(frame_meta, cfg, reason: str) -> str:
+    """Return an error observation instead of fabricating a frame reading."""
+    return json.dumps({
+        "error":                f"inspect_frame unavailable: {reason}",
+        "answer":               f"inspect_frame unavailable: {reason}",
+        "timestamp_used":       frame_meta.timestamp,
+        "frame_id":             frame_meta.frame_id,
+        "new_entities":         [],
+        "new_triplets":         [],
+        "nodes_added_to_graph": 0,
+        "edges_added_to_graph": 0,
+    })
 
 
 def _extract_single_frame(session: "VideoSession", timestamp: float):
@@ -125,26 +160,32 @@ def make_inspect_frame(session: "VideoSession"):
                     "new_triplets": [],
                 })
 
-        # ── 2. call VLM (real or mock) ────────────────────────────────────
-        if frame_meta.path and Path(frame_meta.path).exists():
+        # ── 2. produce inspection result (mock / fail-loud / real) ────────
+        has_api_key = bool(
+            cfg.dashscope_api_key if cfg.backend == "dashscope" else cfg.vllm_api_key
+        )
+        has_real_frame = bool(frame_meta.path and Path(frame_meta.path).exists())
+
+        if cfg.mock.enabled:
+            # Explicit offline mode: honest synthetic output, never on a real run.
+            result = _mock_inspect(frame_meta.timestamp)
+        elif not has_api_key:
+            return _fail_loud_inspect(
+                frame_meta, cfg,
+                f"no API key for backend '{cfg.backend}' — set the key or enable "
+                f"offline mode (mock.enabled: true / --mock)")
+        elif not has_real_frame:
+            return _fail_loud_inspect(
+                frame_meta, cfg,
+                "the target frame is not saved to disk, so it cannot be analyzed — "
+                "call extract_keyframes first, or check the video path")
+        else:
             from src.perception.vl_client import get_vl_client
             client = get_vl_client()
             result = client.inspect(frame_meta.path, question)
-        else:
-            result = {
-                "answer": (
-                    f"[MOCK] At t={frame_meta.timestamp:.1f}s: A person in a red jacket "
-                    f"is riding a blue bicycle through an intersection. "
-                    f"The traffic light is green."
-                ),
-                "entities_found": ["person_A", "bicycle", "traffic_light"],
-                "relations_found": [
-                    {"subject": "person_A", "relation": "riding",   "object": "bicycle"},
-                    {"subject": "bicycle",  "relation": "crossing", "object": "intersection"},
-                ],
-            }
 
         # ── 3. back-propagate to scene graph ──────────────────────────────
+        edge_source = "mock" if cfg.mock.enabled else "inspector"
         new_nodes = [
             {"name": name, "type": "object", "attributes": {}}
             for name in result["entities_found"]
@@ -157,7 +198,7 @@ def make_inspect_frame(session: "VideoSession"):
                 "t_start":    frame_meta.timestamp,
                 "t_end":      frame_meta.timestamp + cfg.scene_graph.merge_window_sec,
                 "confidence": cfg.scene_graph.confidence_threshold,
-                "source":     "inspector",
+                "source":     edge_source,
             }
             for r in result["relations_found"]
             if isinstance(r, dict) and all(k in r for k in ("subject", "relation", "object"))
