@@ -1131,4 +1131,7 @@ v1→v2 = "把图从答案来源降级为证据目录，把建图从预处理升
 - 新增 `CLAUDE.md`：两条 agent 线约定（v2 = main.py + 评测入口；v1 = 基线 + mock）+ 诚实 mock / test-first 护栏。
 - `README.md`：vLLM 后端如实标注为"预留、无 GPU 未实跑"，不再过度宣称双后端部署。
 
-全量测试：39 passed（含新增 mock/接线守卫），10 failed 全部是既有环境问题（缺 NLTK `wordnet` 语料），无新增回归。三 commit 已 push 到 origin/main。
+全量测试：39 passed（含新增 mock/接线守卫），无新增回归。三 commit 已 push 到 origin/main。
+
+### 14.4 补记：实跑交互模式暴露 offline-safety 真 bug（2026-07-03）
+实跑 `main.py --interactive`（真实 v2 + DashScope，test1.mp4）立刻炸在 `search_memory` → `retriever.tokenize` → `_lemmatize`：`LookupError: wordnet not found`。**根因不是"没装语料"，是 retriever 的 offline 兜底守错了位置**——`WordNetLemmatizer()` 懒加载、构造成功，真正的 corpus 加载推迟到 `.lemmatize()` 才发生并抛错，而该调用点无 guard，整个 agent invoke 崩。mock 测试盖住了它：mock 走 v1 `query_scene_graph`、空图短路不 lemmatize，而真实 v2 `search_memory` 第一步就 tokenize→lemmatize。**只有实跑能暴露。** 修复（`_get_lemmatizer` 构造时强制 `lz.lemmatize("tests")` 触发真实加载，失败即退回 suffix stemmer，兑现注释承诺的兜底；wordnet 可用时行为不变）后：交互两轮端到端跑通（均由 L0 摘要直接作答、置信度够未触发 explore），且**此前记为"环境性"的 10 个失败其实全是这个 bug——修后全量 53 passed / 0 failed**。教训：静态 review + mock 会同时盖住"真实路径首步就触发、mock 路径短路绕过"的 bug，收尾务必真跑一遍主路径。

@@ -45,8 +45,14 @@ def _get_lemmatizer():
             nltk.data.find("corpora/wordnet")
         except LookupError:
             nltk.download("wordnet", quiet=True)
-        _lemmatizer = WordNetLemmatizer()
-    except Exception as exc:  # nltk missing or download failed → fallback stemmer
+        lz = WordNetLemmatizer()
+        # nltk loads the corpus lazily on first use, so a WordNetLemmatizer can
+        # construct fine yet raise LookupError later when wordnet is actually
+        # missing. Force the load now so the guard below catches it and we fall
+        # back to the suffix stemmer instead of crashing mid-retrieval.
+        lz.lemmatize("tests", pos="v")
+        _lemmatizer = lz
+    except Exception as exc:  # nltk missing or wordnet unusable → fallback stemmer
         logger.debug("nltk lemmatizer unavailable (%s); using suffix stemmer", exc)
         _lemmatizer = None
     return _lemmatizer
