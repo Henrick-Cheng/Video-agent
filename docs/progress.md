@@ -1112,3 +1112,23 @@ v1→v2 = "把图从答案来源降级为证据目录，把建图从预处理升
 - **🔴 locate_visual + D6 窄窗加密 = DROPPED**（已评估不划算，**非未来工作**）。便宜杠杆耗尽（14.1 路由证伪、14.2 取证深度证伪），残差 = VLM 能力天花板 + 长视频定位。
 - **要更强证据 = 换数据集复现，非榨本集残差**。下一迭代方向：EgoSchema / Video-MME long 复现同一反超。
 - 待办：gpt-4-turbo 重评（待 OpenAI key，`scripts/rejudge_gpt4.py` 就绪）；产物 `docs/benchmark_mmbv_final.{md,json}`、`benchmark_mmbv_final_analysis.md`、`docs/annotation_audit.json`。
+
+## 第十四阶段补充 14.4：产品线接入 v2 + review 加固（2026-07-02）
+
+清掉 Phase 14 一直挂着的工程 backlog——`main.py` 产品 CLI 之前还跑 v1 agent，评测/论文用 v2，两条线口径不一。本次统一到 v2。
+
+### main.py → v2（commit 1df5845）
+- 单问 / 交互模式的真实后端都切到 `build_agent_v2`（verbose 产品模式）：作答前先 `prepare_l0`（8 帧摘要 + 本地 ASR 轻底座，产品版无 token 记账、幂等，交互模式只构建一次），再用 `build_l0_context` 拼上下文；交互每轮重算上下文，带上已探索窗口。
+- `--mock` 保留走 v1（v2 无离线 mock）。v1 退为**评测基线 + `--mock` 路径**，不删。
+
+### review 加固（commit d2c8ed6）
+- **recursion limit 修正**：v2 路径原误用 v1 公式 `iters*3+1=19`，v2 置信度循环（search+≤3 轮×2 探索+inspect）能超 19 步 → 中途 GraphRecursionError。改为 v2 用 `iters*5+10=40`，与 `_answer_agent_v2` 对齐。
+- **pseudo-call 重试**：把 `PSEUDO_CALL_RE`+`looks_like_pseudo_call()` 抽到 `react_agent.py`（单一来源，`run_benchmark` 反向 import），产品 CLI 也加重试——纯文本假工具调用不再当最终答案泄漏给用户。
+- **v2 统计口径**：底部加 `explored_windows()` 计数；banner 按 mock/v2 分标签；CLI docstring 去中文化。
+- **诚实 mock 重写**：`_get_mock_llm` 从"罐头答案伪造场景图证据"改成 `_ScriptedToolCallingModel`（真跑 extract_keyframes→query_scene_graph 工具环，再回带 `[MOCK]` 标签、无伪造内容的占位）。补 `tests/test_agent.py` 守卫：诚实 mock 行为、pseudo-call 检测、v2 recursion 回归。
+
+### 文档（commit d04bbeb）
+- 新增 `CLAUDE.md`：两条 agent 线约定（v2 = main.py + 评测入口；v1 = 基线 + mock）+ 诚实 mock / test-first 护栏。
+- `README.md`：vLLM 后端如实标注为"预留、无 GPU 未实跑"，不再过度宣称双后端部署。
+
+全量测试：39 passed（含新增 mock/接线守卫），10 failed 全部是既有环境问题（缺 NLTK `wordnet` 语料），无新增回归。三 commit 已 push 到 origin/main。
