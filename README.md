@@ -7,7 +7,8 @@
 ![LangGraph](https://img.shields.io/badge/LangGraph-ReAct-FF6F00)
 ![Qwen-VL](https://img.shields.io/badge/Qwen--VL%20%2F%20Qwen--Plus-multimodal-615CED)
 ![Whisper](https://img.shields.io/badge/faster--whisper-ASR-00A98F)
-![Tests](https://img.shields.io/badge/tests-43%20passed%20%2F%2012%20skipped-success)
+![CI](https://github.com/Henrick-Cheng/Video-agent/actions/workflows/ci.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-53%20passed%20offline-success)
 
 ---
 
@@ -120,7 +121,7 @@ pip install -r requirements.txt
 ```
 
 > [!NOTE]
-> 当前 `main.py` / Gradio 产品入口仍接的是 v1 Agent；v2 架构（三层 Lazy 记忆 + 置信度循环）目前通过 `src/eval/run_benchmark.py` 的 `agent_v2` 方法跑通与评测，产品入口接线 v2 是进行中的后续工作。
+> `main.py`（单问 + 交互模式）真实后端已接 **v2 Agent**（`prepare_l0` 构建 L0 后走三层记忆 + 置信度循环），与评测路径同一套架构；`--mock` 离线模式仍走 v1 脚本化 mock（无需 API Key）。Gradio 前端尚未接 v2。
 
 **① Mock 模式** — 无需 API Key，验证流程 / 跑 CI：
 
@@ -154,7 +155,7 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 | 局限 | 说明 | 改进方向 |
 |------|------|---------|
 | **judge 为 qwen-max** | runs=3 ±std 已出，但 judge 仍是 qwen-max（存在 Qwen 评 Qwen 自偏好风险） | 换 gpt-4-turbo 对缓存答案重评（脚本就绪，零推理成本，待 OpenAI key） |
-| **产品入口未接 v2** | `main.py` / Gradio 仍跑 v1 Agent，v2 目前仅评测路径跑通 | 把 v2 的三层记忆 + 置信度循环移植到产品 Agent |
+| **Gradio 前端未接 v2** | `main.py` 已接 v2（单问 + 交互），但 Gradio 前端仍跑 v1 且停在早期版本 | 把前端切到 v2 路径（复用 `prepare_l0` + `build_agent_v2`），或以 CLI 为主入口 |
 | **旁白依赖型问题的硬边界** | 「视频里说了什么」类答案在音轨里；纯视觉够不着，TR 维度的增益主要来自 ASR 而非架构 | ASR 已接入 L0；进一步做旁白×画面的时间对齐交叉检索 |
 | **置信度判据偶尔过度自信** | 「图里有相关但不充分证据」时会直接作答而不升级探索（AGQA TR 上可见） | 升级判据从「图里有没有」细化为「图能否支撑该题型所需推理」 |
 | **关系词表 / 实体去重仍是规则方案** | 50 词关系闭表 + `difflib` 字面相似度去重，长尾会漏 | 数据驱动扩词表；embedding 语义去重 |
@@ -168,7 +169,7 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 
 1. **第二基准复现**（P0）— mmbv 线已收官（runs=3 抗噪成立、便宜杠杆耗尽）；更强证据应在 EgoSchema / Video-MME long 上复现同一反超，而非榨本集残差。
 2. **gpt-4-turbo 重评**（P0）— 换 SOTA 可比 judge，零额外推理成本（答案已缓存），待 OpenAI key。
-3. **产品入口接线 v2**（P0）— 把三层记忆 + 置信度循环移植到 `main.py` / Gradio。
+3. ~~**产品入口接线 v2**（P0）~~ — ✅ 已完成（Phase 14.4）：`main.py` 单问 + 交互模式均接 v2；剩余 Gradio 前端接线降级为 P2。
 4. **亮点实验**（P1）— 多轮指代会话（agent 独有的跨问记忆）+ 时序定位精度（图独有的显式时间轴）。
 5. **升级判据细化 + 旁白时间对齐**（P2）— 解决过度自信与旁白×画面交叉检索。
 
