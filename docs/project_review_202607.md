@@ -108,10 +108,11 @@ V# 项目综合审核报告 — 论文潜力 · 求职定位 · 面试准备
 - ✅ README 修正过期内容（main.py 已接 v2）+ CI badge
 - ✅ 本报告（面试准备包见 §4）
 
-**T1 — 每项半天内，强烈建议（简历可见）**
-1. **FastAPI 薄封装**（~半天）：`POST /sessions {video}` → 预建 L0；`POST /sessions/{id}/ask {question}` → 流式返回 trace + 答案。复用 `prepare_l0`/`build_agent_v2`，一个文件即可。这一项直接把"应用岗无服务化"的最大缺口补掉，且面试可现场 demo。
-2. **Dockerfile**（~2 小时）：跑通 mock 模式 + API 服务即可，不需要 GPU。配一条 `docker run` 演示命令进 README。
-3. **英文版 README**（~2 小时）：现 README 全中文；投外企/大厂国际团队时 GitHub 首页是英文的更好。保留中文版为 `README.zh.md`。
+**T1 — 已全部完成（2026-07-07）**
+1. ✅ **FastAPI 薄封装** — `src/api/app.py`：会话管理（prepare_l0）、/ask（共享 pseudo-call 重试）、SSE 流式 trace、DELETE 清理帧目录、per-session 锁；7 个离线行为测试（mock 契约）。
+2. ✅ **Dockerfile** — 瘦身镜像（requirements-serve.txt，无 torch/vllm/ASR），mock 模式无 key 可跑；本机无 docker daemon，首次 `docker build` 待用户验证。
+3. ✅ **英文版 README** — README.md 英文为主页，中文保留为 README.zh.md，双向语言链接，均含 API+Docker quick start。
+（配套：架构调研落档 `docs/architecture_review_202607.md`——行为中立项已修/列 P2，行为改变项明确不做以保持代码与 runs=3 数字对应。）
 
 **T2 — 有余力再做（面试深挖时加分）**
 4. Gradio 前端接 v2（复用 main.py 的接线模式，~半天）——有可视化 demo 面试冲击力强。
@@ -253,7 +254,7 @@ V# 项目综合审核报告 — 论文潜力 · 求职定位 · 面试准备
 | 优先级 | 事项 | 线 | 成本 | 产出 |
 |---|---|---|---|---|
 | **P0** | gpt-4-turbo 重评（搞到 OpenAI key 即跑） | 论文+面试 | ~0（脚本就绪、答案已缓存） | 消除最大方法学质疑 |
-| **P0** | FastAPI 薄封装 + Dockerfile | 求职 | 1 天 | 补应用岗最大缺口，可现场 demo |
+| ~~P0~~ ✅ | ~~FastAPI 薄封装 + Dockerfile~~（2026-07-07 完成，含英文 README） | 求职 | — | 简历预留 bullet 可激活 |
 | **P0** | 第二基准（EgoSchema 或 Video-MME long 子集）复现反超 | 论文 | 1–2 周 + API 费 | 泛化主张成立；决定是否值得冲更高层级 |
 | **P1** | 英文 README（中文版保留） | 求职 | 2 小时 | GitHub 首页国际化 |
 | **P1** | AGQA runs=3 补 ±std | 论文 | API 费小 | 补统计严谨性 |
