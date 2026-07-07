@@ -1,0 +1,16 @@
+.git
+.github
+.claude
+docs/
+tests/
+data/
+benchmarks/
+frontend/
+scripts/
+assets/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+*.md
+!README.md
