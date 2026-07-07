@@ -1,116 +1,118 @@
 # 🎬 Video Agent
 
-> **一个把视频组织成「Lazy 多粒度记忆」、用置信度驱动按需探索的视频问答 Agent。场景图不再是答案来源，而是多模态证据的时序索引。**
+> **A video Q&A agent that organizes a video into lazy, multi-granularity memory and explores on demand, driven by self-assessed confidence. The scene graph is no longer the answer source — it is a temporal index over multimodal evidence.**
+
+**English** | [中文](README.zh.md)
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1.x-1C3C3C?logo=langchain&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-ReAct-FF6F00)
+![LangGraph](https://img.shields.io/badge/LangGraph-agent-FF6F00)
 ![Qwen-VL](https://img.shields.io/badge/Qwen--VL%20%2F%20Qwen--Plus-multimodal-615CED)
 ![Whisper](https://img.shields.io/badge/faster--whisper-ASR-00A98F)
 ![CI](https://github.com/Henrick-Cheng/Video-agent/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-53%20passed%20offline-success)
+![Tests](https://img.shields.io/badge/tests-60%20passed%20offline-success)
 
 ---
 
-## 架构一览（v2）
+## Architecture at a glance (v2)
 
 ```mermaid
 flowchart TD
-    User(["👤 用户提问 · 自然语言"]) --> Agent
+    User(["👤 User question · natural language"]) --> Agent
 
-    Agent["🧠 <b>置信度驱动 Agent</b> · LangGraph<br/>作答 → 自评置信度 1-3 → 不足才探索"]
+    Agent["🧠 <b>Confidence-driven agent</b> · LangGraph<br/>answer → self-assess confidence 1-3 → explore only if insufficient"]
 
-    Agent -->|① 免费检索| T1["search_memory<br/>三层联合检索"]
-    Agent -->|② 按需细看| T2["explore_segment 🔭<br/>自选时间窗 · 即时建图"]
-    Agent -->|③ 像素级精读| T3["inspect_frame 🔭"]
+    Agent -->|"① free retrieval"| T1["search_memory<br/>joint 3-layer lookup"]
+    Agent -->|"② on-demand close look"| T2["explore_segment 🔭<br/>agent-chosen window · builds graph on the fly"]
+    Agent -->|"③ pixel-level read"| T3["inspect_frame 🔭"]
 
-    subgraph MEM["📦 三层 Lazy 记忆 · VideoSession"]
-        L0[("🌐 L0 全局层<br/>稀疏帧摘要 + ASR 旁白转写")]
-        L1[("📝 L1 Segment 层<br/>密集 caption（按需建）")]
-        L2[("🕸️ L2 三元组索引<br/>⟨主体, 关系, 客体, t⟩ → seg 溯源")]
+    subgraph MEM["📦 3-layer lazy memory · VideoSession"]
+        L0[("🌐 L0 global<br/>sparse-frame summary + ASR transcript")]
+        L1[("📝 L1 segments<br/>dense captions (built on demand)")]
+        L2[("🕸️ L2 triplet index<br/>⟨subject, relation, object, t⟩ → seg provenance")]
     end
 
-    T1 -. 联合检索 .-> L0 & L1 & L2
-    T2 -->|密集 caption + 三元组| L1
+    T1 -. joint lookup .-> L0 & L1 & L2
+    T2 -->|dense caption + triplets| L1
     T2 --> L2
-    T3 -->|新发现回写| L2
+    T3 -->|new findings written back| L2
 
-    L0 -. 初始上下文 .-> Agent
-    Agent ==>|置信度达标 / 预算用尽| Answer(["✅ 答案 + 证据 trace"])
+    L0 -. initial context .-> Agent
+    Agent ==>|confidence reached / budget spent| Answer(["✅ answer + evidence trace"])
 
-    T2 -. VLM 多帧分析 .-> VLM["Qwen-VL"]
-    T3 -. VLM 单帧精读 .-> VLM
+    T2 -. multi-frame VLM call .-> VLM["Qwen-VL"]
+    T3 -. single-frame VLM read .-> VLM
 ```
 
-## 三句话
+## In three sentences
 
-**做什么**：把一段视频组织成**三层 Lazy 记忆**（全局摘要 + 旁白转写 / 按需细化的段落描述 / 带时间戳的三元组索引），让 Agent 像查档案一样回答关于视频的问题——**不预先全片建图，问到哪里才细看哪里**。
+**What**: Organize a video into a **3-layer lazy memory** (global summary + narration transcript / on-demand dense segment captions / a timestamped triplet index) so an agent can answer questions about the video the way an archivist consults records — **no upfront full-video graph build; look closely only where the question demands it**.
 
-**怎么做**：基于 LangGraph 的 Agent 走**置信度驱动**循环——先免费检索现有记忆并作答，自评置信度 1–3，不足时才自己挑一段视频用 `explore_segment` 细看（即时生成密集描述 + 三元组），轮数与探索次数有上限。场景图被重新定位为**证据的时序索引**（三元组指向它出自的那段完整描述），而非有损的答案压缩。
+**How**: A LangGraph agent runs a **confidence-driven loop** — first answer from free retrieval over existing memory, self-assess confidence 1–3, and only when insufficient pick a time window to watch closely with `explore_segment` (generating dense captions + triplets on the fly), under a bounded budget. The scene graph is repositioned as a **temporal index over evidence** (each triplet points back to the full caption it came from), not a lossy compression of answers.
 
-**结果如何**：在公开长视频基准 **MMBench-Video**（150 题分层子集，**runs=3**）上，v2 **整体反超**直接看帧的 VLM 基线（**1.984±0.101 vs 1.478±0.025**，0–3 分制），且反超在噪声下稳健（差距 0.257 > 双方标准差之和 0.121）；归因干净——旁白模态贡献 +0.249，**架构本身再贡献 +0.257**（同模态公平基线对照）。优势随视频变长单调增强（舒适区边界 ≈90 秒），且**每题只看 3.1 帧** vs 基线固定 8 帧。
+**Result**: On the public long-video benchmark **MMBench-Video** (150-question stratified subset, **runs=3**), v2 **beats the direct-frame VLM baseline overall** (**1.984±0.101 vs 1.478±0.025**, 0–3 scale), and the reversal is robust to noise (gap 0.257 > sum of stds 0.121). Attribution is clean — the narration modality contributes +0.249 and **the architecture itself another +0.257** (same-modality fair baseline). The advantage grows monotonically with video length (comfort-zone boundary ≈90s), while touching only **3.1 frames per question** vs the baseline's fixed 8.
 
 > [!IMPORTANT]
-> **核心结果（MMBench-Video 150 题 · runs=3 · mean ± std · 已收官）**
+> **Headline results (MMBench-Video, 150 questions · runs=3 · mean ± std · final)**
 >
-> | 方法 | 总分 (0–3) | Frames/Q | 说明 |
+> | Method | Overall (0–3) | Frames/Q | Notes |
 > |------|-----------|----------|------|
-> | **agent_v2** | **1.984 ± 0.101** | **3.1** | Lazy 记忆 + 置信度探索 |
-> | vlm_transcript@8 | 1.727 ± 0.020 | 8.0 | 同帧数 + 旁白文字（公平基线） |
-> | vlm_direct@8 | 1.478 ± 0.025 | 8.0 | 直接看 8 帧 |
-> | agent (v1) | 1.193 | — | 全量预建场景图（旧架构 · runs=1） |
+> | **agent_v2** | **1.984 ± 0.101** | **3.1** | lazy memory + confidence-driven exploration |
+> | vlm_transcript@8 | 1.727 ± 0.020 | 8.0 | same frames + narration text (fair baseline) |
+> | vlm_direct@8 | 1.478 ± 0.025 | 8.0 | direct 8-frame VLM |
+> | agent (v1) | 1.193 | — | full upfront scene-graph build (legacy · runs=1) |
 >
-> - **反超抗噪成立**：agent_v2 − vlm_transcript = 0.257 > 两者 std 之和 0.121，反超越过噪声带。
-> - **归因干净**：ASR 模态 +0.249（vlm_direct→vlm_transcript），架构再 +0.257（同模态对照）——「赢只是因为多了个模态」被数据排除。
-> - **舒适区边界 ≈90 秒**：90 秒内基本持平，90 秒以上明显领先（90–180s: 2.10 vs 1.55；>180s: 2.05 vs 1.87）。
-> - **幻觉抵抗**：官方 HL 维度 2.422±0.191，是同模态基线的 **2.3×**（vs vlm_direct 约 3.9×）——「答案必须接地到证据」的架构属性。
-> - **帧效率**：3.1 帧/题打赢 8 帧/题；150 题中 81 题靠免费检索直答、69 题自主升级探索——按需分配感知预算。
+> - **Reversal survives noise**: agent_v2 − vlm_transcript = 0.257 > 0.121 (sum of both stds).
+> - **Clean attribution**: ASR modality +0.249 (vlm_direct→vlm_transcript), architecture +0.257 on top (same-modality control) — "it only wins because of the extra modality" is ruled out by data.
+> - **Comfort-zone boundary ≈90s**: parity under 90s; clear lead beyond it (90–180s: 2.10 vs 1.55; >180s: 2.05 vs 1.87).
+> - **Hallucination resistance**: official HL dimension 2.422±0.191 — **2.3×** the same-modality baseline (≈3.9× vs vlm_direct). An architectural property: answers must ground to evidence.
+> - **Frame efficiency**: 3.1 frames/question beats 8; of 150 questions, 81 answered from free retrieval alone, 69 self-escalated to exploration — perception budget allocated on demand.
 >
-> ⚠️ **诚实披露**：judge 为 `qwen-max`（存在 Qwen 评 Qwen 自偏好）；标注审计（n=30）显示 97% gold 被证据支撑，离 3.0 的差距主要是模型能力而非烂标注。论文级 `gpt-4-turbo` 重评待 OpenAI key（已留缓存答案，零额外推理成本）。完整分析见 [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)。
+> ⚠️ **Honest disclosure**: the judge is `qwen-max` (Qwen-judging-Qwen self-preference risk); an annotation audit (n=30) shows 97% of gold answers are evidence-supported, so the gap to 3.0 is mostly model capability, not label noise. A paper-grade `gpt-4-turbo` re-judge is ready to run at zero inference cost (answers cached) once an OpenAI key is available. Full analysis: [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md).
 
 ---
 
-## 为什么是 v2？—— 一次诚实的返修
+## Why v2 — an honest rework
 
-v1 用「时序场景图」做唯一工作记忆（全片预建 → 三元组 → 只查三元组作答）。在真实计费口径下复测，**v1 并没有对直接看帧取得决定性优势**——MMBench-Video 上 1.193 反而输给 vlm_direct 的 1.478。诊断出两个设计错误：
+v1 used the temporal scene graph as the *only* working memory (full upfront build → triplets → answer from triplets alone). Re-measured under real API billing, **v1 held no decisive advantage over directly watching frames** — 1.193 on MMBench-Video, losing to vlm_direct's 1.478. Two design errors were diagnosed:
 
-1. **三元组被当成「答案来源」，但它是有损瓶颈**。VLM 看帧时理解的画面文字、属性细节、事件因果，在「只输出 JSON 三元组 + 50 词关系闭表」这一步被丢光。纯三元组 RAG 只保住了直接看帧约一半的可答信号。
-2. **全量预建摊不掉**。每视频约 1 题时，开场就把全片建图的成本永远收不回。
+1. **Triplets were treated as the answer source, but they are a lossy bottleneck.** On-screen text, attribute details and event causality that the VLM understands while watching frames were thrown away at the "emit JSON triplets + a 50-word relation vocabulary" step. Pure triplet RAG retained only about half of the answerable signal of direct frame viewing.
+2. **A full upfront build never amortizes.** At ~1 question per video, building the whole graph at the start is a cost that is never recovered.
 
-对照前沿（VideoAgent / Graph-VideoAgent / DoraemonGPT / Deep Video Discovery / Agentic VLVU）收敛出的共识——**记忆应多粒度且按需构建、caption 必须保留、编排应由置信度驱动**——重写为 v2，于是有了上面的反超。完整演进记录见 [`docs/progress.md`](docs/progress.md)（第十二～十四阶段）。
+Cross-referencing the consensus that recent agent systems converge on (VideoAgent / Graph-VideoAgent / DoraemonGPT / Deep Video Discovery / agentic VLVU) — **memory should be multi-granular and built on demand, captions must be preserved, orchestration should be confidence-driven** — the system was rewritten as v2, producing the reversal above. Full evolution log: [`docs/progress.md`](docs/progress.md) (Phases 12–14, Chinese).
 
 ---
 
-## 核心设计
+## Core design
 
-### 三层 Lazy 记忆
+### 3-layer lazy memory
 
-| 层 | 内容 | 何时构建 |
+| Layer | Contents | Built when |
 |----|------|---------|
-| **L0 全局层** | 稀疏帧（8 帧）全局摘要 + faster-whisper 本地旁白转写 + 时长元信息 | 初始化一次（廉价） |
-| **L1 Segment 层** | Agent 选定时间窗 → 窗口内 ≤6 帧 → **密集 caption + 三元组** | **按需**（`explore_segment` 触发） |
-| **L2 三元组索引** | `⟨主体, 关系, 客体, t_start, t_end⟩`，每条挂 `seg:<id>` 溯源 | 随 L1 一起写入 |
+| **L0 global** | sparse-frame (8) global summary + faster-whisper local narration transcript + duration metadata | once at init (cheap) |
+| **L1 segments** | agent-chosen time window → ≤6 frames → **dense caption + triplets** | **on demand** (`explore_segment`) |
+| **L2 triplet index** | `⟨subject, relation, object, t_start, t_end⟩`, each carrying `seg:<id>` provenance | written together with L1 |
 
-关键点：**建图本身成了逐题的 Agent 决策**，不再是预处理。检索时三元组命中会**连带返回它出自的那段完整 caption 与旁白片段**——图是目录，证据在 caption 与转写里。
+Key point: **graph construction became a per-question agent decision**, not preprocessing. At retrieval time a triplet hit **pulls back the full caption and transcript window it came from** — the graph is the catalog; the evidence lives in captions and the transcript.
 
-### 置信度驱动编排
+### Confidence-driven orchestration
 
-Agent 不走固定流水线，而是：① 先用零成本的 `search_memory` 三层联合检索并尝试作答；② 自评置信度 1–3，不足才用 `explore_segment` 挑一段视频细看（每轮 ≤2 次、最多 3 轮）；③ 置信度达标或预算用尽即停。需要画面文字 / 精确计数时才用 `inspect_frame` 做单帧像素级精读。**缺证据时绝不把「图里没有」当成「答案是否」**——必须先探索验证再答。
+Instead of a fixed pipeline the agent: ① answers from the zero-cost `search_memory` joint lookup first; ② self-assesses confidence 1–3, and only if insufficient picks a video window to explore with `explore_segment` (≤2 per round, ≤3 rounds); ③ stops as soon as confidence is reached or the budget is spent. `inspect_frame` handles pixel-level needs (on-screen text, exact counting). **Absence of evidence is never treated as "no"** — the agent must verify by exploring before answering negatively.
 
-### 后端抽象
+### Backend abstraction
 
-同一套代码、配置一行切换后端：**DashScope 云端**（`qwen-plus` + `qwen-vl-plus`，本项目全部开发与评测的实跑后端）与 **Mock 模式**（无需 API Key，供 CI / 离线开发）。配置走 `configs/default.yaml` + `.env` + 环境变量三级覆盖。代码另预留 **本地 vLLM 后端**接口（`backend: vllm`，目标 `Qwen3-8B` + `Qwen2.5-VL-7B-AWQ`），但因无 GPU 环境**尚未实跑验证**。faster-whisper 在本地转写、零 API 费用，缺失时优雅降级为纯视觉。
+One codebase, one config line to switch backends: **DashScope cloud** (`qwen-plus` + `qwen-vl-plus`, the backend all development and evaluation actually ran on) and a **mock mode** (no API key, for CI / offline development). Config resolves through `configs/default.yaml` + `.env` + environment variables. A **local vLLM backend** interface is reserved (`backend: vllm`, targeting `Qwen3-8B` + `Qwen2.5-VL-7B-AWQ`) but **not yet verified on real hardware** (no GPU environment). faster-whisper transcribes locally at zero API cost and degrades gracefully to vision-only when absent.
 
 ---
 
-## 评测方法
+## Evaluation methodology
 
-- **真实计费口径**：所有 token 来自 API 返回的真实 `usage`（图像 token 含在内），不再用「字符数 ÷3 / 帧数 ×1500」估算——旧的「省 token」卖点经此修正已撤回，详见 [`docs/progress.md`](docs/progress.md) 第十二阶段。
-- **官方协议复刻**：MMBench-Video 评分逐字复刻 VLMEvalKit 的 0–3 语义相似度 judge（`src/eval/run_benchmark.py` 的 `mmbv` scorer），judge 端点可经 `JUDGE_*` 环境变量切换（测试用 `qwen-max`，论文换 `gpt-4-turbo`）。
-- **公平基线**：`vlm_transcript` = 同帧数 + 旁白文字进 prompt，把「多模态」与「架构」两个变量分开。
-- **新指标**：`frames-touched/Q`（每题真正送进视觉模型的帧数），衡量「有指导的感知预算」。
+- **Real billing**: every token count comes from the API's actual `usage` (image tokens included) — no character/frame estimation. The earlier "token savings" claim was retracted after this correction; see [`docs/progress.md`](docs/progress.md) Phase 12.
+- **Official protocol replication**: MMBench-Video scoring replicates VLMEvalKit's 0–3 semantic judge verbatim (`mmbv` scorer in `src/eval/run_benchmark.py`); the judge endpoint switches via `JUDGE_*` env vars (`qwen-max` for testing, `gpt-4-turbo` for the paper).
+- **Fair baseline**: `vlm_transcript` = same frame count + narration text in the prompt, separating the "extra modality" variable from the "architecture" variable.
+- **New metric**: `frames-touched/Q` — frames actually sent to the vision model per question, measuring guided perception budget.
 
-报告：[`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)（**runs=3 收官 · 权威结果**） · [`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md)（v2 runs=1 详析） · [`docs/benchmark_mmbv_analysis.md`](docs/benchmark_mmbv_analysis.md)（v1 对照） · [`docs/benchmark_v2_agqa.md`](docs/benchmark_v2_agqa.md)（AGQA 验证门：duration 0.682，5× vlm；总成本 −48%）。
+Reports: [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md) (**runs=3, authoritative**) · [`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md) (v2 runs=1 detail) · [`docs/benchmark_v2_agqa.md`](docs/benchmark_v2_agqa.md) (AGQA gate: duration 0.682, 5× vlm).
 
 ---
 
@@ -120,23 +122,42 @@ Agent 不走固定流水线，而是：① 先用零成本的 `search_memory` �
 pip install -r requirements.txt
 ```
 
-> [!NOTE]
-> `main.py`（单问 + 交互模式）真实后端已接 **v2 Agent**（`prepare_l0` 构建 L0 后走三层记忆 + 置信度循环），与评测路径同一套架构；`--mock` 离线模式仍走 v1 脚本化 mock（无需 API Key）。Gradio 前端尚未接 v2。
-
-**① Mock 模式** — 无需 API Key，验证流程 / 跑 CI：
+**① Mock mode** — no API key; verifies the full loop / used by CI:
 
 ```bash
-python main.py --video data/videos/cooking.mp4 --question "视频里用了哪几种锅？" --mock
+python main.py --video data/videos/cooking.mp4 --question "What cookware is used?" --mock
 ```
 
-**② DashScope 云端模式** — 推荐开发 / macOS，无 GPU 要求：
+**② DashScope cloud mode** — recommended for development on macOS, no GPU required:
 
 ```bash
-cp .env.example .env          # 编辑 .env 填入 DASHSCOPE_API_KEY=sk-xxx
-python main.py --video data/videos/cooking.mp4 --question "炒糖色是在放猪肉之前还是之后？"
+cp .env.example .env          # put DASHSCOPE_API_KEY=sk-xxx in .env
+python main.py --video data/videos/cooking.mp4 --question "Is the sugar added before or after the pork?"
 ```
 
-**③ 跑 v2 评测** — 在 MMBench-Video 子集上复现核心结果：
+`main.py` (single-question + interactive) runs the **v2 agent** on the real backend; `--mock` runs the v1 scripted offline mock.
+
+**③ REST API service** — the same v2 agent behind FastAPI (session memory persists across questions):
+
+```bash
+uvicorn src.api.app:app --port 8000
+
+# create a session (runs L0 prep: summary + transcript)
+curl -X POST localhost:8000/sessions -H 'Content-Type: application/json' \
+     -d '{"video_path": "data/videos/cooking.mp4"}'
+# ask (returns answer + tool trace; use /ask/stream for SSE streaming)
+curl -X POST localhost:8000/sessions/<session_id>/ask \
+     -H 'Content-Type: application/json' -d '{"question": "What is cooked first?"}'
+```
+
+**④ Docker** — slim service image (mock mode needs no key):
+
+```bash
+docker build -t video-agent .
+docker run --rm -p 8000:8000 --env-file .env -v "$PWD/data:/app/data" video-agent
+```
+
+**⑤ Reproduce the headline result** on the MMBench-Video subset:
 
 ```bash
 python -m src.eval.build_mmbench_video --out benchmarks/mmbv_150.json --total 150 --seed 42
@@ -148,47 +169,48 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 
 ---
 
-## 已知局限性
+## Known limitations
 
-诚实评估 —— 每条都附改进方向。
+Honest assessment — each with its improvement path.
 
-| 局限 | 说明 | 改进方向 |
+| Limitation | Detail | Path |
 |------|------|---------|
-| **judge 为 qwen-max** | runs=3 ±std 已出，但 judge 仍是 qwen-max（存在 Qwen 评 Qwen 自偏好风险） | 换 gpt-4-turbo 对缓存答案重评（脚本就绪，零推理成本，待 OpenAI key） |
-| **Gradio 前端未接 v2** | `main.py` 已接 v2（单问 + 交互），但 Gradio 前端仍跑 v1 且停在早期版本 | 把前端切到 v2 路径（复用 `prepare_l0` + `build_agent_v2`），或以 CLI 为主入口 |
-| **旁白依赖型问题的硬边界** | 「视频里说了什么」类答案在音轨里；纯视觉够不着，TR 维度的增益主要来自 ASR 而非架构 | ASR 已接入 L0；进一步做旁白×画面的时间对齐交叉检索 |
-| **置信度判据偶尔过度自信** | 「图里有相关但不充分证据」时会直接作答而不升级探索（AGQA TR 上可见） | 升级判据从「图里有没有」细化为「图能否支撑该题型所需推理」 |
-| **关系词表 / 实体去重仍是规则方案** | 50 词关系闭表 + `difflib` 字面相似度去重，长尾会漏 | 数据驱动扩词表；embedding 语义去重 |
-| **更长视频（10min+）未测** | 舒适区边界已实测到 ≈90s，但小时级视频上的外推尚无数据 | 接入 LVBench 切片验证斜率交叉 |
+| **Judge is qwen-max** | runs=3 ±std done, but the judge has Qwen-judging-Qwen self-preference risk | gpt-4-turbo re-judge of cached answers (script ready, zero inference cost, needs OpenAI key) |
+| **Gradio frontend not on v2** | `main.py` and the API run v2; the Gradio UI still drives v1 and is stale | port the frontend to the v2 path, or treat CLI/API as the product entry |
+| **Hard boundary on narration-dependent questions** | "what did they say" answers live in the audio track; TR-dimension gains come mostly from ASR, not architecture | ASR is in L0; next is time-aligned cross-retrieval of narration × visuals |
+| **Confidence self-assessment is occasionally overconfident** | "related but insufficient evidence in the graph" can trigger a direct answer instead of escalation | refine the criterion from "is there related evidence" to "does the evidence support this question type's reasoning" |
+| **Relation vocab / entity dedup are rule-based** | 50-word closed relation set + string-similarity dedup; long-tail slips through | data-driven vocabulary growth; embedding-based semantic dedup |
+| **Videos >10min untested** | comfort-zone boundary measured to ≈90s; hour-scale extrapolation has no data | LVBench slices to verify the slope crossing |
 
 ---
 
 ## Roadmap
 
-按性价比排序，完整分层见 [`docs/progress.md`](docs/progress.md) 第十四阶段末尾。
+Ordered by return on effort; full tiering in [`docs/progress.md`](docs/progress.md) (Phase 14).
 
-1. **第二基准复现**（P0）— mmbv 线已收官（runs=3 抗噪成立、便宜杠杆耗尽）；更强证据应在 EgoSchema / Video-MME long 上复现同一反超，而非榨本集残差。
-2. **gpt-4-turbo 重评**（P0）— 换 SOTA 可比 judge，零额外推理成本（答案已缓存），待 OpenAI key。
-3. ~~**产品入口接线 v2**（P0）~~ — ✅ 已完成（Phase 14.4）：`main.py` 单问 + 交互模式均接 v2；剩余 Gradio 前端接线降级为 P2。
-4. **亮点实验**（P1）— 多轮指代会话（agent 独有的跨问记忆）+ 时序定位精度（图独有的显式时间轴）。
-5. **升级判据细化 + 旁白时间对齐**（P2）— 解决过度自信与旁白×画面交叉检索。
+1. **Second-benchmark reproduction** (P0) — the mmbv line is closed (runs=3 noise-robust, cheap levers exhausted); stronger evidence means reproducing the same reversal on EgoSchema / Video-MME long, not squeezing this subset.
+2. **gpt-4-turbo re-judge** (P0) — SOTA-comparable judge at zero extra inference cost (answers cached); waiting on an OpenAI key.
+3. **Highlight experiments** (P1) — multi-turn reference resolution (agent-only cross-question memory) + temporal localization precision (graph-only explicit timeline).
+4. **Confidence criterion refinement + narration-visual time alignment** (P2).
 
 ---
 
-## 项目结构
+## Project structure
 
 ```
 src/
-├── agents/        Agent 工厂（v1 build_agent + v2 build_agent_v2 / 置信度 prompt）
-├── tools/         search_memory · explore_segment · inspect_frame（+ v1 四工具）
-├── perception/    VLClient（双后端，三层 JSON 容错）· usage 真实计费账本 · asr 本地转写
-├── scene_graph/   三元组结构 + 检索器（segment caption + 旁白联合检索）+ 关系词表
-├── memory/        VideoSession 跨轮共享状态 + 三层 Lazy 记忆（Segment）
-└── eval/          benchmark runner（多方法 / 多 scorer）· MMBench-Video 适配器
-frontend/app.py    Gradio UI（Agent trace 流式输出）
-benchmarks/        mmbv_150（MMBench-Video 子集）· agqa_en_small 等评测集
-configs/default.yaml   统一配置入口
-docs/              架构详解 + Phase 12–14 评测报告 + 演进日志
+├── agents/        agent factories (v1 build_agent + v2 build_agent_v2 / confidence prompts / shared runtime helpers)
+├── api/           FastAPI service (sessions, ask, SSE streaming trace)
+├── tools/         search_memory · explore_segment · inspect_frame (+ 4 v1 tools)
+├── perception/    VLClient (dual backend, 3-level JSON tolerance) · real-usage ledger · local ASR
+├── scene_graph/   triplet structures + retriever (segment captions + transcript joint lookup) + relation vocab
+├── memory/        VideoSession cross-turn shared state + 3-layer lazy memory
+└── eval/          benchmark runner (multi-method / multi-scorer) · MMBench-Video adapter
+main.py            CLI entry (single question / interactive / --mock)
+frontend/app.py    Gradio UI (v1, stale — see limitations)
+benchmarks/        mmbv_150 (MMBench-Video subset) · agqa_en_small
+configs/default.yaml   unified config entry
+docs/              architecture, evaluation reports, evolution log (Chinese)
 ```
 
-技术栈：Python 3.13 · LangChain 1.x / LangGraph · Qwen-VL / Qwen-Plus · faster-whisper · OpenCV · pydantic-settings · Gradio 5.x
+Stack: Python 3.13 · LangChain 1.x / LangGraph · Qwen-VL / Qwen-Plus · faster-whisper · OpenCV · pydantic-settings · FastAPI · Gradio 5.x
