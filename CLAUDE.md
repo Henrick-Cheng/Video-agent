@@ -4,12 +4,15 @@ Temporal-scene-graph video Q&A agent. Two agent lines live in
 `src/agents/react_agent.py`:
 
 - **v2 `build_agent_v2`** — current line (lazy 3-layer memory + confidence loop:
-  search_memory / explore_segment / inspect_frame). Powers both the benchmark
-  path and `main.py`'s real backend (single + interactive), via `prepare_l0`
-  (summary + ASR base) + `build_l0_context`. Has **no offline mock yet**.
+  search_memory / explore_segment / inspect_frame). Powers the benchmark path,
+  `main.py`'s real backend (single + interactive), and the FastAPI service
+  (`src/api/app.py`), via `prepare_l0` (summary + ASR base) + `build_l0_context`
+  and the shared runtime helpers (`get_recursion_limit` / `invoke_with_retry`).
+  Has **no offline mock yet**.
 - **v1 `build_agent`** — legacy ReAct line (extract_keyframes / build_scene_graph
   / query_scene_graph / inspect_frame). Retained as a benchmark baseline and as
-  `main.py`'s `--mock` path only (`use_mock`, the offline mock lives here).
+  the offline mock path (`use_mock`) for `main.py --mock` and the API's
+  `{"mock": true}` sessions (tests/test_api.py holds the e2e guards).
 
 ## Testing & AI-assisted development
 
