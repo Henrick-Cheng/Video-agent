@@ -1135,3 +1135,30 @@ v1→v2 = "把图从答案来源降级为证据目录，把建图从预处理升
 
 ### 14.4 补记：实跑交互模式暴露 offline-safety 真 bug（2026-07-03）
 实跑 `main.py --interactive`（真实 v2 + DashScope，test1.mp4）立刻炸在 `search_memory` → `retriever.tokenize` → `_lemmatize`：`LookupError: wordnet not found`。**根因不是"没装语料"，是 retriever 的 offline 兜底守错了位置**——`WordNetLemmatizer()` 懒加载、构造成功，真正的 corpus 加载推迟到 `.lemmatize()` 才发生并抛错，而该调用点无 guard，整个 agent invoke 崩。mock 测试盖住了它：mock 走 v1 `query_scene_graph`、空图短路不 lemmatize，而真实 v2 `search_memory` 第一步就 tokenize→lemmatize。**只有实跑能暴露。** 修复（`_get_lemmatizer` 构造时强制 `lz.lemmatize("tests")` 触发真实加载，失败即退回 suffix stemmer，兑现注释承诺的兜底；wordnet 可用时行为不变）后：交互两轮端到端跑通（均由 L0 摘要直接作答、置信度够未触发 explore），且**此前记为"环境性"的 10 个失败其实全是这个 bug——修后全量 53 passed / 0 failed**。教训：静态 review + mock 会同时盖住"真实路径首步就触发、mock 路径短路绕过"的 bug，收尾务必真跑一遍主路径。
+
+## 第十五阶段：工程整备 —— CI + FastAPI 服务化 + 英文 README + 架构调研（2026-07-03 ~ 07-07）
+
+GPT-4 重评仍被 OpenAI key 卡住，本阶段做不被阻塞的工程整备（对齐 `docs/project_review_202607.md` 的 roadmap），不动任何影响 benchmark 数字的行为。
+
+### CI + README 修正（2026-07-03，commits 819113c/d7ffa55）
+- **GitHub Actions CI**：`.github/workflows/ci.yml` 跑 `pytest -m "not vllm"`；`requirements-ci.txt` 最小依赖集（12 包）在干净 venv 实测与全量环境等价（53 passed / 8 skipped）。CI 环境无 key/无视频，后端依赖测试自动跳过。
+- README 修正 14.4 后的过期表述（main.py 已接 v2）+ 测试徽章 + CI badge。
+- 交付综合审核报告 `docs/project_review_202607.md`（论文差距 / 求职定位 / 面试 20 题 / 简历替换稿，§1.4 为简历与面试的唯一取数源）。
+
+### 共享运行时辅助（commit 99927ed，行为零改变）
+`_get_recursion_limit` / pseudo-call 纠正重试从 main.py 提升为 `react_agent.get_recursion_limit` / `invoke_with_retry(on_retry=…)`；main.py 薄委托（保留旧名，测试零改动）。坑：委托若先自行 invoke 再调共享版会三次调用，`on_retry` 回调避免。触发条件 / 纠正话术 / 预算公式逐字不变。
+
+### FastAPI 服务化（commits 9a6c12c/26975ea）
+- `src/api/app.py`：`POST /sessions`（真实路径跑 `prepare_l0`；`{"mock": true}` 走 v1 脚本化 mock）、`POST /ask`（共享重试）、`GET /ask/stream`（SSE 流式 trace）、会话状态、`DELETE`（连带 rmtree 帧目录——修掉帧文件泄漏）、`/healthz`。
+- **并发边界**：VideoSession 非线程安全 → per-session 锁（ask 期间持有），不同 session 并行。
+- 7 个离线行为测试（`tests/test_api.py`，mock 契约：[MOCK] 标签、无伪造三元组、fail-loud 400/404、删除清理、SSE 事件流）。**离线测试 53 → 60**。
+- 瘦身 Dockerfile（`requirements-serve.txt`，无 torch/vllm/faster-whisper，ASR 缺失优雅降级）；本机无 docker daemon，`docker build` 首跑待验证。
+- 实跑验证：uvicorn 起服务 curl 冒烟（建 mock 会话→提问→[MOCK] 答案+工具轨迹→删除）；CLI `--mock` 行为复核未变。
+
+### 英文 README（commit 418a037）
+`README.md` 英文版为 GitHub 主页（完整含 runs=3 结果表、v1→v2 返修叙事、诚实披露、API/Docker quick start）；中文版保留为 `README.zh.md`，双向语言链接。
+
+### 架构调研（commit 4eb63ec，`docs/architecture_review_202607.md`）
+逐行审读 v2 核心链路。结论：链路本体无腐坏，真实短板全在服务化边界（并发/清理/逻辑复用），已随本阶段修掉。**行为中立**待做项列 P2（prompt 模块化、session 序列化、transcript 分词缓存）；**行为改变**项（embedding 检索、置信度判据细化）明确不做——动了会使代码与已收官的 runs=3 数字脱钩，embedding 检索归入第二基准评测周期的对照实验（14.1 已定位 3/10 失败源于词重叠漏检，是最有希望的单项升级）。
+
+全量离线测试 60 passed / 8 skipped。产品面变化：简历预留 bullet「FastAPI 服务化 + 容器化」可激活；面试 Q18 从"计划"升级为"已做可 demo"。
