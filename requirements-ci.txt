@@ -13,7 +13,10 @@ langchain-openai>=0.3
 
 # API client
 openai>=1.0
-httpx>=0.27                  # used by the vllm_required test marker
+httpx>=0.27                  # used by the vllm_required test marker + TestClient
+
+# API service under test (tests/test_api.py)
+fastapi>=0.110
 
 # Config
 pydantic>=2.0

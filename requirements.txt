@@ -29,8 +29,10 @@ langchain-community>=0.3     # FakeListLLM and other utilities
 faiss-cpu>=1.8               # swap to faiss-gpu if needed
 sentence-transformers>=3.0   # embedding model for scene graph retrieval
 
-# ── UI ────────────────────────────────────────────────────────────────────────
+# ── UI / API ──────────────────────────────────────────────────────────────────
 gradio>=5.0
+fastapi>=0.110                # REST API service (src/api/app.py)
+uvicorn>=0.30                 # ASGI server for the API
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 pydantic>=2.0
