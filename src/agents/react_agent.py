@@ -72,6 +72,50 @@ def looks_like_pseudo_call(text: str) -> bool:
     return bool(text) and bool(PSEUDO_CALL_RE.match(text))
 
 
+def get_recursion_limit(agent: Any, v2: bool = False) -> int:
+    """Derive LangGraph recursion_limit from the agent's stored max_iterations.
+
+    v2's confidence loop (search + up to 3 rounds x 2 explore + inspect) needs a
+    wider budget than v1's linear loop; matches _answer_agent_v2 in
+    src/eval/run_benchmark.py so product/API paths can't hit GraphRecursionError
+    on a run the benchmark would complete.
+    """
+    iters = getattr(agent, "_va_max_iterations", 6)
+    return iters * 5 + 10 if v2 else iters * 3 + 1
+
+
+def invoke_with_retry(agent: Any, user_text: str, recursion_limit: int,
+                      on_retry: Any = None) -> dict:
+    """Invoke the agent once; if the final message is a textual pseudo tool-call
+    rather than an answer, re-ask once with a corrective instruction.
+
+    v2 models sometimes emit e.g. `search_memory("...")` as plain text instead
+    of calling the tool. Mirrors the benchmark's retry (run_benchmark.py). The
+    [MOCK] placeholder never matches, so the mock/v1 path passes through cleanly.
+
+    on_retry: optional zero-arg callable invoked when the corrective re-ask
+    actually fires (the CLI uses it to print a notice).
+    """
+    result = agent.invoke(
+        {"messages": [("user", user_text)]},
+        config={"recursion_limit": recursion_limit},
+    )
+    answer = result["messages"][-1].content
+    if looks_like_pseudo_call(answer):
+        if on_retry is not None:
+            on_retry()
+        corrective = (
+            f"{user_text}\n\nYour previous reply was plain text that LOOKED like "
+            f"a tool call ({answer[:80]}); it was not executed. Either CALL the "
+            f"tool through the tool-calling interface, or give your final answer."
+        )
+        result = agent.invoke(
+            {"messages": [("user", corrective)]},
+            config={"recursion_limit": recursion_limit},
+        )
+    return result
+
+
 # ── Factory ───────────────────────────────────────────────────────────────────
 
 def build_agent(

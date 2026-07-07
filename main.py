@@ -70,44 +70,21 @@ def _print_trace(messages: list) -> None:
 
 
 def _get_recursion_limit(agent, v2: bool = False) -> int:
-    """Derive LangGraph recursion_limit from agent's stored max_iterations.
-
-    v2's confidence loop (search + up to 3 rounds x 2 explore + inspect) needs a
-    wider budget than v1's linear loop; matches _answer_agent_v2 in
-    src/eval/run_benchmark.py so the product path can't hit GraphRecursionError
-    on a run the benchmark would complete.
-    """
-    iters = getattr(agent, "_va_max_iterations", 6)
-    return iters * 5 + 10 if v2 else iters * 3 + 1
+    """Thin delegation to the shared runtime helper (kept under the old name —
+    tests import it from main). See src.agents.react_agent.get_recursion_limit."""
+    from src.agents.react_agent import get_recursion_limit
+    return get_recursion_limit(agent, v2=v2)
 
 
 def _invoke_v2_with_retry(agent, user_text: str, recursion_limit: int) -> dict:
-    """Invoke the agent once; if the final message is a textual pseudo tool-call
-    rather than an answer, re-ask once with a corrective instruction.
-
-    v2 models sometimes emit e.g. `search_memory("...")` as plain text instead
-    of calling the tool. Mirrors the benchmark's retry (run_benchmark.py). The
-    [MOCK] placeholder never matches, so the mock/v1 path passes through cleanly.
-    """
-    from src.agents.react_agent import looks_like_pseudo_call
-
-    result = agent.invoke(
-        {"messages": [("user", user_text)]},
-        config={"recursion_limit": recursion_limit},
+    """Thin delegation to the shared pseudo-call retry
+    (src.agents.react_agent.invoke_with_retry) with a CLI-side retry notice."""
+    from src.agents.react_agent import invoke_with_retry
+    return invoke_with_retry(
+        agent, user_text, recursion_limit,
+        on_retry=lambda: print(
+            "  [retry] final reply looked like a tool call — re-asking\n"),
     )
-    answer = result["messages"][-1].content
-    if looks_like_pseudo_call(answer):
-        print("  [retry] final reply looked like a tool call — re-asking\n")
-        corrective = (
-            f"{user_text}\n\nYour previous reply was plain text that LOOKED like "
-            f"a tool call ({answer[:80]}); it was not executed. Either CALL the "
-            f"tool through the tool-calling interface, or give your final answer."
-        )
-        result = agent.invoke(
-            {"messages": [("user", corrective)]},
-            config={"recursion_limit": recursion_limit},
-        )
-    return result
 
 
 def run_single(video: str, question: str, mock: bool = False) -> str:
