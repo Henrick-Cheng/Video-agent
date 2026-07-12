@@ -16,7 +16,7 @@ AGQA 的官方 EM 协议假设:模型直接输出**一个规范化的短答案 t
 
 ## 2. 铁证(真实数据,来自 03PRW.mp4 冒烟跑)
 
-> 评测集 `benchmarks/agqa_en_smoke.json`,原始记录见 `docs/benchmark_en_smoke.json`。
+> 评测集 `benchmarks/agqa_en_smoke.json`,原始记录见 `docs/archive/benchmark_en_smoke.json`。
 
 **问题**(duration 类,"X or Y" 选择):
 > *Was the person snuggling with a blanket or sitting in a bed for a shorter amount of time?*
@@ -59,4 +59,4 @@ LLM-judge 对**所有类别**的生成式输出都更公平(它读完整答案�
 
 ---
 
-*附:本结论由英文管线迁移后的冒烟评测得出。完整逐题记录(原始答案 → 抽取短答案 → 双评分)见 `docs/benchmark_en_smoke.json`;评测器实现见 `src/eval/run_benchmark.py`(`_judge_exact` / `_extract_short_answer`)。*
+*附:本结论由英文管线迁移后的冒烟评测得出。完整逐题记录(原始答案 → 抽取短答案 → 双评分)见 `docs/archive/benchmark_en_smoke.json`;评测器实现见 `src/eval/run_benchmark.py`(`_judge_exact` / `_extract_short_answer`)。*

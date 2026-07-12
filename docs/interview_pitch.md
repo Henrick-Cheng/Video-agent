@@ -1,5 +1,8 @@
 # Video Agent 面试叙事手册
 
+> ⚠️ **数字已过时（v1 时代，2026-05）**：本稿的 AGQA 0.364、"token 1/4" 等均为 v1 agent 线结果，已被 v2 线取代。
+> 当前权威数字见 `project_review_202607.md` §1.4（agent_v2 1.984±0.101 > vlm_transcript 1.727 > vlm_direct 1.478，MMBench-Video runs=3）。待基于其重写。
+
 > 不是项目文档,是**自己面试前过一遍用的稿子**。
 > 关键数字、关键故事、可能的追问都在这一份里。
 
