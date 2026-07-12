@@ -28,7 +28,7 @@
 |---|---|
 | `architecture.md` | 系统架构（论文第 4 章素材） |
 | `architecture_review_202607.md` | 2026-07 架构评审（论文第 6 章素材） |
-| `project_review_202607.md` | 2026-07 全仓综述；**§1.4 = 简历/面试用权威数字** |
+| `project_review_202607.md` | 2026-07 全仓综述；**§1.4 = 简历/面试用权威数字**；§1.5 = 系统设计审核（设计强项 + 设计债） |
 | `thesis_outline.md` | 论文大纲 + 材料映射表（定义各章取数源） |
 | `progress.md` | Phase 1–15 编年演进日志（历史叙述中的旧文件路径不回改） |
 | `interview_pitch.md` | 面试叙事稿（⚠️ 数字为 v1 时代，待按 project_review §1.4 重写） |
