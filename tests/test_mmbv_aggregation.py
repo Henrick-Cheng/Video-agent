@@ -100,6 +100,19 @@ def test_mean_std_over_trials():
     assert coarse["Overall"]["all_std"] == pytest.approx(0.25)
 
 
+def test_paper_table_renders_table3_layout():
+    from src.eval.run_benchmark import _mmbv_paper_lines
+
+    off = _aggregate_mmbv_official([TRIAL])
+    text = "\n".join(_mmbv_paper_lines({"agent_v2": off}))
+    assert "| Model | Overall Mean | CP | FP-S | FP-C | HL | *P. Mean* " \
+           "| LR | AR | RR | CSR | TR | *R. Mean* |" in text
+    # Overall(all) of TRIAL is 1.25; untouched dims render as em-dash
+    assert "| agent_v2 | **1.25** |" in text
+    assert "| — |" in text
+    assert "NOT directly comparable" in text
+
+
 def test_aggregate_wires_official_only_for_mmbv_with_dimensions():
     agg = _aggregate([TRIAL], scorers=("mmbv",))
     assert "mmbv_official" in agg

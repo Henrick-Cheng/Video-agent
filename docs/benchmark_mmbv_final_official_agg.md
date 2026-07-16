@@ -1,6 +1,6 @@
 # Benchmark Results
 
-> Video: `136 videos`  |  Benchmark: `benchmarks/mmbv_150.json`  |  Runs: 3  |  Generated: 2026-07-17 00:40
+> Video: `136 videos`  |  Benchmark: `benchmarks/mmbv_150.json`  |  Runs: 3  |  Generated: 2026-07-17 02:11
 
 ## Overall Accuracy
 
@@ -13,6 +13,16 @@
 ## MMBench-Video Official Rating (multi-label, 0-3)
 
 > VLMEvalKit `get_dimension_rating` semantics: each question counts toward **every** dimension it is tagged with (a question can appear in several rows). Cell = `all / valid` mean: *all* scores judge failures as 0 (official leaderboard variant); *valid* excludes them (`(vN)` marks buckets with failures). ± std over trials is an extension over the official single-run protocol. n = questions per bucket.
+
+### Paper-style summary (Table-3 layout of the MMBench-Video paper)
+
+| Model | Overall Mean | CP | FP-S | FP-C | HL | *P. Mean* | LR | AR | RR | CSR | TR | *R. Mean* |
+|-------|------|----|----|----|----|----|----|----|----|----|----|----|----|
+| agent_v2 | **1.98** | 2.25 | 2.06 | 1.39 | 2.42 | 2.06 | 2.21 | 2.14 | 2.00 | 2.23 | 1.68 | 1.96 |
+| vlm_transcript | **1.73** | 1.63 | 1.73 | 0.78 | 1.04 | 1.40 | 1.85 | 2.50 | 2.12 | 2.36 | 1.88 | 2.09 |
+| vlm_direct | **1.48** | 1.57 | 1.55 | 0.61 | 0.62 | 1.22 | 1.61 | 2.33 | 1.76 | 2.31 | 1.51 | 1.82 |
+
+> ⚠️ 150-question stratified subset (TR/HL oversampled) — rows are NOT directly comparable to published full-set (1,998-question) numbers; use for internal method comparison, or re-run on the full set before placing in the same table as leaderboard entries.
 
 ### L2 dimensions + rollups
 

@@ -1180,6 +1180,37 @@ def _mmbv_cell(st: dict) -> str:
     return cell
 
 
+def _mmbv_paper_lines(officials: dict[str, dict]) -> list[str]:
+    """Paper-style leaderboard row(s) — the MMBench-Video Table 3 layout:
+    Overall Mean | Perception CP/FP-S/FP-C/HL + Mean | Reasoning LR/AR/RR/CSR/TR
+    + Mean. Plain 'all'-variant means (the leaderboard variant), 2 decimals,
+    one row per method, ready to paste alongside published numbers."""
+    cols = ["CP", "FP-S", "FP-C", "HL", "Perception",
+            "LR", "AR", "RR", "CSR", "TR", "Reasoning"]
+
+    def cell(off: dict, dim: str) -> str:
+        st = off["coarse"][dim]
+        return f"{st['all_mean']:.2f}" if st["all_mean"] is not None else "—"
+
+    lines = [
+        "", "### Paper-style summary (Table-3 layout of the MMBench-Video paper)", "",
+        "| Model | Overall Mean | CP | FP-S | FP-C | HL | *P. Mean* "
+        "| LR | AR | RR | CSR | TR | *R. Mean* |",
+        "|-------|------|" + "----|" * 12,
+    ]
+    for method, off in officials.items():
+        cells = " | ".join(cell(off, d) for d in cols)
+        lines.append(f"| {method} | **{cell(off, 'Overall')}** | {cells} |")
+    lines += [
+        "",
+        "> ⚠️ 150-question stratified subset (TR/HL oversampled) — rows are NOT "
+        "directly comparable to published full-set (1,998-question) numbers; "
+        "use for internal method comparison, or re-run on the full set before "
+        "placing in the same table as leaderboard entries.",
+    ]
+    return lines
+
+
 def _mmbv_official_lines(results_by_method: dict[str, dict]) -> list[str]:
     """Official MMBench-Video rating tables (VLMEvalKit get_dimension_rating):
     multi-label coarse (9 L2 + Perception/Reasoning/Overall) and fine (26-leaf)
@@ -1200,6 +1231,7 @@ def _mmbv_official_lines(results_by_method: dict[str, dict]) -> list[str]:
         "± std over trials is an extension over the official single-run protocol. "
         "n = questions per bucket.",
     ]
+    lines += _mmbv_paper_lines(officials)
     for part, title in (("coarse", "L2 dimensions + rollups"), ("fine", "26 leaf capabilities")):
         lines += [
             "", f"### {title}", "",
