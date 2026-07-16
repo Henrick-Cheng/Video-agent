@@ -3,14 +3,14 @@
 > 数据：`benchmarks/mmbv_150.json`（150 题 / 136 视频，分层抽样 seed=42）×
 > {agent_v2, vlm_transcript@8, vlm_direct@8} × **runs=3**。
 > 评分：官方 VLMEvalKit 0–3 协议，judge = `qwen-max`（测试口径）。
-> Token / frames 全部真实 API usage。原始：`docs/benchmark_mmbv_final.json`。
+> Token / frames 全部真实 API usage。原始：`docs/results/benchmark_mmbv_final.json`。
 > **这是 mmbv 上的权威结果，可供论文 / 简历引用。**
 >
 > **2026-07 聚合修正**：维度聚合已从单标签（每题只计入主 L2）修正为官方
 > `get_dimension_rating` 多标签口径（每题计入其涉及的**每个**维度；26 leaf +
 > 9 L2 + Perception/Reasoning/Overall；all/valid 双口径）。总分不变（Overall(all)
 > 在数学上等于原 flat mean），**维度级数字以修正版为准**：
-> `docs/benchmark_mmbv_final_official_agg.{md,json}`（由
+> `docs/results/benchmark_mmbv_final_official_agg.{md,json}`（由
 > `scripts/reaggregate_mmbv.py` 对缓存结果零成本重聚合产出）。本文维度数字已同步更新。
 
 ## 总览（mean ± std over 3 runs）
@@ -24,8 +24,8 @@
 ## 论文版式表（gpt-4-turbo 判分口径 —— 论文引用以此为准）
 
 MMBench-Video 论文 Table-3 版式（0–3 分制，官方多标签 all 口径，两位小数）。
-出处：`docs/benchmark_mmbv_final_gpt4judge.md`（qwen-max 口径对应表见
-`benchmark_mmbv_final_official_agg.md`，两口径总分差 <0.015）。
+出处：`docs/results/benchmark_mmbv_final_gpt4judge.md`（qwen-max 口径对应表见
+`docs/results/benchmark_mmbv_final_official_agg.md`，两口径总分差 <0.015）。
 
 | Model | Overall Mean | CP | FP-S | FP-C | HL | *P. Mean* | LR | AR | RR | CSR | TR | *R. Mean* |
 |-------|------|----|----|----|----|----|----|----|----|----|----|----|
@@ -73,7 +73,7 @@ MMBench-Video 论文 Table-3 版式（0–3 分制，官方多标签 all 口径�
 
 ## 披露
 
-- ~~judge = qwen-max 自偏好风险~~ → **已被 gpt-4-turbo 重判证伪（2026-07-17）**：官方判分模型对缓存答案全量重判（1350 次），总分 agent_v2 1.978 / vlm_transcript 1.713 / vlm_direct 1.491——与 qwen-max 口径差均 <0.015，agent 领先反而微扩（0.257→0.265）；逐题判分一致率 0.76–0.81（判分噪声带）。**论文引用以 gpt-4-turbo 口径为准**：`docs/benchmark_mmbv_final_gpt4judge.{md,json}`（重判原始分：`benchmark_mmbv_final.rejudge_gpt-4-turbo.json`）。
+- ~~judge = qwen-max 自偏好风险~~ → **已被 gpt-4-turbo 重判证伪（2026-07-17）**：官方判分模型对缓存答案全量重判（1350 次），总分 agent_v2 1.978 / vlm_transcript 1.713 / vlm_direct 1.491——与 qwen-max 口径差均 <0.015，agent 领先反而微扩（0.257→0.265）；逐题判分一致率 0.76–0.81（判分噪声带）。**论文引用以 gpt-4-turbo 口径为准**：`docs/results/benchmark_mmbv_final_gpt4judge.{md,json}`（重判原始分：`benchmark_mmbv_final.rejudge_gpt-4-turbo.json`）。
 - 聚合口径：已对齐官方 `get_dimension_rating`（多标签、all/valid 双口径）；150 题为分层子集（TR/HL 超采、seed=42），**不可与官方 leaderboard 直接对标**（全量 1998 题待定）。
 - runs=3 ±std；成本：agent_v2 仍约基线 2.1×（卖点是帧效率 3.1 vs 8 + 90s+ 准确率，非成本）。
 

@@ -65,10 +65,10 @@ flowchart TD
 > - **Reversal survives noise**: agent_v2 − vlm_transcript = 0.257 > 0.121 (sum of both stds).
 > - **Clean attribution**: ASR modality +0.249 (vlm_direct→vlm_transcript), architecture +0.257 on top (same-modality control) — "it only wins because of the extra modality" is ruled out by data.
 > - **Comfort-zone boundary ≈90s**: parity under 90s; clear lead beyond it (90–180s: 2.10 vs 1.55; >180s: 2.05 vs 1.87).
-> - **Hallucination resistance**: official HL dimension 2.42±0.19 — **2.3×** the same-modality baseline (≈3.9× vs vlm_direct). An architectural property: answers must ground to evidence. (Dimension scores follow the official multi-label `get_dimension_rating` aggregation — see `docs/benchmark_mmbv_final_official_agg.md`.)
+> - **Hallucination resistance**: official HL dimension 2.42±0.19 — **2.3×** the same-modality baseline (≈3.9× vs vlm_direct). An architectural property: answers must ground to evidence. (Dimension scores follow the official multi-label `get_dimension_rating` aggregation — see `docs/results/benchmark_mmbv_final_official_agg.md`.)
 > - **Frame efficiency**: 3.1 frames/question beats 8; of 150 questions, 81 answered from free retrieval alone, 69 self-escalated to exploration — perception budget allocated on demand.
 >
-> ✅ **Judge cross-validation**: a full `gpt-4-turbo` re-judge of the cached answers (the official-protocol judge) yields 1.98 / 1.71 / 1.49 — within 0.015 of the `qwen-max` numbers (per-question agreement 0.76–0.81), refuting the Qwen-judging-Qwen self-preference concern; paper-grade numbers use the gpt-4-turbo run ([`docs/benchmark_mmbv_final_gpt4judge.md`](docs/benchmark_mmbv_final_gpt4judge.md)). An annotation audit (n=30) shows 97% of gold answers are evidence-supported, so the gap to 3.0 is mostly model capability, not label noise. Full analysis: [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md).
+> ✅ **Judge cross-validation**: a full `gpt-4-turbo` re-judge of the cached answers (the official-protocol judge) yields 1.98 / 1.71 / 1.49 — within 0.015 of the `qwen-max` numbers (per-question agreement 0.76–0.81), refuting the Qwen-judging-Qwen self-preference concern; paper-grade numbers use the gpt-4-turbo run ([`docs/results/benchmark_mmbv_final_gpt4judge.md`](docs/results/benchmark_mmbv_final_gpt4judge.md)). An annotation audit (n=30) shows 97% of gold answers are evidence-supported, so the gap to 3.0 is mostly model capability, not label noise. Full analysis: [`docs/analysis/benchmark_mmbv_final_analysis.md`](docs/analysis/benchmark_mmbv_final_analysis.md).
 
 ---
 
@@ -112,7 +112,7 @@ One codebase, one config line to switch backends: **DashScope cloud** (`qwen-plu
 - **Fair baseline**: `vlm_transcript` = same frame count + narration text in the prompt, separating the "extra modality" variable from the "architecture" variable.
 - **New metric**: `frames-touched/Q` — frames actually sent to the vision model per question, measuring guided perception budget.
 
-Reports: [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md) (**runs=3, authoritative**) · [`docs/benchmark_mmbv_v2_analysis.md`](docs/benchmark_mmbv_v2_analysis.md) (v2 runs=1 detail) · [`docs/benchmark_v2_agqa.md`](docs/benchmark_v2_agqa.md) (AGQA gate: duration 0.682, 5× vlm).
+Reports: [`docs/analysis/benchmark_mmbv_final_analysis.md`](docs/analysis/benchmark_mmbv_final_analysis.md) (**runs=3, authoritative**) · [`docs/archive/benchmark_mmbv_v2_analysis.md`](docs/archive/benchmark_mmbv_v2_analysis.md) (v2 runs=1 detail) · [`docs/results/benchmark_v2_agqa.md`](docs/results/benchmark_v2_agqa.md) (AGQA gate: duration 0.682, 5× vlm).
 
 ---
 
@@ -175,7 +175,7 @@ Honest assessment — each with its improvement path.
 
 | Limitation | Detail | Path |
 |------|------|---------|
-| ~~Judge is qwen-max~~ | ✅ Resolved (2026-07-17): full gpt-4-turbo re-judge, totals within 0.015, agreement 0.76–0.81 — self-preference refuted | Paper numbers use the gpt-4-turbo run (`docs/benchmark_mmbv_final_gpt4judge.md`) |
+| ~~Judge is qwen-max~~ | ✅ Resolved (2026-07-17): full gpt-4-turbo re-judge, totals within 0.015, agreement 0.76–0.81 — self-preference refuted | Paper numbers use the gpt-4-turbo run (`docs/results/benchmark_mmbv_final_gpt4judge.md`) |
 | **Gradio frontend not on v2** | `main.py` and the API run v2; the Gradio UI still drives v1 and is stale | port the frontend to the v2 path, or treat CLI/API as the product entry |
 | **Hard boundary on narration-dependent questions** | "what did they say" answers live in the audio track; TR-dimension gains come mostly from ASR, not architecture | ASR is in L0; next is time-aligned cross-retrieval of narration × visuals |
 | **Confidence self-assessment is occasionally overconfident** | "related but insufficient evidence in the graph" can trigger a direct answer instead of escalation | refine the criterion from "is there related evidence" to "does the evidence support this question type's reasoning" |
@@ -189,7 +189,7 @@ Honest assessment — each with its improvement path.
 Ordered by return on effort; full tiering in [`docs/progress.md`](docs/progress.md) (Phase 14).
 
 1. **Second-benchmark reproduction** (P0) — the mmbv line is closed (runs=3 noise-robust, cheap levers exhausted); stronger evidence means reproducing the same reversal on EgoSchema / Video-MME long, not squeezing this subset.
-2. ~~**gpt-4-turbo re-judge** (P0)~~ — ✅ Done (2026-07-17): official-protocol judge confirms all conclusions (totals within 0.015); see `docs/benchmark_mmbv_final_gpt4judge.md`.
+2. ~~**gpt-4-turbo re-judge** (P0)~~ — ✅ Done (2026-07-17): official-protocol judge confirms all conclusions (totals within 0.015); see `docs/results/benchmark_mmbv_final_gpt4judge.md`.
 3. **Highlight experiments** (P1) — multi-turn reference resolution (agent-only cross-question memory) + temporal localization precision (graph-only explicit timeline).
 4. **Confidence criterion refinement + narration-visual time alignment** (P2).
 

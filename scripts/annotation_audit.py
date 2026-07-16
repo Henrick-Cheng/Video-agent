@@ -100,8 +100,8 @@ def main() -> None:
 
     json.dump({"tally": tally, "n": n, "seed": args.seed, "rows": rows,
                "ceiling_proxy": round(ceiling, 3)},
-              open("docs/annotation_audit.json", "w"), ensure_ascii=False, indent=2)
-    print("saved → docs/annotation_audit.json")
+              open("docs/results/annotation_audit.json", "w"), ensure_ascii=False, indent=2)
+    print("saved → docs/results/annotation_audit.json")
 
 
 if __name__ == "__main__":

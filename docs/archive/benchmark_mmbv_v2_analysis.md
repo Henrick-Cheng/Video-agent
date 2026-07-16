@@ -6,9 +6,9 @@
 > 下方"gpt-4-turbo 重评待做"已于 2026-07-17 完成，自偏好被证伪。本文数字为当期历史记录，不回改。
 
 > 数据：mmbv_150 × {agent_v2, vlm_transcript@8帧} × runs=1（qwen-max judge，官方
-> VLMEvalKit 协议；v1 各方法引用 `docs/benchmark_mmbv.json` 同口径数据）。
+> VLMEvalKit 协议；v1 各方法引用 `docs/archive/benchmark_mmbv.json` 同口径数据）。
 > Token / frames 全部真实计量；judge 失败 0/300。
-> 原始记录：`docs/benchmark_mmbv_v2.json`。
+> 原始记录：`docs/archive/benchmark_mmbv_v2.json`。
 
 ## 总览
 

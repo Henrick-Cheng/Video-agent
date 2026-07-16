@@ -1,17 +1,17 @@
 """Re-judge cached mmbv answers with a paper-grade judge (e.g. gpt-4-turbo).
 
 Zero inference cost: reads the answers already produced by run_benchmark
-(docs/benchmark_mmbv_final.json) and only re-runs the MMBench-Video judge with
+(docs/results/benchmark_mmbv_final.json) and only re-runs the MMBench-Video judge with
 a different JUDGE_* endpoint. Reports the new judge's mean per method and its
 agreement with the original scores (judge-noise band), and dumps a raw-structure
 copy with the re-judged scores so scripts/reaggregate_mmbv.py can produce the
 full official (multi-label) dimension breakdown from it:
 
-    python -m scripts.reaggregate_mmbv docs/benchmark_mmbv_final.rejudge_gpt-4-turbo.json
+    python -m scripts.reaggregate_mmbv docs/results/benchmark_mmbv_final.rejudge_gpt-4-turbo.json
 
 Usage (OPENAI_API_KEY stored in .env; a gpt-* JUDGE_MODEL auto-selects the
 OpenAI endpoint + that key, so one variable switches the judge):
-    JUDGE_MODEL=gpt-4-turbo python -m scripts.rejudge_gpt4 docs/benchmark_mmbv_final.json
+    JUDGE_MODEL=gpt-4-turbo python -m scripts.rejudge_gpt4 docs/results/benchmark_mmbv_final.json
 
 Explicit JUDGE_BASE_URL / JUDGE_API_KEY still override (e.g. a GPT proxy).
 """
@@ -24,7 +24,7 @@ from src.eval.run_benchmark import _judge_mmbv, _judge_model
 
 
 def main() -> None:
-    path = sys.argv[1] if len(sys.argv) > 1 else "docs/benchmark_mmbv_final.json"
+    path = sys.argv[1] if len(sys.argv) > 1 else "docs/results/benchmark_mmbv_final.json"
     bench = sys.argv[2] if len(sys.argv) > 2 else "benchmarks/mmbv_150.json"
     data = json.load(open(path))
     raw = copy.deepcopy(data["raw"])

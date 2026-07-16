@@ -15,7 +15,7 @@ Usage:
         --benchmark benchmarks/cn_video_qa_v1.json \\
         --runs 3 \\
         --methods agent,rag_only,vlm_direct \\
-        --output docs/benchmark_results.md
+        --output docs/results/benchmark_results.md
 """
 
 from __future__ import annotations
@@ -1443,7 +1443,7 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
             "the first yes/no, others require normalized equality (length-guarded). Verbose answers "
             "(e.g. the ReAct agent) are reduced to their canonical short form by a deterministic "
             "extraction step before EM. NOTE: extraction is unreliable on open/'X or Y' questions "
-            "(see docs/em_vs_agent_analysis.md) — treat non-binary EM as a conservative reference"
+            "(see docs/analysis/em_vs_agent_analysis.md) — treat non-binary EM as a conservative reference"
         )
     lines.append(f"- Each method ran {n_runs} independent trials; mean ± std reported over trials")
     return "\n".join(lines)
@@ -1461,7 +1461,7 @@ def main() -> None:
     parser.add_argument("--benchmark", default="benchmarks/cn_video_qa_v1.json")
     parser.add_argument("--methods", default="agent,rag_only,vlm_direct")
     parser.add_argument("--runs", type=int, default=3)
-    parser.add_argument("--output", default="docs/benchmark_results.md")
+    parser.add_argument("--output", default="docs/results/benchmark_results.md")
     parser.add_argument(
         "--categories",
         default="",

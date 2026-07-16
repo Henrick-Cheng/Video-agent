@@ -10,7 +10,7 @@
 > 评分：官方 VLMEvalKit 协议复刻（0-3 语义相似度），judge=qwen-max（测试口径；
 > 论文口径将经 JUDGE_* 切 gpt-4-turbo 重评缓存答案）。judge 失败 0/600。
 > Token 全部为真实 API usage。本次总消耗 ~8.6M tokens。
-> 原始逐题记录：`docs/benchmark_mmbv.json`；标准报表：`docs/benchmark_mmbv.md`。
+> 原始逐题记录：`docs/archive/benchmark_mmbv.json`；标准报表：`docs/archive/benchmark_mmbv.md`。
 
 ## 总览
 

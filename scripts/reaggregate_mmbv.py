@@ -11,9 +11,9 @@ Also accepts the raw-copy output of scripts/rejudge_gpt4.py, so a gpt-4-turbo
 re-judge gets the same official breakdown.
 
 Usage:
-    python -m scripts.reaggregate_mmbv docs/benchmark_mmbv_final.json \
+    python -m scripts.reaggregate_mmbv docs/results/benchmark_mmbv_final.json \
         --benchmark benchmarks/mmbv_150.json \
-        --output docs/benchmark_mmbv_final_official_agg.md
+        --output docs/results/benchmark_mmbv_final_official_agg.md
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from src.eval.run_benchmark import _aggregate, _build_report
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Official (multi-label) re-aggregation of cached mmbv results")
-    parser.add_argument("results", nargs="?", default="docs/benchmark_mmbv_final.json",
+    parser.add_argument("results", nargs="?", default="docs/results/benchmark_mmbv_final.json",
                         help="raw results JSON produced by run_benchmark (or rejudge_gpt4)")
     parser.add_argument("--benchmark", default="benchmarks/mmbv_150.json",
                         help="benchmark JSON supplying per-question dimensions")

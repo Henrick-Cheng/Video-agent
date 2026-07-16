@@ -49,7 +49,7 @@
 - 5.6 Ablations & negative results：oracle routing 证伪（选择偏差）、caption 加密证伪（能力天花板）——写成"剩余差距的归因"，这是方法论亮点不是失败记录。
 - 5.7 AGQA transfer（70 题，duration 0.682 强项 + open/sequencing 弱项如实）。
 - 5.8 Annotation audit（n=30，97%）+ **Threats to validity**：子集规模（构成偏差已按官方分布重加权量化 ≤0.04）、单 benchmark；judge 自偏好已由 gpt-4-turbo 全量重判证伪（总分差 <0.015、一致率 0.76–0.81）——写成已消除的 threat + 交叉验证方法，是加分素材而非坦白项。
-- 5.9 Case study（1-2 个真实 trace：search→confidence 不足→explore→带溯源作答；从 benchmark_mmbv_final.json 里挑）。
+- 5.9 Case study（1-2 个真实 trace：search→confidence 不足→explore→带溯源作答；从 results/benchmark_mmbv_final.json 里挑）。
 
 ### Ch.6 Conclusion & Future Work（~5%）
 结论按三个 RQ 收口；future work 直接用 roadmap：第二基准复现（EgoSchema/Video-MME long）、MMBench-Video 全量 1998 题（可对标公开榜）、embedding 检索（附架构调研的"为什么现在不动"论证）、多轮指代/时序定位亮点实验、小时级外推。（gpt-4 judge 已完成，移出 future work。）
@@ -65,7 +65,7 @@ A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（
 | Ch.2.4 定位表 | review §2.2（撞车风险表展开成文） |
 | Ch.3 | progress.md Phase 12-13、README「为什么是 v2」 |
 | Ch.4 | docs/architecture.md、README 核心设计、builder.py/react_agent.py（配图与伪代码） |
-| Ch.5 | **benchmark_mmbv_final_analysis.md（叙事取数源）+ benchmark_mmbv_final_gpt4judge.md（论文口径维度全表）+ benchmark_mmbv_final_official_agg.md（qwen 口径对照）**、benchmark_mmbv_final.json（case study 原始 trace）、benchmark_v2_agqa.md、annotation_audit.json、progress.md §14.1/14.2（负结果） |
+| Ch.5 | **analysis/benchmark_mmbv_final_analysis.md（叙事取数源）+ results/benchmark_mmbv_final_gpt4judge.md（论文口径维度全表）+ results/benchmark_mmbv_final_official_agg.md（qwen 口径对照）**、results/benchmark_mmbv_final.json（case study 原始 trace）、results/benchmark_v2_agqa.md、results/annotation_audit.json、progress.md §14.1/14.2（负结果） |
 | Ch.6 | review §5 roadmap、architecture_review_202607.md |
 
 ## 3. 写作顺序（按依赖关系，不按章节号）
@@ -73,7 +73,7 @@ A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（
 1. **先画图后动笔**：把全文 6-8 张图先做出来——架构图、时长桶折线（money chart）、归因柱状、维度对比、frames-touched、case study trace 图。图定了，Ch.4/5 的文字就是给图配说明。
 2. **Ch.5 先写**（数据全在、表格现成，最不需要灵感）→ **Ch.4**（对着代码写，最熟）→ **Ch.3**（progress.md 改写）→ **Ch.2**（读文献最耗时，穿插做）→ **Ch.1 与 Abstract 最后写**（等你知道全文到底证明了什么）。
 3. 每写完一章给导师/postdoc 过一轮，不要憋大招到最后。
-4. ~~gpt-4 重评若在提交前完成……~~ ✅ 已完成（2026-07-17）：全文数字以 gpt-4-turbo 口径为准（`benchmark_mmbv_final_gpt4judge.md`），qwen-max 口径作稳健性对照；答辩口径见 review Q6（已改写为进攻题）。
+4. ~~gpt-4 重评若在提交前完成……~~ ✅ 已完成（2026-07-17）：全文数字以 gpt-4-turbo 口径为准（`results/benchmark_mmbv_final_gpt4judge.md`），qwen-max 口径作稳健性对照；答辩口径见 review Q6（已改写为进攻题）。
 
 ## 4. 避坑（与 review 面试纪律同源）
 

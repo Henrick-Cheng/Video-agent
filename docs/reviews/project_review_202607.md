@@ -37,7 +37,7 @@
 ### 1.4 结果数据备忘（面试/论文引用统一从这里取）
 
 > 维度级数字自 2026-07 起以官方 `get_dimension_rating` 多标签口径为准；
-> **论文级引用以 gpt-4-turbo 判分口径为准**（`docs/benchmark_mmbv_final_gpt4judge.md`：
+> **论文级引用以 gpt-4-turbo 判分口径为准**（`docs/results/benchmark_mmbv_final_gpt4judge.md`：
 > 总分 1.978 / 1.713 / 1.491，gap 0.265）。qwen-max 口径（本节下方数字）与其差均
 > <0.015、逐题一致率 0.76–0.81 —— 自偏好质疑已被交叉验证证伪，两口径可互为稳健性证据。
 > 时长桶/归因等派生分析仍基于 qwen 口径原始分。
@@ -152,7 +152,7 @@
 1. ✅ **FastAPI 薄封装** — `src/api/app.py`：会话管理（prepare_l0）、/ask（共享 pseudo-call 重试）、SSE 流式 trace、DELETE 清理帧目录、per-session 锁；7 个离线行为测试（mock 契约）。
 2. ✅ **Dockerfile** — 瘦身镜像（requirements-serve.txt，无 torch/vllm/ASR），mock 模式无 key 可跑；本机无 docker daemon，首次 `docker build` 待用户验证。
 3. ✅ **英文版 README** — README.md 英文为主页，中文保留为 README.zh.md，双向语言链接，均含 API+Docker quick start。
-（配套：架构调研落档 `docs/architecture_review_202607.md`——行为中立项已修/列 P2，行为改变项明确不做以保持代码与 runs=3 数字对应。）
+（配套：架构调研落档 `docs/reviews/architecture_review_202607.md`——行为中立项已修/列 P2，行为改变项明确不做以保持代码与 runs=3 数字对应。）
 
 **T2 — 有余力再做（面试深挖时加分）**
 4. Gradio 前端接 v2（复用 main.py 的接线模式，~半天）——有可视化 demo 面试冲击力强。
@@ -342,4 +342,4 @@
 
 ---
 
-*本报告与 `docs/benchmark_mmbv_final_analysis.md`（权威数据源）、`docs/progress.md`（演进史）配套使用；简历与面试引用数字一律以 §1.4 为准。*
+*本报告与 `docs/analysis/benchmark_mmbv_final_analysis.md`（权威数据源）、`docs/progress.md`（演进史）配套使用；简历与面试引用数字一律以 §1.4 为准。*
