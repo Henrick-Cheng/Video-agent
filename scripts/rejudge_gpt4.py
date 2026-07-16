@@ -2,8 +2,12 @@
 
 Zero inference cost: reads the answers already produced by run_benchmark
 (docs/benchmark_mmbv_final.json) and only re-runs the MMBench-Video judge with
-a different JUDGE_* endpoint. Reports the gpt-4 mean per method and its
-agreement with the original qwen-max scores (judge-noise band).
+a different JUDGE_* endpoint. Reports the new judge's mean per method and its
+agreement with the original scores (judge-noise band), and dumps a raw-structure
+copy with the re-judged scores so scripts/reaggregate_mmbv.py can produce the
+full official (multi-label) dimension breakdown from it:
+
+    python -m scripts.reaggregate_mmbv docs/benchmark_mmbv_final.rejudge_gpt-4-turbo.json
 
 Usage (when an OpenAI key is available):
     JUDGE_BASE_URL=https://api.openai.com/v1 \
@@ -11,6 +15,7 @@ Usage (when an OpenAI key is available):
     JUDGE_API_KEY=sk-... \
     python -m scripts.rejudge_gpt4 docs/benchmark_mmbv_final.json
 """
+import copy
 import json
 import sys
 from statistics import mean
@@ -22,7 +27,7 @@ def main() -> None:
     path = sys.argv[1] if len(sys.argv) > 1 else "docs/benchmark_mmbv_final.json"
     bench = sys.argv[2] if len(sys.argv) > 2 else "benchmarks/mmbv_150.json"
     data = json.load(open(path))
-    raw = data["raw"]
+    raw = copy.deepcopy(data["raw"])
     # raw dump stores no reference_answer — join gold from the benchmark by id.
     gold = {q["id"]: q["reference_answer"] for q in json.load(open(bench))}
     judge = _judge_model()
@@ -36,6 +41,7 @@ def main() -> None:
                 gpt = _judge_mmbv(r["question"], gold.get(r["id"], ""),
                                   r["answer"])
                 old = r["scores"].get("mmbv", -1)
+                r["scores"]["mmbv"] = gpt  # raw -1 convention preserved
                 new_all.append(max(gpt, 0))
                 # exact-integer agreement with the original judge
                 if gpt == old:
@@ -49,9 +55,15 @@ def main() -> None:
         print(f"{method:16s} {judge} mean={out[method][f'{judge}_mean']:.3f}  "
               f"agreement={out[method]['exact_agreement_with_orig']:.3f}")
 
-    json.dump(out, open(path.replace(".json", f".rejudge_{judge}.json"), "w"),
+    summary_path = path.replace(".json", f".rejudge_{judge}.summary.json")
+    json.dump(out, open(summary_path, "w"), ensure_ascii=False, indent=2)
+
+    # Raw-structure copy with the re-judged scores — reaggregate_mmbv input.
+    raw_path = path.replace(".json", f".rejudge_{judge}.json")
+    meta = {**data.get("meta", {}), "judge_model": judge, "rejudged_from": path}
+    json.dump({"meta": meta, "raw": raw}, open(raw_path, "w"),
               ensure_ascii=False, indent=2)
-    print(f"\nsaved → {path.replace('.json', f'.rejudge_{judge}.json')}")
+    print(f"\nsummary → {summary_path}\nraw     → {raw_path}")
 
 
 if __name__ == "__main__":

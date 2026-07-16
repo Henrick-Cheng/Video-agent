@@ -942,6 +942,10 @@ def run_trial(
                 "id": qa["id"],
                 "video": v,
                 "category": qa["category"],
+                # Multi-label leaf capabilities (MMBench-Video). The official
+                # aggregation counts a question in EVERY dimension it touches,
+                # unlike the single-label "category" above.
+                "dimensions": (qa.get("_source") or {}).get("dimensions", []),
                 "question": q,
                 "answer": answer,
                 "answer_short": answer_short,
@@ -1008,6 +1012,85 @@ def _aggregate_scorer(all_trials: list[list[dict]], scorer: str,
     }
 
 
+# ── MMBench-Video official aggregation (VLMEvalKit get_dimension_rating) ──────
+
+def _mmbv_official_buckets() -> tuple[dict[str, list[str]], list[str]]:
+    """Official rating buckets, built exactly as VLMEvalKit's
+    utils/mmbench_video.py does: the 9 L2 dims plus Perception (CP+FP-C+FP-S+HL),
+    Reasoning (LR+AR+RR+CSR+TR) and Overall rollups; plus the flat leaf list
+    (L3_DIMS) used for the fine-grained rating."""
+    from src.eval.build_mmbench_video import MMV_DIMENSIONS
+
+    coarse: dict[str, list[str]] = {k: list(v) for k, v in MMV_DIMENSIONS.items()}
+    coarse["Perception"] = [
+        leaf for k in ("CP", "FP-C", "FP-S", "HL") for leaf in MMV_DIMENSIONS[k]]
+    coarse["Reasoning"] = [
+        leaf for k in ("LR", "AR", "RR", "CSR", "TR") for leaf in MMV_DIMENSIONS[k]]
+    coarse["Overall"] = coarse["Perception"] + coarse["Reasoning"]
+    fine = [leaf for leaves in MMV_DIMENSIONS.values() for leaf in leaves]
+    return coarse, fine
+
+
+def _aggregate_mmbv_official(all_trials: list[list[dict]]) -> Optional[dict]:
+    """Multi-label aggregation replicating VLMEvalKit's get_dimension_rating.
+
+    Each question counts toward EVERY leaf capability in its `dimensions` list
+    (fine, 26 leaves) and every coarse bucket whose leaf set it intersects
+    (9 L2 dims + Perception/Reasoning/Overall). Two variants, per the official
+    code: 'all' = mean(max(score, 0)) — judge failures (-1) count as 0;
+    'valid' = mean over scores >= 0 only. Scores stay on the 0-3 scale.
+    Extensions over the official single-run protocol (disclosed in the report):
+    mean ± std over trials, and per-bucket sample counts n / n_valid.
+
+    Returns None when rows carry no leaf labels (non-MMBench-Video benchmark).
+    """
+    if not any(r.get("dimensions") for trial in all_trials for r in trial):
+        return None
+
+    coarse_buckets, fine_dims = _mmbv_official_buckets()
+
+    def _bucket_scores(trial: list[dict]) -> tuple[dict, dict]:
+        coarse = {k: [] for k in coarse_buckets}
+        fine = {k: [] for k in fine_dims}
+        for r in trial:
+            score = r.get("scores", {}).get("mmbv", -1.0)
+            cates = r.get("dimensions") or []
+            for c in cates:
+                if c in fine:
+                    fine[c].append(score)
+            for d, leaves in coarse_buckets.items():
+                if any(x in leaves for x in cates):
+                    coarse[d].append(score)
+        return coarse, fine
+
+    per_trial = [_bucket_scores(trial) for trial in all_trials]
+
+    def _stats(bucket_key: str, which: int) -> dict:
+        counts = [len(t[which][bucket_key]) for t in per_trial]
+        all_means, valid_means, n_valids = [], [], []
+        for t in per_trial:
+            scores = t[which][bucket_key]
+            if scores:
+                all_means.append(_mean([max(x, 0.0) for x in scores]))
+            valid = [x for x in scores if x >= 0]
+            n_valids.append(len(valid))
+            if valid:
+                valid_means.append(_mean(valid))
+        return {
+            "n": max(counts) if counts else 0,
+            "n_valid": max(n_valids) if n_valids else 0,
+            "all_mean": round(_mean(all_means), 3) if all_means else None,
+            "all_std": round(_std(all_means), 3) if all_means else None,
+            "valid_mean": round(_mean(valid_means), 3) if valid_means else None,
+            "valid_std": round(_std(valid_means), 3) if valid_means else None,
+        }
+
+    return {
+        "coarse": {k: _stats(k, 0) for k in coarse_buckets},
+        "fine": {k: _stats(k, 1) for k in fine_dims},
+    }
+
+
 def _aggregate(all_trials: list[list[dict]],
                scorers: tuple[str, ...] = SCORERS) -> dict:
     """Aggregate multiple trial result lists into per-scorer mean/std stats."""
@@ -1017,7 +1100,9 @@ def _aggregate(all_trials: list[list[dict]],
         _mean([r["tool_calls"] for r in trial]) for trial in all_trials
     ]
     time_per_trial = [
-        _mean([r["time_sec"] for r in trial]) for trial in all_trials
+        # .get: raw JSON dumps omit time_sec, and offline re-aggregation
+        # (scripts/reaggregate_mmbv.py) feeds those rows back through here.
+        _mean([r.get("time_sec", 0.0) for r in trial]) for trial in all_trials
     ]
     tokens_per_q = [
         _mean([r["tokens"] for r in trial]) for trial in all_trials
@@ -1029,7 +1114,7 @@ def _aggregate(all_trials: list[list[dict]],
         _mean([r.get("frames_touched", 0) for r in trial]) for trial in all_trials
     ]
 
-    return {
+    agg = {
         "scorers": {s: _aggregate_scorer(all_trials, s, categories) for s in scorers},
         "avg_tool_calls": round(_mean(tool_calls_per_trial), 1),
         "avg_time_sec":   round(_mean(time_per_trial), 1),
@@ -1040,6 +1125,11 @@ def _aggregate(all_trials: list[list[dict]],
         "avg_total_tokens_per_q": int(_mean(tokens_per_q) + _mean(prebuild_per_q)),
         "avg_frames_per_q": round(_mean(frames_per_q), 1),
     }
+    if "mmbv" in scorers:
+        official = _aggregate_mmbv_official(all_trials)
+        if official:
+            agg["mmbv_official"] = official
+    return agg
 
 
 # ── Report generation ─────────────────────────────────────────────────────────
@@ -1064,6 +1154,53 @@ _SCORER_LABELS = {
     "exact": "exact-match",
     "mmbv":  "MMBench-Video official (0-3)",
 }
+
+
+def _mmbv_cell(st: dict) -> str:
+    """`all / valid` cell for one method × dimension (official dual variant)."""
+    if st["n"] == 0 or st["all_mean"] is None:
+        return "—"
+    cell = f"{st['all_mean']:.2f}±{st['all_std']:.2f}"
+    if st["valid_mean"] is not None:
+        cell += f" / {st['valid_mean']:.2f}"
+        if st["n_valid"] < st["n"]:
+            cell += f" (v{st['n_valid']})"
+    return cell
+
+
+def _mmbv_official_lines(results_by_method: dict[str, dict]) -> list[str]:
+    """Official MMBench-Video rating tables (VLMEvalKit get_dimension_rating):
+    multi-label coarse (9 L2 + Perception/Reasoning/Overall) and fine (26-leaf)
+    breakdowns, each cell showing the all / valid variants."""
+    officials = {m: agg["mmbv_official"] for m, agg in results_by_method.items()
+                 if agg.get("mmbv_official")}
+    if not officials:
+        return []
+    methods = list(officials.keys())
+    first = next(iter(officials.values()))
+
+    lines = [
+        "", "## MMBench-Video Official Rating (multi-label, 0-3)", "",
+        "> VLMEvalKit `get_dimension_rating` semantics: each question counts toward "
+        "**every** dimension it is tagged with (a question can appear in several rows). "
+        "Cell = `all / valid` mean: *all* scores judge failures as 0 (official leaderboard "
+        "variant); *valid* excludes them (`(vN)` marks buckets with failures). "
+        "± std over trials is an extension over the official single-run protocol. "
+        "n = questions per bucket.",
+    ]
+    for part, title in (("coarse", "L2 dimensions + rollups"), ("fine", "26 leaf capabilities")):
+        lines += [
+            "", f"### {title}", "",
+            "| Dimension | n | " + " | ".join(methods) + " |",
+            "|-----------|---|" + "---------|" * len(methods),
+        ]
+        for dim, st0 in first[part].items():
+            if all(officials[m][part][dim]["n"] == 0 for m in methods):
+                continue  # leaf absent from this benchmark subset
+            cells = " | ".join(_mmbv_cell(officials[m][part][dim]) for m in methods)
+            bold = "**" if part == "coarse" and dim in ("Perception", "Reasoning", "Overall") else ""
+            lines.append(f"| {bold}{dim}{bold} | {st0['n']} | {cells} |")
+    return lines
 
 
 def _per_video_lines(raw_by_method: dict[str, list[list[dict]]],
@@ -1188,6 +1325,11 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
     first_agg = next(iter(results_by_method.values()))
     categories = list(first_agg["scorers"][scorers[0]]["by_category"].keys())
     for s in scorers:
+        if s == "mmbv":
+            official = _mmbv_official_lines(results_by_method)
+            if official:
+                lines += official
+                continue
         lines += ["", f"## Per-Category Accuracy — {_SCORER_LABELS.get(s, s)}", ""]
         lines += [
             "| Category | " + " | ".join(results_by_method.keys()) + " |",
@@ -1244,9 +1386,12 @@ def _build_report(results_by_method: dict[str, dict], n_runs: int,
     if "mmbv" in scorers:
         lines.append(
             f"- **MMBench-Video official (0-3)**: VLMEvalKit protocol replicated verbatim "
-            f"(semantic-similarity integer 0-3, mean aggregation, judge failures → 0 per the "
-            f"official 'all' variant; raw -1 kept in JSON). Judge model: `{_judge_model()}` "
-            "(official protocol uses gpt-4-turbo; swap via JUDGE_MODEL for paper numbers)"
+            f"(semantic-similarity integer 0-3; multi-label `get_dimension_rating` "
+            f"aggregation with all/valid variants; judge failures → 0 in 'all', raw -1 "
+            f"kept in JSON). Judge model: `{_judge_model()}` "
+            "(official protocol uses gpt-4-turbo; swap via JUDGE_MODEL for paper numbers). "
+            "Any run on fewer than the full 1,998 questions is a subset — NOT comparable "
+            "to the official leaderboard"
         )
     if "exact" in scorers:
         lines.append(
@@ -1427,7 +1572,7 @@ def main() -> None:
         method: [
             [
                 {k: r.get(k) for k in
-                 ("id", "video", "category", "question", "answer",
+                 ("id", "video", "category", "dimensions", "question", "answer",
                   "answer_short", "scores", "tool_calls", "tokens",
                   "tokens_llm", "tokens_vl", "frames_touched", "prebuild_share")}
                 for r in trial
