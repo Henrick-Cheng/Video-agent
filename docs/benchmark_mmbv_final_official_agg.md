@@ -1,33 +1,65 @@
 # Benchmark Results
 
-> ⚠️ **已被取代（2026-07）**：本报告的 Per-Category 表是旧的单标签聚合（每题只计入主 L2），
-> 与官方 MMBench-Video 协议不符。维度级数字请以官方多标签口径的
-> `benchmark_mmbv_final_official_agg.md` 为准（同一批缓存答案与判分重新聚合，
-> 总分 1.984/1.727/1.478 不变）。本文件保留供审计。
-
-> Video: `136 videos`  |  Benchmark: `benchmarks/mmbv_150.json`  |  Runs: 3  |  Generated: 2026-06-21 16:09
+> Video: `136 videos`  |  Benchmark: `benchmarks/mmbv_150.json`  |  Runs: 3  |  Generated: 2026-07-17 00:40
 
 ## Overall Accuracy
 
 | Method | Acc · MMBench-Video official (0-3) | Avg Tool Calls | Avg Time (s) | Frames/Q | Tokens/Q (answer) | + Prebuild/Q | = Total/Q |
 |--------|----|----------------|--------------|------|------|------|------|
-| **agent_v2** | 1.984 ± 0.101 | 1.7 | 21.8 | 3.6 | 10546 | 6108 | 16655 |
-| **vlm_transcript** | 1.727 ± 0.020 | — | 3.4 | 8.0 | 7299 | — | 7299 |
-| **vlm_direct** | 1.478 ± 0.025 | — | 3.7 | 8.0 | 6748 | — | 6748 |
+| **agent_v2** | 1.984 ± 0.101 | 1.7 | 0.0 | 3.6 | 10546 | 6108 | 16655 |
+| **vlm_transcript** | 1.727 ± 0.020 | — | 0.0 | 8.0 | 7299 | — | 7299 |
+| **vlm_direct** | 1.478 ± 0.025 | — | 0.0 | 8.0 | 6748 | — | 6748 |
 
-## Per-Category Accuracy — MMBench-Video official (0-3)
+## MMBench-Video Official Rating (multi-label, 0-3)
 
-| Category | agent_v2 | vlm_transcript | vlm_direct |
-|----------|---------|---------|---------|
-| HL | 2.422±0.191 | 1.044±0.137 | 0.622±0.126 |
-| CSR | 2.333±0.068 | 2.472±0.039 | 2.444±0.039 |
-| FP-S | 2.040±0.182 | 1.667±0.038 | 1.427±0.019 |
-| CP | 2.244±0.126 | 1.600±0.000 | 1.578±0.063 |
-| LR | 2.200±0.245 | 1.900±0.000 | 1.567±0.047 |
-| RR | 2.000±0.117 | 2.119±0.034 | 1.762±0.034 |
-| TR | 1.544±0.150 | 1.767±0.094 | 1.367±0.027 |
-| FP-C | 1.489±0.083 | 0.756±0.063 | 0.644±0.031 |
-| AR | 2.143±0.101 | 2.500±0.000 | 2.333±0.034 |
+> VLMEvalKit `get_dimension_rating` semantics: each question counts toward **every** dimension it is tagged with (a question can appear in several rows). Cell = `all / valid` mean: *all* scores judge failures as 0 (official leaderboard variant); *valid* excludes them (`(vN)` marks buckets with failures). ± std over trials is an extension over the official single-run protocol. n = questions per bucket.
+
+### L2 dimensions + rollups
+
+| Dimension | n | agent_v2 | vlm_transcript | vlm_direct |
+|-----------|---|---------|---------|---------|
+| CP | 17 | 2.25±0.10 / 2.25 | 1.63±0.03 / 1.63 | 1.57±0.06 / 1.57 |
+| FP-S | 36 | 2.06±0.16 / 2.06 | 1.73±0.04 / 1.73 | 1.55±0.01 / 1.55 |
+| FP-C | 17 | 1.39±0.12 / 1.39 | 0.78±0.06 / 0.78 | 0.61±0.06 / 0.61 |
+| HL | 15 | 2.42±0.19 / 2.42 | 1.04±0.14 / 1.04 | 0.62±0.13 / 0.62 |
+| LR | 11 | 2.21±0.30 / 2.21 | 1.85±0.04 / 1.85 | 1.61±0.04 / 1.61 |
+| AR | 14 | 2.14±0.10 / 2.14 | 2.50±0.00 / 2.50 | 2.33±0.03 / 2.33 |
+| RR | 14 | 2.00±0.12 / 2.00 | 2.12±0.03 / 2.12 | 1.76±0.03 / 1.76 |
+| CSR | 13 | 2.23±0.13 / 2.23 | 2.36±0.04 / 2.36 | 2.31±0.00 / 2.31 |
+| TR | 33 | 1.68±0.14 / 1.68 | 1.88±0.09 / 1.88 | 1.51±0.03 / 1.51 |
+| **Perception** | 78 | 2.06±0.12 / 2.06 | 1.40±0.04 / 1.40 | 1.22±0.05 / 1.22 |
+| **Reasoning** | 83 | 1.96±0.13 / 1.96 | 2.09±0.03 / 2.09 | 1.82±0.01 / 1.82 |
+| **Overall** | 150 | 1.98±0.10 / 1.98 | 1.73±0.02 / 1.73 | 1.48±0.03 / 1.48 |
+
+### 26 leaf capabilities
+
+| Dimension | n | agent_v2 | vlm_transcript | vlm_direct |
+|-----------|---|---------|---------|---------|
+| Video Topic | 7 | 2.48±0.18 / 2.48 | 1.57±0.00 / 1.57 | 1.86±0.12 / 1.86 |
+| Video Emotion | 4 | 2.00±0.35 / 2.00 | 1.42±0.12 / 1.42 | 1.83±0.12 / 1.83 |
+| Video Scene | 6 | 2.17±0.24 / 2.17 | 1.83±0.00 / 1.83 | 1.06±0.08 / 1.06 |
+| Video Style | 1 | 3.00±0.00 / 3.00 | 1.67±0.47 / 1.67 | 1.67±0.47 / 1.67 |
+| OCR | 16 | 2.31±0.15 / 2.31 | 2.04±0.06 / 2.04 | 1.75±0.00 / 1.75 |
+| Object Recognition | 6 | 1.83±0.24 / 1.83 | 1.50±0.00 / 1.50 | 1.33±0.00 / 1.33 |
+| Attribute Recognition | 2 | 3.00±0.00 / 3.00 | 1.50±0.00 / 1.50 | 1.50±0.00 / 1.50 |
+| Event Recognition | 8 | 1.17±0.42 / 1.17 | 0.96±0.06 / 0.96 | 0.83±0.06 / 0.83 |
+| Human Motion | 3 | 1.89±0.31 / 1.89 | 1.33±0.00 / 1.33 | 1.33±0.00 / 1.33 |
+| Counting | 3 | 3.00±0.00 / 3.00 | 2.00±0.00 / 2.00 | 2.00±0.00 / 2.00 |
+| Human-object Interaction | 6 | 0.89±0.08 / 0.89 | 0.89±0.08 / 0.89 | 0.50±0.14 / 0.50 |
+| Human Interaction | 12 | 1.67±0.18 / 1.67 | 0.83±0.07 / 0.83 | 0.72±0.04 / 0.72 |
+| Hallucination | 15 | 2.42±0.19 / 2.42 | 1.04±0.14 / 1.04 | 0.62±0.13 / 0.62 |
+| Structuralized Image-Text Understanding | 5 | 2.07±0.25 / 2.07 | 2.27±0.09 / 2.27 | 2.33±0.09 / 2.33 |
+| Mathematical Calculation | 6 | 2.33±0.47 / 2.33 | 1.50±0.00 / 1.50 | 1.00±0.00 / 1.00 |
+| Physical Property | 5 | 2.07±0.09 / 2.07 | 2.60±0.00 / 2.60 | 2.27±0.09 / 2.27 |
+| Function Reasoning | 6 | 2.44±0.08 / 2.44 | 2.17±0.00 / 2.17 | 2.17±0.00 / 2.17 |
+| Identity Reasoning | 3 | 1.67±0.27 / 1.67 | 3.00±0.00 / 3.00 | 2.78±0.16 / 2.78 |
+| Natural Relation | 1 | 3.00±0.00 / 3.00 | 3.00±0.00 / 3.00 | 1.00±0.00 / 1.00 |
+| Physical Relation | 8 | 2.21±0.06 / 2.21 | 2.08±0.06 / 2.08 | 2.08±0.06 / 2.08 |
+| Social Relation | 5 | 1.47±0.25 / 1.47 | 2.00±0.00 / 2.00 | 1.40±0.00 / 1.40 |
+| Common Sense Reasoning | 13 | 2.23±0.13 / 2.23 | 2.36±0.04 / 2.36 | 2.31±0.00 / 2.31 |
+| Counterfactual Reasoning | 8 | 1.83±0.24 / 1.83 | 1.71±0.06 / 1.71 | 1.46±0.16 / 1.46 |
+| Causal Reasoning | 22 | 1.77±0.06 / 1.77 | 2.08±0.09 / 2.08 | 1.65±0.02 / 1.65 |
+| Future Prediction | 4 | 1.17±0.31 / 1.17 | 1.42±0.12 / 1.42 | 1.25±0.00 / 1.25 |
 
 ## Per-Video Accuracy — MMBench-Video official (0-3)
 
@@ -181,5 +213,5 @@
 - **Frames/Q**: frames sent to the vision model per question (answer phase) — the guided-perception-budget metric
 - **Prebuild frame budget**: duration-adaptive — one frame per ~15s, clamped to [8, 24] (Charades-length clips stay at the historical 8)
 - **Token accounting**: all counts are real API-reported `usage` summed over every call the method makes (agent: per-turn usage_metadata, so re-sent ReAct history is fully counted; VL calls include image tokens in prompt_tokens). No estimates. **Tokens/Q (answer)** is the marginal per-question cost; **+Prebuild/Q** amortizes the one-time scene-graph build over that video's questions (vlm_direct has no prebuild). Judge / short-answer-extraction calls are scoring infrastructure and are NOT counted
-- **MMBench-Video official (0-3)**: VLMEvalKit protocol replicated verbatim (semantic-similarity integer 0-3, mean aggregation, judge failures → 0 per the official 'all' variant; raw -1 kept in JSON). Judge model: `qwen-max` (official protocol uses gpt-4-turbo; swap via JUDGE_MODEL for paper numbers)
+- **MMBench-Video official (0-3)**: VLMEvalKit protocol replicated verbatim (semantic-similarity integer 0-3; multi-label `get_dimension_rating` aggregation with all/valid variants; judge failures → 0 in 'all', raw -1 kept in JSON). Judge model: `qwen-plus-latest` (official protocol uses gpt-4-turbo; swap via JUDGE_MODEL for paper numbers). Any run on fewer than the full 1,998 questions is a subset — NOT comparable to the official leaderboard
 - Each method ran 3 independent trials; mean ± std reported over trials

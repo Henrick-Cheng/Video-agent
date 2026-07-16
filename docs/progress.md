@@ -1162,3 +1162,13 @@ GPT-4 重评仍被 OpenAI key 卡住，本阶段做不被阻塞的工程整备�
 逐行审读 v2 核心链路。结论：链路本体无腐坏，真实短板全在服务化边界（并发/清理/逻辑复用），已随本阶段修掉。**行为中立**待做项列 P2（prompt 模块化、session 序列化、transcript 分词缓存）；**行为改变**项（embedding 检索、置信度判据细化）明确不做——动了会使代码与已收官的 runs=3 数字脱钩，embedding 检索归入第二基准评测周期的对照实验（14.1 已定位 3/10 失败源于词重叠漏检，是最有希望的单项升级）。
 
 全量离线测试 60 passed / 8 skipped。产品面变化：简历预留 bullet「FastAPI 服务化 + 容器化」可激活；面试 Q18 从"计划"升级为"已做可 demo"。
+
+## 第十六阶段：测评合规性修正 —— 聚合对齐官方 get_dimension_rating（2026-07-17）
+
+对照 MMBench-Video 原论文（arXiv 2406.14515）与 VLMEvalKit 官方实现逐项审计测评体系。逐题打分器本就合规（judge prompt/0–3 制/temp=0/失败-1 均逐字复刻）；**聚合口径不合规**：官方为多标签（每题计入其涉及的每个维度，26 leaf + 9 L2 + Perception/Reasoning/Overall，all/valid 双口径），旧实现每题只计入主 L2 单桶。
+
+- **修正**：`run_benchmark.py` 新增 `_aggregate_mmbv_official`（复刻官方语义，多 trial ±std 与桶内 n 为披露的扩展）；结果行带多标签 `dimensions`；报告出官方口径 coarse/fine 表。
+- **零成本重聚合**：`scripts/reaggregate_mmbv.py` 对缓存结果重聚合出 `docs/benchmark_mmbv_final_official_agg.{md,json}`——**总分数学不变**（Overall(all) ≡ 旧 flat mean(-1→0)，单测 + 真实数据双验证：1.984/1.727/1.478 逐位一致），维度级数字以其为准。
+- **关键位移**：HL 不变（单 leaf，2.42 vs 1.04 卖点无损）；TR 1.544→1.68（对基线 1.88 差距收窄）；FP-C 倍率 2×→~1.8×；新增 Perception/Reasoning 拆分显示架构增益集中在感知侧（2.06 vs 1.40 大胜；推理侧 1.96 vs 2.09 小输）。
+- **就绪待办**：`rejudge_gpt4.py` 升级为输出可重聚合 raw 副本——拿到 OpenAI key 后两条命令得 gpt-4-turbo 口径全维度报告；全量 1998 题视结论变化再定。
+- 测试：新增 `tests/test_mmbv_aggregation.py` 6 例；全量 66 passed / 12 skipped；8 题在线冒烟验证新路径。文档同步：final 报告加取代横幅、README/§1.4 备忘/final_analysis 数字更新。

@@ -65,7 +65,7 @@ flowchart TD
 > - **反超抗噪成立**：agent_v2 − vlm_transcript = 0.257 > 两者 std 之和 0.121，反超越过噪声带。
 > - **归因干净**：ASR 模态 +0.249（vlm_direct→vlm_transcript），架构再 +0.257（同模态对照）——「赢只是因为多了个模态」被数据排除。
 > - **舒适区边界 ≈90 秒**：90 秒内基本持平，90 秒以上明显领先（90–180s: 2.10 vs 1.55；>180s: 2.05 vs 1.87）。
-> - **幻觉抵抗**：官方 HL 维度 2.422±0.191，是同模态基线的 **2.3×**（vs vlm_direct 约 3.9×）——「答案必须接地到证据」的架构属性。
+> - **幻觉抵抗**：官方 HL 维度 2.42±0.19，是同模态基线的 **2.3×**（vs vlm_direct 约 3.9×）——「答案必须接地到证据」的架构属性。（维度分数采用官方多标签 `get_dimension_rating` 口径，见 [`docs/benchmark_mmbv_final_official_agg.md`](docs/benchmark_mmbv_final_official_agg.md)。）
 > - **帧效率**：3.1 帧/题打赢 8 帧/题；150 题中 81 题靠免费检索直答、69 题自主升级探索——按需分配感知预算。
 >
 > ⚠️ **诚实披露**：judge 为 `qwen-max`（存在 Qwen 评 Qwen 自偏好）；标注审计（n=30）显示 97% gold 被证据支撑，离 3.0 的差距主要是模型能力而非烂标注。论文级 `gpt-4-turbo` 重评待 OpenAI key（已留缓存答案，零额外推理成本）。完整分析见 [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)。

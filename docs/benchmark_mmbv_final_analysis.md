@@ -5,6 +5,13 @@
 > 评分：官方 VLMEvalKit 0–3 协议，judge = `qwen-max`（测试口径）。
 > Token / frames 全部真实 API usage。原始：`docs/benchmark_mmbv_final.json`。
 > **这是 mmbv 上的权威结果，可供论文 / 简历引用。**
+>
+> **2026-07 聚合修正**：维度聚合已从单标签（每题只计入主 L2）修正为官方
+> `get_dimension_rating` 多标签口径（每题计入其涉及的**每个**维度；26 leaf +
+> 9 L2 + Perception/Reasoning/Overall；all/valid 双口径）。总分不变（Overall(all)
+> 在数学上等于原 flat mean），**维度级数字以修正版为准**：
+> `docs/benchmark_mmbv_final_official_agg.{md,json}`（由
+> `scripts/reaggregate_mmbv.py` 对缓存结果零成本重聚合产出）。本文维度数字已同步更新。
 
 ## 总览（mean ± std over 3 runs）
 
@@ -35,11 +42,13 @@
 
 边界 ≈90 秒：90 秒内基本持平，90 秒以上明显领先。
 
-## 关键维度（runs=3）
+## 关键维度（runs=3，官方多标签口径）
 
-- **HL 幻觉抵抗**：agent_v2 **2.422±0.191** vs vlm_transcript 1.044 vs vlm_direct 0.622（约 2.3× / 3.9×）——机制性优势，最硬的卖点。
-- **FP-C 跨实例**：1.489 vs 0.756（~2×）；**CP** 2.244 vs 1.600；**FP-S** 2.040 vs 1.667。
-- 输的维度：**TR** 1.544 < vlm_transcript 1.767（TR 增益主要来自模态而非架构）、RR/CSR/AR 基线+旁白有竞争力。
+- **HL 幻觉抵抗**：agent_v2 **2.42±0.19** vs vlm_transcript 1.04 vs vlm_direct 0.62（约 2.3× / 3.9×）——机制性优势，最硬的卖点（HL 单 leaf，多标签修正不影响）。
+- **Perception / Reasoning 拆分**（多标签口径新增）：agent_v2 赢在 **Perception 2.06 vs 1.40**（+0.66）；**Reasoning 1.96 vs 2.09**（−0.13，小输）——架构增益集中在感知侧。
+- **FP-C 跨实例**：1.39 vs 0.78（~1.8×）；**CP** 2.25 vs 1.63；**FP-S** 2.06 vs 1.73。
+- 输的维度：**TR** 1.68 < vlm_transcript 1.88（多标签下差距从旧口径的 0.22 收窄到 0.20；TR 增益主要来自模态而非架构）、RR/CSR/AR 基线+旁白有竞争力。
+- 与旧单标签口径的差异来源：跨 L2 的多标签题（9 个 L2 的 n 合计 170 > 150 题）此前只计入主维度，TR/FP-S 等多标签重的维度受影响最大；总分与 HL 等单 leaf 维度不变。
 
 ## 标注天花板（annotation_audit, n=30, seed=11）
 
@@ -49,7 +58,8 @@
 
 ## 披露
 
-- judge = qwen-max（存在 Qwen 评 Qwen 自偏好）；**gpt-4-turbo 论文级重评待 OpenAI key**，脚本 `scripts/rejudge_gpt4.py` 已就绪、零推理成本（只评缓存答案）。
+- judge = qwen-max（存在 Qwen 评 Qwen 自偏好）；**gpt-4-turbo 论文级重评待 OpenAI key**，脚本 `scripts/rejudge_gpt4.py` 已就绪、零推理成本（只评缓存答案），其输出可直接喂 `scripts/reaggregate_mmbv.py` 得到官方口径全维度报告。
+- 聚合口径：已对齐官方 `get_dimension_rating`（多标签、all/valid 双口径）；150 题为分层子集（TR/HL 超采、seed=42），**不可与官方 leaderboard 直接对标**（全量 1998 题待定）。
 - runs=3 ±std；成本：agent_v2 仍约基线 2.1×（卖点是帧效率 3.1 vs 8 + 90s+ 准确率，非成本）。
 
 ## mmbv 线结论（收尾）

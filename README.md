@@ -65,7 +65,7 @@ flowchart TD
 > - **Reversal survives noise**: agent_v2 − vlm_transcript = 0.257 > 0.121 (sum of both stds).
 > - **Clean attribution**: ASR modality +0.249 (vlm_direct→vlm_transcript), architecture +0.257 on top (same-modality control) — "it only wins because of the extra modality" is ruled out by data.
 > - **Comfort-zone boundary ≈90s**: parity under 90s; clear lead beyond it (90–180s: 2.10 vs 1.55; >180s: 2.05 vs 1.87).
-> - **Hallucination resistance**: official HL dimension 2.422±0.191 — **2.3×** the same-modality baseline (≈3.9× vs vlm_direct). An architectural property: answers must ground to evidence.
+> - **Hallucination resistance**: official HL dimension 2.42±0.19 — **2.3×** the same-modality baseline (≈3.9× vs vlm_direct). An architectural property: answers must ground to evidence. (Dimension scores follow the official multi-label `get_dimension_rating` aggregation — see `docs/benchmark_mmbv_final_official_agg.md`.)
 > - **Frame efficiency**: 3.1 frames/question beats 8; of 150 questions, 81 answered from free retrieval alone, 69 self-escalated to exploration — perception budget allocated on demand.
 >
 > ⚠️ **Honest disclosure**: the judge is `qwen-max` (Qwen-judging-Qwen self-preference risk); an annotation audit (n=30) shows 97% of gold answers are evidence-supported, so the gap to 3.0 is mostly model capability, not label noise. A paper-grade `gpt-4-turbo` re-judge is ready to run at zero inference cost (answers cached) once an OpenAI key is available. Full analysis: [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md).
