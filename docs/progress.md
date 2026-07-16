@@ -1172,3 +1172,12 @@ GPT-4 重评仍被 OpenAI key 卡住，本阶段做不被阻塞的工程整备�
 - **关键位移**：HL 不变（单 leaf，2.42 vs 1.04 卖点无损）；TR 1.544→1.68（对基线 1.88 差距收窄）；FP-C 倍率 2×→~1.8×；新增 Perception/Reasoning 拆分显示架构增益集中在感知侧（2.06 vs 1.40 大胜；推理侧 1.96 vs 2.09 小输）。
 - **就绪待办**：`rejudge_gpt4.py` 升级为输出可重聚合 raw 副本——拿到 OpenAI key 后两条命令得 gpt-4-turbo 口径全维度报告；全量 1998 题视结论变化再定。
 - 测试：新增 `tests/test_mmbv_aggregation.py` 6 例；全量 66 passed / 12 skipped；8 题在线冒烟验证新路径。文档同步：final 报告加取代横幅、README/§1.4 备忘/final_analysis 数字更新。
+
+### 16.1 gpt-4-turbo 官方判分重判 —— 自偏好证伪（2026-07-17）
+
+OPENAI_API_KEY 到位，`rejudge_gpt4` 对缓存答案全量重判（1350 次，~$5）+ `reaggregate_mmbv` 出官方口径报告（`docs/benchmark_mmbv_final_gpt4judge.{md,json}`）：
+
+- **总分**：agent_v2 1.978 / vlm_transcript 1.713 / vlm_direct 1.491——与 qwen-max 口径差均 <0.015，agent 领先微扩（0.257→0.265）。**"Qwen 评 Qwen 自偏好"被官方判分模型证伪**；逐题一致率 0.76–0.81 = 判分噪声带。
+- **维度**：HL 2.29 vs 0.78（2.9×）卖点无损；FP-C 1.47 vs 0.90；结论方向全部保持。
+- 论文引用统一切换 gpt-4-turbo 口径；README/README.zh/review §1.4 已同步。
+- 附：子集构成偏差量化——按官方全量分布重加权，总分移动 ≤0.04（agent +0.017），构成偏差不足以动摇结论；"全量 1998 题单跑（官方 leaderboard 本为单次运行）"为下一个待决定项（推理 ~4.4× 已花、judge ~$22）。

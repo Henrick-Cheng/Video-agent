@@ -58,7 +58,7 @@
 
 ## 披露
 
-- judge = qwen-max（存在 Qwen 评 Qwen 自偏好）；**gpt-4-turbo 论文级重评待 OpenAI key**，脚本 `scripts/rejudge_gpt4.py` 已就绪、零推理成本（只评缓存答案），其输出可直接喂 `scripts/reaggregate_mmbv.py` 得到官方口径全维度报告。
+- ~~judge = qwen-max 自偏好风险~~ → **已被 gpt-4-turbo 重判证伪（2026-07-17）**：官方判分模型对缓存答案全量重判（1350 次），总分 agent_v2 1.978 / vlm_transcript 1.713 / vlm_direct 1.491——与 qwen-max 口径差均 <0.015，agent 领先反而微扩（0.257→0.265）；逐题判分一致率 0.76–0.81（判分噪声带）。**论文引用以 gpt-4-turbo 口径为准**：`docs/benchmark_mmbv_final_gpt4judge.{md,json}`（重判原始分：`benchmark_mmbv_final.rejudge_gpt-4-turbo.json`）。
 - 聚合口径：已对齐官方 `get_dimension_rating`（多标签、all/valid 双口径）；150 题为分层子集（TR/HL 超采、seed=42），**不可与官方 leaderboard 直接对标**（全量 1998 题待定）。
 - runs=3 ±std；成本：agent_v2 仍约基线 2.1×（卖点是帧效率 3.1 vs 8 + 90s+ 准确率，非成本）。
 

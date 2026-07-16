@@ -36,8 +36,11 @@
 
 ### 1.4 结果数据备忘（面试/论文引用统一从这里取）
 
-> 维度级数字自 2026-07 起以官方 `get_dimension_rating` 多标签口径为准
-> （`docs/benchmark_mmbv_final_official_agg.md`）；总分与 HL 不受修正影响。
+> 维度级数字自 2026-07 起以官方 `get_dimension_rating` 多标签口径为准；
+> **论文级引用以 gpt-4-turbo 判分口径为准**（`docs/benchmark_mmbv_final_gpt4judge.md`：
+> 总分 1.978 / 1.713 / 1.491，gap 0.265）。qwen-max 口径（本节下方数字）与其差均
+> <0.015、逐题一致率 0.76–0.81 —— 自偏好质疑已被交叉验证证伪，两口径可互为稳健性证据。
+> 时长桶/归因等派生分析仍基于 qwen 口径原始分。
 
 - **MMBench-Video 150q runs=3**：agent_v2 **1.984±0.101** > vlm_transcript@8 1.727±0.020 > vlm_direct@8 1.478±0.025（0–3 制）；v1 1.193。
 - **抗噪**：gap 0.257 > std 之和 0.121。**归因**：ASR 模态 +0.249，架构 +0.257。

@@ -1,0 +1,17 @@
+{
+  "agent_v2": {
+    "n": 450,
+    "gpt-4-turbo_mean": 1.978,
+    "exact_agreement_with_orig": 0.807
+  },
+  "vlm_transcript": {
+    "n": 450,
+    "gpt-4-turbo_mean": 1.713,
+    "exact_agreement_with_orig": 0.796
+  },
+  "vlm_direct": {
+    "n": 450,
+    "gpt-4-turbo_mean": 1.491,
+    "exact_agreement_with_orig": 0.762
+  }
+}

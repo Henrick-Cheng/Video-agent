@@ -68,7 +68,7 @@ flowchart TD
 > - **幻觉抵抗**：官方 HL 维度 2.42±0.19，是同模态基线的 **2.3×**（vs vlm_direct 约 3.9×）——「答案必须接地到证据」的架构属性。（维度分数采用官方多标签 `get_dimension_rating` 口径，见 [`docs/benchmark_mmbv_final_official_agg.md`](docs/benchmark_mmbv_final_official_agg.md)。）
 > - **帧效率**：3.1 帧/题打赢 8 帧/题；150 题中 81 题靠免费检索直答、69 题自主升级探索——按需分配感知预算。
 >
-> ⚠️ **诚实披露**：judge 为 `qwen-max`（存在 Qwen 评 Qwen 自偏好）；标注审计（n=30）显示 97% gold 被证据支撑，离 3.0 的差距主要是模型能力而非烂标注。论文级 `gpt-4-turbo` 重评待 OpenAI key（已留缓存答案，零额外推理成本）。完整分析见 [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)。
+> ✅ **judge 交叉验证**：官方判分模型 `gpt-4-turbo` 对缓存答案全量重判后总分 1.98 / 1.71 / 1.49，与 `qwen-max` 口径差均 <0.015（逐题一致率 0.76–0.81），"Qwen 评 Qwen 自偏好"被证伪；论文级数字以 gpt-4-turbo 口径为准（[`docs/benchmark_mmbv_final_gpt4judge.md`](docs/benchmark_mmbv_final_gpt4judge.md)）。标注审计（n=30）显示 97% gold 被证据支撑，离 3.0 的差距主要是模型能力而非烂标注。完整分析见 [`docs/benchmark_mmbv_final_analysis.md`](docs/benchmark_mmbv_final_analysis.md)。
 
 ---
 
@@ -176,7 +176,7 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 
 | 局限 | 说明 | 改进方向 |
 |------|------|---------|
-| **judge 为 qwen-max** | runs=3 ±std 已出，但 judge 仍是 qwen-max（存在 Qwen 评 Qwen 自偏好风险） | 换 gpt-4-turbo 对缓存答案重评（脚本就绪，零推理成本，待 OpenAI key） |
+| ~~judge 为 qwen-max~~ | ✅ 已解决（2026-07-17）：gpt-4-turbo 全量重判，总分差 <0.015、一致率 0.76–0.81，自偏好被证伪 | 论文数字以 gpt-4-turbo 口径为准（`docs/benchmark_mmbv_final_gpt4judge.md`） |
 | **Gradio 前端未接 v2** | `main.py` 已接 v2（单问 + 交互），但 Gradio 前端仍跑 v1 且停在早期版本 | 把前端切到 v2 路径（复用 `prepare_l0` + `build_agent_v2`），或以 CLI 为主入口 |
 | **旁白依赖型问题的硬边界** | 「视频里说了什么」类答案在音轨里；纯视觉够不着，TR 维度的增益主要来自 ASR 而非架构 | ASR 已接入 L0；进一步做旁白×画面的时间对齐交叉检索 |
 | **置信度判据偶尔过度自信** | 「图里有相关但不充分证据」时会直接作答而不升级探索（AGQA TR 上可见） | 升级判据从「图里有没有」细化为「图能否支撑该题型所需推理」 |
@@ -190,7 +190,7 @@ JUDGE_MODEL=qwen-max python -m src.eval.run_benchmark \
 按性价比排序，完整分层见 [`docs/progress.md`](docs/progress.md) 第十四阶段末尾。
 
 1. **第二基准复现**（P0）— mmbv 线已收官（runs=3 抗噪成立、便宜杠杆耗尽）；更强证据应在 EgoSchema / Video-MME long 上复现同一反超，而非榨本集残差。
-2. **gpt-4-turbo 重评**（P0）— 换 SOTA 可比 judge，零额外推理成本（答案已缓存），待 OpenAI key。
+2. ~~**gpt-4-turbo 重评**（P0）~~ — ✅ 已完成（2026-07-17）：官方判分模型重判后结论不变（总分差 <0.015），详见 `docs/benchmark_mmbv_final_gpt4judge.md`。
 3. ~~**产品入口接线 v2**（P0）~~ — ✅ 已完成（Phase 14.4）：`main.py` 单问 + 交互模式均接 v2；剩余 Gradio 前端接线降级为 P2。
 4. **亮点实验**（P1）— 多轮指代会话（agent 独有的跨问记忆）+ 时序定位精度（图独有的显式时间轴）。
 5. **升级判据细化 + 旁白时间对齐**（P2）— 解决过度自信与旁白×画面交叉检索。
