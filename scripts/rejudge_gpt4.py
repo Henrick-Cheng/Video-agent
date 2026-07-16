@@ -9,11 +9,11 @@ full official (multi-label) dimension breakdown from it:
 
     python -m scripts.reaggregate_mmbv docs/benchmark_mmbv_final.rejudge_gpt-4-turbo.json
 
-Usage (when an OpenAI key is available):
-    JUDGE_BASE_URL=https://api.openai.com/v1 \
-    JUDGE_MODEL=gpt-4-turbo \
-    JUDGE_API_KEY=sk-... \
-    python -m scripts.rejudge_gpt4 docs/benchmark_mmbv_final.json
+Usage (OPENAI_API_KEY stored in .env; a gpt-* JUDGE_MODEL auto-selects the
+OpenAI endpoint + that key, so one variable switches the judge):
+    JUDGE_MODEL=gpt-4-turbo python -m scripts.rejudge_gpt4 docs/benchmark_mmbv_final.json
+
+Explicit JUDGE_BASE_URL / JUDGE_API_KEY still override (e.g. a GPT proxy).
 """
 import copy
 import json

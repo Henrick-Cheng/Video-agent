@@ -604,13 +604,25 @@ def _judge_client():
     env vars, so the paper-grade judge can be swapped to GPT (academic norm —
     avoids a Qwen-judging-Qwen self-preference confound) without touching the
     pipeline. Falls back to the active DashScope LLM.
+
+    Dual-judge workflow: a gpt-* JUDGE_MODEL alone selects the OpenAI profile —
+    base URL defaults to api.openai.com and the key falls back to
+    OPENAI_API_KEY (loaded from .env; key storage only, never model selection).
+    Explicit JUDGE_BASE_URL / JUDGE_API_KEY still override everything.
     """
+    from dotenv import load_dotenv
     from openai import OpenAI
     from src.config import get_settings
 
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")  # no-override
     cfg = get_settings()
-    base = os.environ.get("JUDGE_BASE_URL", cfg.active_llm.base_url)
-    key = os.environ.get("JUDGE_API_KEY") or cfg.dashscope_api_key or "token-abc"
+    base = os.environ.get("JUDGE_BASE_URL")
+    key = os.environ.get("JUDGE_API_KEY")
+    if _judge_model().startswith("gpt"):
+        base = base or "https://api.openai.com/v1"
+        key = key or os.environ.get("OPENAI_API_KEY")
+    base = base or cfg.active_llm.base_url
+    key = key or cfg.dashscope_api_key or "token-abc"
     return OpenAI(base_url=base, api_key=key, max_retries=6, timeout=60.0)
 
 
