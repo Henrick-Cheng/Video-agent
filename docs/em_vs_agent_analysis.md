@@ -45,7 +45,7 @@ AGQA 的官方 EM 协议假设:模型直接输出**一个规范化的短答案 t
 | sequencing | 14 | ⚠️ 含噪 | 顺序/对象抽取受叙述影响 |
 | duration | 11 | ⚠️ 含噪 | "X or Y" 选择题,抽取易挑中 gold 选项 → 假阳 |
 
-LLM-judge 对**所有类别**的生成式输出都更公平(它读完整答案、按语义判分),代价是它本身不是 AGQA 官方协议、且(若用 Qwen 判 Qwen)有自偏好混杂——后者可通过把 judge 换成 GPT 缓解(代码已支持 `JUDGE_BASE_URL/JUDGE_MODEL` 配置切换)。
+LLM-judge 对**所有类别**的生成式输出都更公平(它读完整答案、按语义判分),代价是它本身不是 AGQA 官方协议、且(若用 Qwen 判 Qwen)有自偏好混杂——后者可通过把 judge 换成 GPT 缓解(代码已支持 `JUDGE_BASE_URL/JUDGE_MODEL` 配置切换)。（后记 2026-07-17：MMBench-Video 线上已做 gpt-4-turbo 全量重判交叉验证，总分差 <0.015、逐题一致率 0.76–0.81——自偏好在该设置下被实证为不成立。）
 
 ## 4. 建议口径
 

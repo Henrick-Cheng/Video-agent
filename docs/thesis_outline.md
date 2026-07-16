@@ -42,17 +42,17 @@
 
 ### Ch.5 Evaluation（~30%，全文重心）
 - 5.1 Setup：MMBench-Video 150 题分层子集（seed=42，**如实声明与公开榜不可直接比**）；VLMEvalKit 0–3 judge 复刻；runs=3；真实 usage 口径；基线三件套（vlm_direct / **vlm_transcript 公平基线** / v1）。
-- 5.2 Main results（RQ1）：1.984±0.101 > 1.727±0.020 > 1.478±0.025；抗噪判据 gap 0.257 > std 和 0.121。
-- 5.3 Attribution（RQ3）：ASR +0.249 / 架构 +0.257 —— 论文最硬的一节。
-- 5.4 Analysis by duration（舒适区 ≈90s、money chart 折线图）与 by dimension（HL 2.3×、FP-C 2×；**如实写 TR 输给基线**并解释为模态驱动——审稿人/答辩委员看到主动披露会加分）。
+- 5.2 Main results（RQ1）：1.984±0.101 > 1.727±0.020 > 1.478±0.025；抗噪判据 gap 0.257 > std 和 0.121（gpt-4-turbo 官方判分口径 1.978/1.713/1.491，gap 0.265——论文正文引用以此口径为准）。
+- 5.3 Attribution（RQ3）：ASR +0.249 / 架构 +0.257（gpt 口径架构增益 0.265）—— 论文最硬的一节。
+- 5.4 Analysis by duration（舒适区 ≈90s、money chart 折线图）与 by dimension（官方多标签口径：HL 2.3×、FP-C ~1.8×（1.39 vs 0.78）；**如实写 TR 输给基线**（1.68 < 1.88）并解释为模态驱动——审稿人/答辩委员看到主动披露会加分）。
 - 5.5 Perception budget（RQ2）：frames-touched 3.1 vs 8；81/150 零探索直答的分布。
 - 5.6 Ablations & negative results：oracle routing 证伪（选择偏差）、caption 加密证伪（能力天花板）——写成"剩余差距的归因"，这是方法论亮点不是失败记录。
 - 5.7 AGQA transfer（70 题，duration 0.682 强项 + open/sequencing 弱项如实）。
-- 5.8 Annotation audit（n=30，97%）+ **Threats to validity**：qwen judge 自偏好（gpt-4 重评预案）、子集规模、单 benchmark —— 集中一节坦白，好过散落各处被挑。
+- 5.8 Annotation audit（n=30，97%）+ **Threats to validity**：子集规模（构成偏差已按官方分布重加权量化 ≤0.04）、单 benchmark；judge 自偏好已由 gpt-4-turbo 全量重判证伪（总分差 <0.015、一致率 0.76–0.81）——写成已消除的 threat + 交叉验证方法，是加分素材而非坦白项。
 - 5.9 Case study（1-2 个真实 trace：search→confidence 不足→explore→带溯源作答；从 benchmark_mmbv_final.json 里挑）。
 
 ### Ch.6 Conclusion & Future Work（~5%）
-结论按三个 RQ 收口；future work 直接用 roadmap：第二基准复现（EgoSchema/Video-MME long）、gpt-4 judge、embedding 检索（附架构调研的"为什么现在不动"论证）、多轮指代/时序定位亮点实验、小时级外推。
+结论按三个 RQ 收口；future work 直接用 roadmap：第二基准复现（EgoSchema/Video-MME long）、MMBench-Video 全量 1998 题（可对标公开榜）、embedding 检索（附架构调研的"为什么现在不动"论证）、多轮指代/时序定位亮点实验、小时级外推。（gpt-4 judge 已完成，移出 future work。）
 
 ### Appendices
 A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（build 子集 + run_benchmark 命令）+ 开源仓库链接；C. 工程规范（CLAUDE.md 的 fail-loud/mock 契约——AI 辅助开发的方法论沉淀，答辩时的差异点）；D. 补充表格（per-dimension 全表、AGQA per-category）。
@@ -65,7 +65,7 @@ A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（
 | Ch.2.4 定位表 | review §2.2（撞车风险表展开成文） |
 | Ch.3 | progress.md Phase 12-13、README「为什么是 v2」 |
 | Ch.4 | docs/architecture.md、README 核心设计、builder.py/react_agent.py（配图与伪代码） |
-| Ch.5 | **benchmark_mmbv_final_analysis.md（唯一取数源）**、benchmark_mmbv_final.json（case study 原始 trace）、benchmark_v2_agqa.md、annotation_audit.json、progress.md §14.1/14.2（负结果） |
+| Ch.5 | **benchmark_mmbv_final_analysis.md（叙事取数源）+ benchmark_mmbv_final_gpt4judge.md（论文口径维度全表）+ benchmark_mmbv_final_official_agg.md（qwen 口径对照）**、benchmark_mmbv_final.json（case study 原始 trace）、benchmark_v2_agqa.md、annotation_audit.json、progress.md §14.1/14.2（负结果） |
 | Ch.6 | review §5 roadmap、architecture_review_202607.md |
 
 ## 3. 写作顺序（按依赖关系，不按章节号）
@@ -73,7 +73,7 @@ A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（
 1. **先画图后动笔**：把全文 6-8 张图先做出来——架构图、时长桶折线（money chart）、归因柱状、维度对比、frames-touched、case study trace 图。图定了，Ch.4/5 的文字就是给图配说明。
 2. **Ch.5 先写**（数据全在、表格现成，最不需要灵感）→ **Ch.4**（对着代码写，最熟）→ **Ch.3**（progress.md 改写）→ **Ch.2**（读文献最耗时，穿插做）→ **Ch.1 与 Abstract 最后写**（等你知道全文到底证明了什么）。
 3. 每写完一章给导师/postdoc 过一轮，不要憋大招到最后。
-4. gpt-4 重评若在提交前完成，全文数字换一版（脚本零成本）；来不及则维持 qwen-max + threats to validity 披露，答辩口径已在 review Q6 备好。
+4. ~~gpt-4 重评若在提交前完成……~~ ✅ 已完成（2026-07-17）：全文数字以 gpt-4-turbo 口径为准（`benchmark_mmbv_final_gpt4judge.md`），qwen-max 口径作稳健性对照；答辩口径见 review Q6（已改写为进攻题）。
 
 ## 4. 避坑（与 review 面试纪律同源）
 
@@ -81,7 +81,7 @@ A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（
 - **不可比性主动声明**：150 题自采样子集 ≠ 公开榜，Ch.5.1 白纸黑字写清，别让委员先发现。
 - **不写已撤回的结论**：任何 token/成本节省表述禁用；成本如实写 2.1×，卖点是帧效率与长视频精度。
 - **负结果是资产**：14.1/14.2 写进 5.6 时用"归因剩余差距"的框架，语气是 systematic elimination，不是 things that didn't work。
-- 数字只从 §1.4 / final_analysis 取，写完用 grep 对一遍全文数字与来源。
+- 数字只从 review §1.4 / final_analysis / gpt4judge 报告取（维度级以 gpt-4-turbo 口径为准），写完用 grep 对一遍全文数字与来源。
 
 ## 5. 需要你先确认的三件事
 

@@ -1,5 +1,10 @@
 # MMBench-Video 150 题交叉分析 —— agent 舒适区刻画
 
+> ⚠️ **历史文档（v1 时代 runs=1 运行，已被取代）**：权威结果见
+> `benchmark_mmbv_final_analysis.md`（runs=3）+ `benchmark_mmbv_final_gpt4judge.md`
+> （gpt-4-turbo 官方判分 + 官方多标签聚合）。文中"gpt-4-turbo 重评待做"已于
+> 2026-07-17 完成，自偏好被证伪（总分差 <0.015）。本文数字为当期历史记录，不回改。
+
 > 数据：`benchmarks/mmbv_150.json`（150 题 / 136 视频，分层抽样 seed=42）×
 > {vlm_direct@8帧, rag_only, agent_tiered, agent} × runs=1。
 > 评分：官方 VLMEvalKit 协议复刻（0-3 语义相似度），judge=qwen-max（测试口径；

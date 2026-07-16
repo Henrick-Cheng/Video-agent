@@ -1,5 +1,10 @@
 # MMBench-Video v2 对比分析 —— 架构重设计的验证结果
 
+> ⚠️ **历史文档（v2 早期 runs=1 运行，已被取代）**：权威结果见
+> `benchmark_mmbv_final_analysis.md`（runs=3，agent_v2 1.984）+
+> `benchmark_mmbv_final_gpt4judge.md`（gpt-4-turbo 官方判分 + 官方多标签聚合）。
+> 下方"gpt-4-turbo 重评待做"已于 2026-07-17 完成，自偏好被证伪。本文数字为当期历史记录，不回改。
+
 > 数据：mmbv_150 × {agent_v2, vlm_transcript@8帧} × runs=1（qwen-max judge，官方
 > VLMEvalKit 协议；v1 各方法引用 `docs/benchmark_mmbv.json` 同口径数据）。
 > Token / frames 全部真实计量；judge 失败 0/300。

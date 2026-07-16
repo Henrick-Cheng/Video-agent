@@ -228,4 +228,5 @@ CPU 机器（开发 / macOS）
 
 vlm_transcript 是**同模态公平基线**：与 agent_v2 同帧数量级、同旁白文字，
 只差架构——用于把增益拆解为 ASR 模态 +0.249 与架构 +0.257 两部分
-（归因方法论，见 `benchmark_mmbv_final_analysis.md`）。
+（gpt-4-turbo 官方判分口径下架构增益 0.265；归因方法论，见
+`benchmark_mmbv_final_analysis.md`）。
