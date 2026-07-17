@@ -18,6 +18,8 @@
 | `benchmark_mmbv_final_official_agg.{json,md}` | qwen-max 判分 + 官方多标签聚合（稳健性对照，总分与 gpt 口径差 <0.015） |
 | `benchmark_mmbv_final.{json,md}` | runs=3 收官运行的原始逐题记录 / 原始报表（⚠️ md 维度表为旧单标签口径，已被上两份取代；json 为 case study trace 与 `scripts/rejudge_gpt4.py`、`scripts/reaggregate_mmbv.py` 的默认输入） |
 | `benchmark_mmbv_final.rejudge_gpt-4-turbo.{json,summary.json}` | gpt-4-turbo 重判原始分 + 一致率摘要（judge 噪声带 0.76–0.81） |
+| `benchmark_mmbv_dense_{16f,32f}.*` | **Frame-scaling 实验（Phase 16.2）**：基线 16/32 帧 × {vlm_direct, vlm_transcript}，各含 as-run（qwen judge）+ `rejudge_gpt-4-turbo` 重判 + `_official_agg` 官方聚合；结论：密集采样追不上（主口径 common-147，见 analysis 的 Frame-scaling 节） |
+| `dense_moderation_*.json` | 3 题内容审核误杀的 id 清单 + 16f/32f 确认性重跑记录（400 确定性复现，重试无效） |
 | `benchmark_v2_agqa.{json,md}` | v2 英文 AGQA 门禁结果（duration 0.682） |
 | `annotation_audit.json` | n=30 标注审计（97% gold 有依据），`scripts/annotation_audit.py` 产物 |
 
@@ -25,7 +27,8 @@
 
 | 文件 | 说明 |
 |---|---|
-| `benchmark_mmbv_final_analysis.md` | **MMBench-Video 收官分析**（叙事取数源：抗噪/归因/舒适区/关键维度/披露；维度数字已同步官方多标签口径） |
+| `benchmark_mmbv_final_analysis.md` | **MMBench-Video 收官分析**（叙事取数源：抗噪/归因/舒适区/关键维度/Frame-scaling/披露；维度数字已同步官方多标签口径） |
+| `frame_scaling.svg` | 帧数-准确率曲线图（Phase 16.2；论文 Ch.5.5 主图候选） |
 | `em_vs_agent_analysis.md` | EM 指标与生成式 Agent 的错配分析（评测方法论，`run_benchmark.py` 注释引用） |
 
 ## reviews/ — 审核与规划（论文 / 求职）

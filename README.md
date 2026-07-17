@@ -50,14 +50,14 @@ flowchart TD
 
 **How**: A LangGraph agent runs a **confidence-driven loop** — first answer from free retrieval over existing memory, self-assess confidence 1–3, and only when insufficient pick a time window to watch closely with `explore_segment` (generating dense captions + triplets on the fly), under a bounded budget. The scene graph is repositioned as a **temporal index over evidence** (each triplet points back to the full caption it came from), not a lossy compression of answers.
 
-**Result**: On the public long-video benchmark **MMBench-Video** (150-question stratified subset, **runs=3**), v2 **beats the direct-frame VLM baseline overall** (**1.984±0.101 vs 1.478±0.025**, 0–3 scale), and the reversal is robust to noise (gap 0.257 > sum of stds 0.121). Attribution is clean — the narration modality contributes +0.249 and **the architecture itself another +0.257** (same-modality fair baseline). The advantage grows monotonically with video length (comfort-zone boundary ≈90s), while touching only **3.1 frames per question** vs the baseline's fixed 8.
+**Result**: On the public long-video benchmark **MMBench-Video** (150-question stratified subset, **runs=3**), v2 **beats the direct-frame VLM baseline overall** (**1.984±0.101 vs 1.478±0.025**, 0–3 scale), and the reversal is robust to noise (gap 0.257 > sum of stds 0.121). Attribution is clean — the narration modality contributes +0.249 and **the architecture itself another +0.257** (same-modality fair baseline). The advantage grows monotonically with video length (comfort-zone boundary ≈90s), while touching only **3.6 frames per question** vs the baseline's fixed 8.
 
 > [!IMPORTANT]
 > **Headline results (MMBench-Video, 150 questions · runs=3 · mean ± std · final)**
 >
 > | Method | Overall (0–3) | Frames/Q | Notes |
 > |------|-----------|----------|------|
-> | **agent_v2** | **1.984 ± 0.101** | **3.1** | lazy memory + confidence-driven exploration |
+> | **agent_v2** | **1.984 ± 0.101** | **3.6** | lazy memory + confidence-driven exploration |
 > | vlm_transcript@8 | 1.727 ± 0.020 | 8.0 | same frames + narration text (fair baseline) |
 > | vlm_direct@8 | 1.478 ± 0.025 | 8.0 | direct 8-frame VLM |
 > | agent (v1) | 1.193 | — | full upfront scene-graph build (legacy · runs=1) |
@@ -66,7 +66,8 @@ flowchart TD
 > - **Clean attribution**: ASR modality +0.249 (vlm_direct→vlm_transcript), architecture +0.257 on top (same-modality control) — "it only wins because of the extra modality" is ruled out by data.
 > - **Comfort-zone boundary ≈90s**: parity under 90s; clear lead beyond it (90–180s: 2.10 vs 1.55; >180s: 2.05 vs 1.87).
 > - **Hallucination resistance**: official HL dimension 2.42±0.19 — **2.3×** the same-modality baseline (≈3.9× vs vlm_direct). An architectural property: answers must ground to evidence. (Dimension scores follow the official multi-label `get_dimension_rating` aggregation — see `docs/results/benchmark_mmbv_final_official_agg.md`.)
-> - **Frame efficiency**: 3.1 frames/question beats 8; of 150 questions, 81 answered from free retrieval alone, 69 self-escalated to exploration — perception budget allocated on demand.
+> - **Frame efficiency**: 3.6 frames/question beats 8; of 150 questions, 81 answered from free retrieval alone, 69 self-escalated to exploration — perception budget allocated on demand.
+> - **Dense sampling doesn't catch up** (frame-scaling): raising the baselines to 16/32 frames still doesn't close the gap — vlm_direct@32f trails the agent by 0.23–0.43 under either judge; log-linear extrapolation puts break-even at **22×–108× the agent's frame budget**. Guided sampling sits top-left on the cost-accuracy frontier (see the Frame-scaling section of [`docs/analysis/benchmark_mmbv_final_analysis.md`](docs/analysis/benchmark_mmbv_final_analysis.md)).
 >
 > ✅ **Judge cross-validation**: a full `gpt-4-turbo` re-judge of the cached answers (the official-protocol judge) yields 1.98 / 1.71 / 1.49 — within 0.015 of the `qwen-max` numbers (per-question agreement 0.76–0.81), refuting the Qwen-judging-Qwen self-preference concern; paper-grade numbers use the gpt-4-turbo run ([`docs/results/benchmark_mmbv_final_gpt4judge.md`](docs/results/benchmark_mmbv_final_gpt4judge.md)). An annotation audit (n=30) shows 97% of gold answers are evidence-supported, so the gap to 3.0 is mostly model capability, not label noise. Full analysis: [`docs/analysis/benchmark_mmbv_final_analysis.md`](docs/analysis/benchmark_mmbv_final_analysis.md).
 
