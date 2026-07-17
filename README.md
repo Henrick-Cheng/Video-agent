@@ -70,6 +70,19 @@ flowchart TD
 >
 > ✅ **Judge cross-validation**: a full `gpt-4-turbo` re-judge of the cached answers (the official-protocol judge) yields 1.98 / 1.71 / 1.49 — within 0.015 of the `qwen-max` numbers (per-question agreement 0.76–0.81), refuting the Qwen-judging-Qwen self-preference concern; paper-grade numbers use the gpt-4-turbo run ([`docs/results/benchmark_mmbv_final_gpt4judge.md`](docs/results/benchmark_mmbv_final_gpt4judge.md)). An annotation audit (n=30) shows 97% of gold answers are evidence-supported, so the gap to 3.0 is mostly model capability, not label noise. Full analysis: [`docs/analysis/benchmark_mmbv_final_analysis.md`](docs/analysis/benchmark_mmbv_final_analysis.md).
 
+<details>
+<summary><b>Per-dimension results</b> — MMBench-Video paper Table-3 layout (gpt-4-turbo judge · official multi-label aggregation · 0–3)</summary>
+
+| Model | Overall | CP | FP-S | FP-C | HL | *P. Mean* | LR | AR | RR | CSR | TR | *R. Mean* |
+|-------|------|----|----|----|----|----|----|----|----|----|----|----|
+| **agent_v2** | **1.98** | 2.18 | 2.08 | **1.47** | **2.29** | **2.04** | 2.18 | 2.07 | 2.07 | 2.21 | 1.74 | 1.98 |
+| vlm_transcript | 1.71 | 1.78 | 1.81 | 0.90 | 0.78 | 1.42 | 1.73 | 2.50 | 2.12 | 2.28 | 1.87 | 2.07 |
+| vlm_direct | 1.49 | 1.53 | 1.64 | 0.77 | 0.64 | 1.28 | 1.39 | 2.21 | 1.81 | 2.26 | 1.52 | 1.79 |
+
+The architectural gain concentrates on the **Perception** side (2.04 vs 1.42; guided zoom-in), with hallucination resistance the standout (HL 2.29 vs 0.78, ~2.9×); reasoning dimensions stay near parity since all methods share the same LLM — *this architecture buys seeing accurately, not thinking harder*. ⚠️ 150-question stratified subset (TR/HL oversampled): rows are **not** directly comparable to published full-set (1,998-question) leaderboard numbers. Source: [`docs/results/benchmark_mmbv_final_gpt4judge.md`](docs/results/benchmark_mmbv_final_gpt4judge.md).
+
+</details>
+
 ---
 
 ## Why v2 — an honest rework

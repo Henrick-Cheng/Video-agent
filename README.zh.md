@@ -70,6 +70,19 @@ flowchart TD
 >
 > ✅ **judge 交叉验证**：官方判分模型 `gpt-4-turbo` 对缓存答案全量重判后总分 1.98 / 1.71 / 1.49，与 `qwen-max` 口径差均 <0.015（逐题一致率 0.76–0.81），"Qwen 评 Qwen 自偏好"被证伪；论文级数字以 gpt-4-turbo 口径为准（[`docs/results/benchmark_mmbv_final_gpt4judge.md`](docs/results/benchmark_mmbv_final_gpt4judge.md)）。标注审计（n=30）显示 97% gold 被证据支撑，离 3.0 的差距主要是模型能力而非烂标注。完整分析见 [`docs/analysis/benchmark_mmbv_final_analysis.md`](docs/analysis/benchmark_mmbv_final_analysis.md)。
 
+<details>
+<summary><b>分维度结果</b> —— MMBench-Video 论文 Table-3 版式（gpt-4-turbo 判分 · 官方多标签聚合 · 0–3 分制）</summary>
+
+| Model | Overall | CP | FP-S | FP-C | HL | *P. Mean* | LR | AR | RR | CSR | TR | *R. Mean* |
+|-------|------|----|----|----|----|----|----|----|----|----|----|----|
+| **agent_v2** | **1.98** | 2.18 | 2.08 | **1.47** | **2.29** | **2.04** | 2.18 | 2.07 | 2.07 | 2.21 | 1.74 | 1.98 |
+| vlm_transcript | 1.71 | 1.78 | 1.81 | 0.90 | 0.78 | 1.42 | 1.73 | 2.50 | 2.12 | 2.28 | 1.87 | 2.07 |
+| vlm_direct | 1.49 | 1.53 | 1.64 | 0.77 | 0.64 | 1.28 | 1.39 | 2.21 | 1.81 | 2.26 | 1.52 | 1.79 |
+
+架构增益集中在**感知侧**（Perception 2.04 vs 1.42，按需 zoom-in 的收益），幻觉抵抗最突出（HL 2.29 vs 0.78，约 2.9×）；推理类维度与基线基本持平——因为所有方法共用同一个 LLM，**这套架构买的是看得准，不是想得深**。⚠️ 150 题分层子集（TR/HL 超采）：各行**不可**与论文全量 1998 题的 leaderboard 数字直接同表对比。出处：[`docs/results/benchmark_mmbv_final_gpt4judge.md`](docs/results/benchmark_mmbv_final_gpt4judge.md)。
+
+</details>
+
 ---
 
 ## 为什么是 v2？—— 一次诚实的返修
