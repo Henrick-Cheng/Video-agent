@@ -1,0 +1,12 @@
+{
+  "vlm_direct": {
+    "n": 150,
+    "gpt-4-turbo_mean": 1.7,
+    "exact_agreement_with_orig": 0.673
+  },
+  "vlm_transcript": {
+    "n": 150,
+    "gpt-4-turbo_mean": 1.86,
+    "exact_agreement_with_orig": 0.727
+  }
+}

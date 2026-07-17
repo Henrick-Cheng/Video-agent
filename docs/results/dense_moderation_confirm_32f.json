@@ -1,0 +1,816 @@
+{
+  "meta": {
+    "video": "3 videos",
+    "videos": [
+      "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3cs8S_urAXU.mp4",
+      "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/cHazQV45SPs.mp4",
+      "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/e_iZaS00xds.mp4"
+    ],
+    "runs": 1,
+    "scorers": [
+      "mmbv"
+    ]
+  },
+  "results": {
+    "vlm_direct": {
+      "scorers": {
+        "mmbv": {
+          "overall_mean": 0.0,
+          "overall_std": 0.0,
+          "by_category": {
+            "TR": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "HL": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 26.3,
+      "avg_tokens_per_q": 0,
+      "avg_prebuild_per_q": 0,
+      "avg_total_tokens_per_q": 0,
+      "avg_frames_per_q": 0.0,
+      "mmbv_official": {
+        "coarse": {
+          "CP": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "FP-S": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "FP-C": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "HL": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "LR": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "AR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "RR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "CSR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "TR": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Perception": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Reasoning": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Overall": {
+            "n": 3,
+            "n_valid": 3,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          }
+        },
+        "fine": {
+          "Video Topic": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Video Emotion": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Video Scene": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Video Style": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "OCR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Object Recognition": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Attribute Recognition": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Event Recognition": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Human Motion": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Counting": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Spatial Relationship": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Human-object Interaction": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Human Interaction": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Hallucination": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Structuralized Image-Text Understanding": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Mathematical Calculation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Physical Property": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Function Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Identity Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Natural Relation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Physical Relation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Social Relation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Common Sense Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Counterfactual Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Causal Reasoning": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Future Prediction": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          }
+        }
+      }
+    },
+    "vlm_transcript": {
+      "scorers": {
+        "mmbv": {
+          "overall_mean": 0.0,
+          "overall_std": 0.0,
+          "by_category": {
+            "TR": {
+              "mean": 0.0,
+              "std": 0.0
+            },
+            "HL": {
+              "mean": 0.0,
+              "std": 0.0
+            }
+          }
+        }
+      },
+      "avg_tool_calls": 0.0,
+      "avg_time_sec": 21.3,
+      "avg_tokens_per_q": 0,
+      "avg_prebuild_per_q": 0,
+      "avg_total_tokens_per_q": 0,
+      "avg_frames_per_q": 0.0,
+      "mmbv_official": {
+        "coarse": {
+          "CP": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "FP-S": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "FP-C": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "HL": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "LR": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "AR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "RR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "CSR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "TR": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Perception": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Reasoning": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Overall": {
+            "n": 3,
+            "n_valid": 3,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          }
+        },
+        "fine": {
+          "Video Topic": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Video Emotion": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Video Scene": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Video Style": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "OCR": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Object Recognition": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Attribute Recognition": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Event Recognition": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Human Motion": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Counting": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Spatial Relationship": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Human-object Interaction": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Human Interaction": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Hallucination": {
+            "n": 2,
+            "n_valid": 2,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Structuralized Image-Text Understanding": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Mathematical Calculation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Physical Property": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Function Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Identity Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Natural Relation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Physical Relation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Social Relation": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Common Sense Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Counterfactual Reasoning": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          },
+          "Causal Reasoning": {
+            "n": 1,
+            "n_valid": 1,
+            "all_mean": 0.0,
+            "all_std": 0.0,
+            "valid_mean": 0.0,
+            "valid_std": 0.0
+          },
+          "Future Prediction": {
+            "n": 0,
+            "n_valid": 0,
+            "all_mean": null,
+            "all_std": null,
+            "valid_mean": null,
+            "valid_std": null
+          }
+        }
+      }
+    }
+  },
+  "raw": {
+    "vlm_direct": [
+      [
+        {
+          "id": "mmbv-0131",
+          "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/cHazQV45SPs.mp4",
+          "category": "TR",
+          "dimensions": [
+            "Causal Reasoning"
+          ],
+          "question": "Why has the Fed continued to raise interest rates in recent years?",
+          "answer": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-a682ac3d-7e95-968d-84a1-c807106317d4', 'request_id': 'a682ac3d-7e95-968d-84a1-c807106317d4'}",
+          "answer_short": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-a682ac3d-7e95-968d-84a1-c807106317d4', 'request_id': 'a682ac3d-7e95-968d-84a1-c807106317d4'}",
+          "scores": {
+            "mmbv": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 0,
+          "tokens_llm": 0,
+          "tokens_vl": 0,
+          "frames_touched": 0,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "mmbv-0679",
+          "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3cs8S_urAXU.mp4",
+          "category": "HL",
+          "dimensions": [
+            "Hallucination"
+          ],
+          "question": "What country is the girl in the video from?\n",
+          "answer": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-15702b19-0570-9a5c-950b-8217bb98fa83', 'request_id': '15702b19-0570-9a5c-950b-8217bb98fa83'}",
+          "answer_short": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-15702b19-0570-9a5c-950b-8217bb98fa83', 'request_id': '15702b19-0570-9a5c-950b-8217bb98fa83'}",
+          "scores": {
+            "mmbv": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 0,
+          "tokens_llm": 0,
+          "tokens_vl": 0,
+          "frames_touched": 0,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "mmbv-1185",
+          "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/e_iZaS00xds.mp4",
+          "category": "HL",
+          "dimensions": [
+            "Hallucination",
+            "Structuralized Image-Text Understanding"
+          ],
+          "question": "Did NIO rank the 20th place in the chart?",
+          "answer": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-19ae0850-0c32-912f-bbd0-9d3f2f92e19c', 'request_id': '19ae0850-0c32-912f-bbd0-9d3f2f92e19c'}",
+          "answer_short": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-19ae0850-0c32-912f-bbd0-9d3f2f92e19c', 'request_id': '19ae0850-0c32-912f-bbd0-9d3f2f92e19c'}",
+          "scores": {
+            "mmbv": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 0,
+          "tokens_llm": 0,
+          "tokens_vl": 0,
+          "frames_touched": 0,
+          "prebuild_share": 0.0
+        }
+      ]
+    ],
+    "vlm_transcript": [
+      [
+        {
+          "id": "mmbv-0131",
+          "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/cHazQV45SPs.mp4",
+          "category": "TR",
+          "dimensions": [
+            "Causal Reasoning"
+          ],
+          "question": "Why has the Fed continued to raise interest rates in recent years?",
+          "answer": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-d3b939d2-6e87-9fe8-b718-e1baa0b914ae', 'request_id': 'd3b939d2-6e87-9fe8-b718-e1baa0b914ae'}",
+          "answer_short": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-d3b939d2-6e87-9fe8-b718-e1baa0b914ae', 'request_id': 'd3b939d2-6e87-9fe8-b718-e1baa0b914ae'}",
+          "scores": {
+            "mmbv": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 0,
+          "tokens_llm": 0,
+          "tokens_vl": 0,
+          "frames_touched": 0,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "mmbv-0679",
+          "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3cs8S_urAXU.mp4",
+          "category": "HL",
+          "dimensions": [
+            "Hallucination"
+          ],
+          "question": "What country is the girl in the video from?\n",
+          "answer": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-c66f9d68-df9f-94bc-a196-8207f2ccf024', 'request_id': 'c66f9d68-df9f-94bc-a196-8207f2ccf024'}",
+          "answer_short": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-c66f9d68-df9f-94bc-a196-8207f2ccf024', 'request_id': 'c66f9d68-df9f-94bc-a196-8207f2ccf024'}",
+          "scores": {
+            "mmbv": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 0,
+          "tokens_llm": 0,
+          "tokens_vl": 0,
+          "frames_touched": 0,
+          "prebuild_share": 0.0
+        },
+        {
+          "id": "mmbv-1185",
+          "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/e_iZaS00xds.mp4",
+          "category": "HL",
+          "dimensions": [
+            "Hallucination",
+            "Structuralized Image-Text Understanding"
+          ],
+          "question": "Did NIO rank the 20th place in the chart?",
+          "answer": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-ac878bfb-afef-9a95-8585-7b91ad62ee83', 'request_id': 'ac878bfb-afef-9a95-8585-7b91ad62ee83'}",
+          "answer_short": "[ERROR] Error code: 400 - {'error': {'message': 'Input data may contain inappropriate content. For details, see: https://help.aliyun.com/zh/model-studio/error-code#inappropriate-content', 'type': 'data_inspection_failed', 'param': None, 'code': 'data_inspection_failed'}, 'id': 'chatcmpl-ac878bfb-afef-9a95-8585-7b91ad62ee83', 'request_id': 'ac878bfb-afef-9a95-8585-7b91ad62ee83'}",
+          "scores": {
+            "mmbv": 0.0
+          },
+          "tool_calls": 0,
+          "tokens": 0,
+          "tokens_llm": 0,
+          "tokens_vl": 0,
+          "frames_touched": 0,
+          "prebuild_share": 0.0
+        }
+      ]
+    ]
+  }
+}

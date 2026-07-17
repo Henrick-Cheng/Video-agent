@@ -65,6 +65,49 @@ MMBench-Video 论文 Table-3 版式（0–3 分制，官方多标签 all 口径�
 - 输的维度：**TR** 1.68 < vlm_transcript 1.88（多标签下差距从旧口径的 0.22 收窄到 0.20；TR 增益主要来自模态而非架构）、RR/CSR/AR 基线+旁白有竞争力。
 - 与旧单标签口径的差异来源：跨 L2 的多标签题（9 个 L2 的 n 合计 170 > 150 题）此前只计入主维度，TR/FP-S 等多标签重的维度受影响最大；总分与 HL 等单 leaf 维度不变。
 
+## Frame-scaling —— 密集采样 vs 有指导采帧（Phase 16.2）
+
+回应质疑「把更多帧/整段视频直接喂给 VLM 会不会比 agent 更准」。把两个基线的帧预算
+从 8 帧加到 **16 / 32 帧**（`--vlm-frames`，150 题，`--answer-mode verbose`），
+与 agent_v2 的 ~3.6 帧对照。
+
+**口径（like-for-like）**：dense 是 runs=1,故曲线统一取**单 run（trial-1）**,
+并把 3 个被内容审核误杀的题（见下）从**每个**条件（含 8 帧基线与 agent_v2）剔除 →
+**common-147**。两判分模型（qwen-max as-run + gpt-4-turbo official）各出一条。
+
+![帧数-准确率曲线](frame_scaling.svg)
+
+| 判分 | 方法 | 8f | 16f | 32f | agent_v2(~3.6f) | 32f 距 agent |
+|---|---|---|---|---|---|---|
+| qwen-max | vlm_direct | 1.442 | 1.497 | 1.680 | **2.109** | −0.429 |
+| qwen-max | vlm_transcript | 1.735 | 1.660 | 1.823 | **2.109** | −0.286 |
+| gpt-4-turbo | vlm_direct | 1.510 | 1.707 | 1.857 | **2.088** | −0.231 |
+| gpt-4-turbo | vlm_transcript | 1.694 | 1.871 | 1.932 | **2.088** | −0.156 |
+
+（agent_v2 3-run 均值:qwen 1.968 / gpt-4-turbo 1.957,与 trial-1 同序;全 150 题
+含审核 0 分的口径见附录 A。）
+
+**结论——密集采样追不上有指导采帧,应改写为成本-精度前沿:**
+- **vlm_direct（纯密集帧,无旁白）在任一判分下都未追平**:即便 32 帧仍比 agent 低
+  **0.23–0.43**。它随帧数单调上升(每翻倍 +0.12～0.17),log-线性外推需 **~81 帧
+  (gpt-4-turbo)～389 帧(qwen-max)** 才追平 agent 的 3.6 帧——即 **22×–108× 帧预算**。
+  这就是"直接加帧"的答案:**No**。
+- **vlm_transcript（密集帧 + 全量 ASR）** 在宽松的 gpt-4-turbo 下,32 帧(1.932)已落入
+  agent 3-run(1.957)的**判分噪声带内(gap 0.025;逐题一致率 0.71)**——**如实披露这是
+  接近交叉**。但代价是同时吃满 **全量旁白模态 + 9× 帧预算**;而在更严的 qwen-max 下,
+  32 帧仍差 **0.29**。换言之:要靠盲采追平,得同时给它旁白、把帧数堆到 agent 的近十倍,
+  且只在最宽松的判分口径下成立。**agent 在 ~3.6 帧即到同一水平**——成本-精度前沿上,
+  有指导采帧稳居左上。
+
+**报错披露(密集采样的一个隐藏代价):** dense 跑批出现 `[ERROR]` 均为 **DashScope
+内容审核 400**("Input data may contain inappropriate content"),**非能力失败、非
+帧数/token 上限、非解码错误**。报错数随帧数单调上升(8f=0 → 16f=1 → 32f=3):帧越密,
+某一帧触发内容审核的概率越高——这是"喂更多帧"本身的一个副作用。三题
+(mmbv-0131/0679/1185)经 16f/32f 确认性重跑 **100% 复现**(确定性均匀采样→同样的帧),
+**重试无效**;8 帧基线与 agent_v2 对这三题**零报错**且正常判分。为公平,已将其从所有条件
+统一剔除(common-147)。原始 `[ERROR]` 被判 0 且计入 valid,故全 150 题口径会**低估** dense
+基线(附录 A);主口径以 common-147 为准。
+
 ## 标注天花板（annotation_audit, n=30, seed=11）
 
 - 抽 30 题判 gold 是否被「L0 摘要 + 完整旁白」支撑：**supported 29 (97%) / partial 1 / unsupported 0** → 粗略天花板 ~0.98（归一）。
@@ -82,3 +125,21 @@ MMBench-Video 论文 Table-3 版式（0–3 分制，官方多标签 all 口径�
 v2 在 MMBench-Video 上对直接看帧基线的反超 **runs=3 抗噪成立**（1.984 ± 0.101 vs 1.727 ± 0.020），归因干净、舒适区清晰、幻觉抵抗 2× 起。**mmbv 上的便宜提升杠杆已耗尽**（Phase 14.1 路由证伪、14.2 取证深度证伪），残差是 VLM 能力天花板 + 长视频定位（🔴 locate_visual / D6 窄窗加密均已评估为不划算，**DROPPED，非未来工作**）。
 
 **要更强证据应换数据集复现，而非榨本集残差**：下一迭代方向 = 更干净 / 更长的公开基准（EgoSchema / Video-MME long）复现同一反超。
+
+## 附录 A：Frame-scaling 全 150 题口径（透明性）
+
+主口径为 common-147（剔除 3 个审核误杀题）。此处给全 150 题（含 `[ERROR]` 被判 0 的口径，
+单 run trial-1）——它**低估** dense 基线，仅供透明对照；结论与 common-147 一致（无交叉）。
+
+| 判分 | 方法 | 8f | 16f | 32f |
+|---|---|---|---|---|
+| qwen-max | vlm_direct | 1.447 | 1.507 | 1.647 |
+| qwen-max | vlm_transcript | 1.747 | 1.667 | 1.787 |
+| gpt-4-turbo | vlm_direct | 1.513 | 1.700 | 1.820 |
+| gpt-4-turbo | vlm_transcript | 1.700 | 1.860 | 1.893 |
+
+> 原始：`docs/results/benchmark_mmbv_dense_{16f,32f}.json`（qwen-max as-run）、
+> `…rejudge_gpt-4-turbo.json` + `…rejudge_gpt-4-turbo_official_agg.json`（gpt-4-turbo）。
+> 确认性重跑：`docs/results/dense_moderation_confirm_{16f,32f}.json`（3 题
+> `dense_moderation_3blocked_ids.json` 审核 400 复现，重试无效）。曲线图源：
+> `docs/analysis/frame_scaling.svg`。

@@ -1,0 +1,60 @@
+[
+ {
+  "id": "mmbv-0131",
+  "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/cHazQV45SPs.mp4",
+  "category": "TR",
+  "question": "Why has the Fed continued to raise interest rates in recent years?",
+  "reference_answer": "This is to deal with the problem of high domestic inflation.",
+  "key_facts": [],
+  "_source": {
+   "dataset": "MMBench-Video",
+   "index": 131,
+   "youtube_id": "cHazQV45SPs",
+   "video_type": "Finance",
+   "dimensions": [
+    "Causal Reasoning"
+   ],
+   "duration_sec": 173.2,
+   "duration_bucket": "90-180s"
+  }
+ },
+ {
+  "id": "mmbv-0679",
+  "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/3cs8S_urAXU.mp4",
+  "category": "HL",
+  "question": "What country is the girl in the video from?\n",
+  "reference_answer": "I don't konw.",
+  "key_facts": [],
+  "_source": {
+   "dataset": "MMBench-Video",
+   "index": 679,
+   "youtube_id": "3cs8S_urAXU",
+   "video_type": "Instruction Video (how to ...)",
+   "dimensions": [
+    "Hallucination"
+   ],
+   "duration_sec": 140.2,
+   "duration_bucket": "90-180s"
+  }
+ },
+ {
+  "id": "mmbv-1185",
+  "video": "/Users/cjzh/.cache/huggingface/hub/datasets--opencompass--MMBench-Video/snapshots/ef35e21df54488715a906c7e47146f5d9f4abbed/video/e_iZaS00xds.mp4",
+  "category": "HL",
+  "question": "Did NIO rank the 20th place in the chart?",
+  "reference_answer": "No. NIO ranked 21st. ",
+  "key_facts": [],
+  "_source": {
+   "dataset": "MMBench-Video",
+   "index": 1185,
+   "youtube_id": "e_iZaS00xds",
+   "video_type": "Business & Industrial",
+   "dimensions": [
+    "Hallucination",
+    "Structuralized Image-Text Understanding"
+   ],
+   "duration_sec": 179.2,
+   "duration_bucket": "90-180s"
+  }
+ }
+]

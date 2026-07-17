@@ -1181,3 +1181,12 @@ OPENAI_API_KEY 到位，`rejudge_gpt4` 对缓存答案全量重判（1350 次，
 - **维度**：HL 2.29 vs 0.78（2.9×）卖点无损；FP-C 1.47 vs 0.90；结论方向全部保持。
 - 论文引用统一切换 gpt-4-turbo 口径；README/README.zh/review §1.4 已同步。
 - 附：子集构成偏差量化——按官方全量分布重加权，总分移动 ≤0.04（agent +0.017），构成偏差不足以动摇结论；"全量 1998 题单跑（官方 leaderboard 本为单次运行）"为下一个待决定项（推理 ~4.4× 已花、judge ~$22）。
+
+### 16.2 Frame-scaling —— 密集采样追不上有指导采帧（2026-07-17）
+
+回应评审质疑「把更多帧/整段视频直接喂给 VLM 会不会更准」。把两基线帧预算 8→**16/32 帧**（`--vlm-frames`，150 题，`--answer-mode verbose`，runs=1），与 agent_v2 的 ~3.6 帧对照，两判分模型交叉验证。产物：`docs/results/benchmark_mmbv_dense_{16f,32f}.{json,md}` + `…rejudge_gpt-4-turbo{,_official_agg}.json`；曲线 `docs/analysis/frame_scaling.svg`。
+
+- **口径（like-for-like）**：dense 是 runs=1，故曲线取单 run（trial-1）；把 3 个审核误杀题从**每个**条件（含 8 帧与 agent_v2）剔除 → **common-147**。全 150 题口径入附录（低估 dense，仅透明对照）。
+- **结论——无交叉，改写为成本-精度前沿**：`vlm_direct`（纯密集帧）任一判分下都没追平，32 帧仍低 0.23–0.43，log-线性外推需 **~81（gpt-4-turbo）～389（qwen-max）帧**追平 agent 的 3.6 帧（22×–108× 帧预算）。唯一接近的是 `vlm_transcript`（密集帧+全量旁白）在宽松 gpt-4-turbo 下 32 帧落进 agent 3-run 噪声带（1.932 vs 1.957，gap 0.025）——但需同时吃满旁白 + ~10× 帧、且只在宽松 judge 成立（严 judge 仍差 0.29）。**agent 在 ~3.6 帧即达同一水平**。
+- **报错根因（推翻交接假设）**：dense 的 `[ERROR]` 全为 **DashScope 内容审核 400**（"inappropriate content"），**非能力失败、非帧数/token 上限、非解码错误**。报错随帧数单调升（8f=0→16f=1→32f=3）：帧越密越易触审核。3 题（0131/0679/1185）经 16f/32f 确认性重跑 **100% 复现**（确定性均匀采样→同样的帧），**重试无效**；8 帧/agent 对这三题零报错。这是"喂更多帧"的一个隐藏副作用，如实披露并统一剔除。
+- **背书**：`pytest -q` 全绿（70 passed / 12 skipped），含 `test_mmbv_aggregation::test_overall_all_equals_legacy_flat_mean`（Overall(all)≡旧 flat mean）为聚合口径背书。文档同步：`benchmark_mmbv_final_analysis.md` 增 Frame-scaling 节 + 附录 A；`project_review_202607.md` §4.2 增 Q7+（数据版反驳）。

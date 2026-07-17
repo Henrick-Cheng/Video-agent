@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="712" viewBox="0 0 580 712" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+<rect width="580" height="712" fill="#fcfcfb"/>
+<text x="290.0" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="#0b0b0b">Frame-scaling on MMBench-Video (150q)</text>
+<text x="290.0" y="43" text-anchor="middle" font-size="12" fill="#52514e">dense uniform sampling never overtakes guided sampling &#183; trial-1, common-147</text>
+<rect x="48" y="74" width="440" height="250" fill="none" stroke="#c3c2b7" stroke-width="1"/>
+<text x="48" y="66" font-size="12.5" font-weight="600" fill="#52514e">qwen-max (as-run judge)</text>
+<line x1="48" y1="279.9" x2="488" y2="279.9" stroke="#e1e0d9" stroke-width="1"/>
+<text x="40" y="283.9" text-anchor="end" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">1.50</text>
+<line x1="48" y1="206.4" x2="488" y2="206.4" stroke="#e1e0d9" stroke-width="1"/>
+<text x="40" y="210.4" text-anchor="end" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">1.75</text>
+<line x1="48" y1="132.8" x2="488" y2="132.8" stroke="#e1e0d9" stroke-width="1"/>
+<text x="40" y="136.8" text-anchor="end" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">2.00</text>
+<line x1="212.3" y1="324" x2="212.3" y2="329" stroke="#c3c2b7" stroke-width="1"/>
+<text x="212.3" y="343" text-anchor="middle" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">8</text>
+<line x1="329.6" y1="324" x2="329.6" y2="329" stroke="#c3c2b7" stroke-width="1"/>
+<text x="329.6" y="343" text-anchor="middle" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">16</text>
+<line x1="446.9" y1="324" x2="446.9" y2="329" stroke="#c3c2b7" stroke-width="1"/>
+<text x="446.9" y="343" text-anchor="middle" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">32</text>
+<line x1="77.1" y1="324" x2="77.1" y2="329" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="77.1" y="343" text-anchor="middle" font-size="10.5" fill="#2a78d6" font-weight="600">3.6</text>
+<text x="268.0" y="361" text-anchor="middle" font-size="11" fill="#52514e">frames / question (log scale)</text>
+<rect x="48" y="100.8" width="440" height="41.5" fill="#2a78d6" opacity="0.09"/>
+<line x1="48" y1="100.8" x2="488" y2="100.8" stroke="#2a78d6" stroke-width="2" stroke-dasharray="6 4"/>
+<circle cx="77.1" cy="100.8" r="5.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="494" y="97.8" font-size="11" font-weight="700" fill="#2a78d6">agent</text>
+<text x="494" y="111.8" font-size="11" font-weight="700" fill="#2a78d6">2.11</text>
+<path d="M212.3 210.8 L329.6 232.8 L446.9 184.9" fill="none" stroke="#008300" stroke-width="2"/>
+<circle cx="212.3" cy="210.8" r="3.6" fill="#008300" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="329.6" cy="232.8" r="3.6" fill="#008300" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="446.9" cy="184.9" r="3.6" fill="#008300" stroke="#fcfcfb" stroke-width="1"/>
+<text x="452.9" y="188.9" font-size="11" font-weight="600" fill="#008300">transcript 1.82</text>
+<path d="M212.3 296.9 L329.6 280.8 L446.9 226.9" fill="none" stroke="#e87ba4" stroke-width="2"/>
+<circle cx="212.3" cy="296.9" r="3.6" fill="#e87ba4" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="329.6" cy="280.8" r="3.6" fill="#e87ba4" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="446.9" cy="226.9" r="3.6" fill="#e87ba4" stroke="#fcfcfb" stroke-width="1"/>
+<text x="452.9" y="230.9" font-size="11" font-weight="600" fill="#e87ba4">direct 1.68</text>
+<rect x="48" y="388" width="440" height="250" fill="none" stroke="#c3c2b7" stroke-width="1"/>
+<text x="48" y="380" font-size="12.5" font-weight="600" fill="#52514e">gpt-4-turbo (official judge)</text>
+<line x1="48" y1="593.9" x2="488" y2="593.9" stroke="#e1e0d9" stroke-width="1"/>
+<text x="40" y="597.9" text-anchor="end" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">1.50</text>
+<line x1="48" y1="520.4" x2="488" y2="520.4" stroke="#e1e0d9" stroke-width="1"/>
+<text x="40" y="524.4" text-anchor="end" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">1.75</text>
+<line x1="48" y1="446.8" x2="488" y2="446.8" stroke="#e1e0d9" stroke-width="1"/>
+<text x="40" y="450.8" text-anchor="end" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">2.00</text>
+<line x1="212.3" y1="638" x2="212.3" y2="643" stroke="#c3c2b7" stroke-width="1"/>
+<text x="212.3" y="657" text-anchor="middle" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">8</text>
+<line x1="329.6" y1="638" x2="329.6" y2="643" stroke="#c3c2b7" stroke-width="1"/>
+<text x="329.6" y="657" text-anchor="middle" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">16</text>
+<line x1="446.9" y1="638" x2="446.9" y2="643" stroke="#c3c2b7" stroke-width="1"/>
+<text x="446.9" y="657" text-anchor="middle" font-size="11" fill="#898781" font-variant-numeric="tabular-nums">32</text>
+<line x1="77.1" y1="638" x2="77.1" y2="643" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="77.1" y="657" text-anchor="middle" font-size="10.5" fill="#2a78d6" font-weight="600">3.6</text>
+<text x="268.0" y="675" text-anchor="middle" font-size="11" fill="#52514e">frames / question (log scale)</text>
+<rect x="48" y="420.9" width="440" height="38.5" fill="#2a78d6" opacity="0.09"/>
+<line x1="48" y1="420.9" x2="488" y2="420.9" stroke="#2a78d6" stroke-width="2" stroke-dasharray="6 4"/>
+<circle cx="77.1" cy="420.9" r="5.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="494" y="417.9" font-size="11" font-weight="700" fill="#2a78d6">agent</text>
+<text x="494" y="431.9" font-size="11" font-weight="700" fill="#2a78d6">2.09</text>
+<path d="M212.3 536.8 L329.6 484.8 L446.9 466.8" fill="none" stroke="#008300" stroke-width="2"/>
+<circle cx="212.3" cy="536.8" r="3.6" fill="#008300" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="329.6" cy="484.8" r="3.6" fill="#008300" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="446.9" cy="466.8" r="3.6" fill="#008300" stroke="#fcfcfb" stroke-width="1"/>
+<text x="452.9" y="470.8" font-size="11" font-weight="600" fill="#008300">transcript 1.93</text>
+<path d="M212.3 590.9 L329.6 533.0 L446.9 488.9" fill="none" stroke="#e87ba4" stroke-width="2"/>
+<circle cx="212.3" cy="590.9" r="3.6" fill="#e87ba4" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="329.6" cy="533.0" r="3.6" fill="#e87ba4" stroke="#fcfcfb" stroke-width="1"/>
+<circle cx="446.9" cy="488.9" r="3.6" fill="#e87ba4" stroke="#fcfcfb" stroke-width="1"/>
+<text x="452.9" y="492.9" font-size="11" font-weight="600" fill="#e87ba4">direct 1.86</text>
+<rect x="48" y="687" width="16" height="4" rx="2" fill="#2a78d6"/>
+<text x="70" y="694" font-size="10.5" fill="#52514e">agent_v2 (guided, ~3.6 f)</text>
+<rect x="237.5" y="687" width="16" height="4" rx="2" fill="#008300"/>
+<text x="259.5" y="694" font-size="10.5" fill="#52514e">vlm_transcript (dense+ASR)</text>
+<rect x="432.9" y="687" width="16" height="4" rx="2" fill="#e87ba4"/>
+<text x="454.9" y="694" font-size="10.5" fill="#52514e">vlm_direct (dense frames)</text>
+</svg>
