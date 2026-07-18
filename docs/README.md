@@ -39,6 +39,13 @@
 | `architecture_review_202607.md` | 2026-07 架构评审（论文第 6 章素材） |
 | `thesis_outline.md` | 论文大纲 + 材料映射表（定义各章取数源） |
 
+## thesis/ — 论文章节草稿
+
+| 文件 | 说明 |
+|---|---|
+| `ch4_method.md` | **Ch.4 Method 完整英文初稿**（英文正文 + HTML 注释内嵌中文写作注、定稿零成本剥离；常数速查表在文末注释，均经源码核对） |
+| `fig/ch4_architecture.svg` | Fig. 4.1 架构图（论文候选正式图；草稿内另有 mermaid 迭代版） |
+
 ## archive/ — 历史归档
 
 被后续版本取代的运行记录与文稿（v1 时代 mmbv 线、v2 runs=1 线、v1 面试稿等），

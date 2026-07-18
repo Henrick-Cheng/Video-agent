@@ -34,11 +34,17 @@
 - 3.3 Design requirements derived（多粒度按需记忆 / caption 必须保留 / 置信度编排）——自然引出 Ch.4。
 
 ### Ch.4 Method: Lazy Three-Layer Memory & Confidence-Driven Orchestration（~22%）
-- 4.1 Overview + 架构图（重绘 README mermaid 为正式矢量图）。
-- 4.2 Three-layer lazy memory：L0/L1/L2 定义、构建时机表、**provenance 设计**（triplet 挂 seg:id、命中回带 caption+转写——"图是目录，证据在 caption"是本章的 thesis statement）。
-- 4.3 Tools：search_memory（零成本联合检索）/ explore_segment（逐题建图）/ inspect_frame；实体命名三道防线 + 关系时窗合并（素材：builder.py、review 附录）。
-- 4.4 Confidence-driven loop：自评 1-3、预算上限（≤2/轮、≤3 轮）、grounding rules（absence≠no —— HL 2.3× 的机制来源，此处先讲设计、Ch.5 给数）。
-- 4.5 Implementation notes（半页到一页即可）：双后端抽象、fail-loud 契约、真实计费账本、pseudo-call 防护——工程细节点到为止，展开放 Appendix。
+
+> **✍️ 完整英文初稿已成文：`docs/thesis/ch4_method.md`**（2026-07-18；正文英文、中文写作注释以 HTML
+> 注释内嵌、定稿零成本剥离）。架构图：`docs/thesis/fig/ch4_architecture.svg`（论文候选正式图）+
+> 草稿内嵌 mermaid（迭代讨论用，终稿以 SVG 为准）。以下小节结构与初稿一致。
+
+- 4.1 Overview：问题形式化（V/T/q/a、M=⟨L0,L1,L2⟩、s_i、τ 五元组、σ(τ) provenance——符号体系为本稿新建，代码/旧文档无现成形式化）；Ch.3 诊断反推的三条设计需求 R1 按需多粒度 / R2 证据原文保留 / R3 置信度编排；**Fig. 4.1** + 单题生命周期 walkthrough。
+- 4.2 Three-layer lazy memory（**Table 4.2** 三层总览）：4.2.1 L0（8 帧摘要 + faster-whisper 全量转写、12k 字符 head60/tail40 截断及动机）；4.2.2 L1（≤6 帧/窗口单次 VL call 同产 caption+triplets）；4.2.3 L2（50 词闭集关系表、实体命名三道防线（生成端 Known-entities / 批内 (label.lower,type) / 跨批 difflib≥**0.85**）、时窗合并 gap≤3s）；4.2.4 **Provenance principle**（thesis statement：graph=catalogue, caption=evidence；命中回带 score 1.0）。
+- 4.3 Memory interface（**Table 4.1** 工具契约）：search_memory 评分权重 2.0/1.5/0.5/0.3、top-k 5/3/4、时间约束 first/last 20%；explore_segment；inspect_frame 回写（σ=inspector, conf 0.75）。
+- 4.4 Confidence-driven orchestration（**Algorithm 4.1**）：自评 1-3；⚠️ **写作红线——预算措辞**：「≤2/轮、≤3 轮」是 prompt 指令性约束（instructed），代码唯一硬上限是 recursion_limit=5K+10=40（K=6）——正文必须用 instructed/enforced 二分，不可写 enforced budget（runs=3 实测均值 1.7 calls/3.6 帧可引为"实际被遵守"的证据）；grounding rules 三条（absence≠no —— HL 2.3× 的机制来源，此处先讲设计、Ch.5 给数）；short/verbose 双模式；pseudo-call 防护 + 三级 JSON 容错。
+- 4.5 Implementation notes（半页到一页）：`create_agent`（LangGraph）、记忆外置 session（messages 跨问不复用、session 持久）、fail-loud 契约、真实计费账本——展开放 Appendix。
+- ⚠️ 常数一律以 `docs/thesis/ch4_method.md` 文末注释的速查表为准（源码逐一核对过）：L0=8 帧（硬编码）、explore≤6 帧、dedup 0.85（非 config 预留的 0.9）、VLM=qwen-vl-plus（非 -latest）。
 
 ### Ch.5 Evaluation（~30%，全文重心）
 - 5.1 Setup：MMBench-Video 150 题分层子集（seed=42，**如实声明与公开榜不可直接比**）；VLMEvalKit 0–3 judge 复刻；runs=3；真实 usage 口径；基线三件套（vlm_direct / **vlm_transcript 公平基线** / v1）。
@@ -64,14 +70,14 @@ A. 三套系统 prompt 全文（v1 / v2 core / noexplore）；B. 复现指令（
 | Ch.1/摘要 | README.md 三句话、review §Q0/§2.1 |
 | Ch.2.4 定位表 | review §2.2（撞车风险表展开成文） |
 | Ch.3 | progress.md Phase 12-13、README「为什么是 v2」 |
-| Ch.4 | docs/architecture.md、README 核心设计、builder.py/react_agent.py（配图与伪代码） |
+| Ch.4 | **thesis/ch4_method.md（完整英文初稿）+ thesis/fig/ch4_architecture.svg（Fig 4.1）**、docs/architecture.md、README 核心设计、builder.py/react_agent.py（配图与伪代码） |
 | Ch.5 | **analysis/benchmark_mmbv_final_analysis.md（叙事取数源）+ results/benchmark_mmbv_final_gpt4judge.md（论文口径维度全表）+ results/benchmark_mmbv_final_official_agg.md（qwen 口径对照）**、results/benchmark_mmbv_final.json（case study 原始 trace）、results/benchmark_v2_agqa.md、results/annotation_audit.json、progress.md §14.1/14.2（负结果）、**results/benchmark_mmbv_dense_{16f,32f}.* + analysis/frame_scaling.svg（Ch.5.5 frame-scaling）** |
 | Ch.6 | review §5 roadmap、architecture_review_202607.md |
 
 ## 3. 写作顺序（按依赖关系，不按章节号）
 
 1. **先画图后动笔**：把全文 6-8 张图先做出来——架构图、时长桶折线（money chart）、归因柱状、维度对比、frames-touched、**帧数-准确率 scaling 曲线（已有：`docs/analysis/frame_scaling.svg`，重绘为论文风格即可）**、case study trace 图。图定了，Ch.4/5 的文字就是给图配说明。
-2. **Ch.5 先写**（数据全在、表格现成，最不需要灵感）→ **Ch.4**（对着代码写，最熟）→ **Ch.3**（progress.md 改写）→ **Ch.2**（读文献最耗时，穿插做）→ **Ch.1 与 Abstract 最后写**（等你知道全文到底证明了什么）。
+2. **Ch.5 先写**（数据全在、表格现成，最不需要灵感）→ **Ch.4**（✍️ 英文初稿已完成：`docs/thesis/ch4_method.md`，待导师过一轮）→ **Ch.3**（progress.md 改写）→ **Ch.2**（读文献最耗时，穿插做）→ **Ch.1 与 Abstract 最后写**（等你知道全文到底证明了什么）。
 3. 每写完一章给导师/postdoc 过一轮，不要憋大招到最后。
 4. ~~gpt-4 重评若在提交前完成……~~ ✅ 已完成（2026-07-17）：全文数字以 gpt-4-turbo 口径为准（`results/benchmark_mmbv_final_gpt4judge.md`），qwen-max 口径作稳健性对照；答辩口径见 review Q6（已改写为进攻题）。
 
