@@ -1,0 +1,62 @@
+% =====================================================================
+% Dissertation (single-column, report class) --- main file.
+% Self-contained: compiles on Overleaf or any TeX Live that has the packages
+% below (no CVPR style involved). This wrapper makes Method appear as
+% "Chapter 4" and pulls in sec/method.tex.
+% =====================================================================
+
+\documentclass[12pt,a4paper,oneside]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{svg}               % \includesvg — Overleaf runs Inkscape automatically
+\usepackage{graphicx}
+\usepackage{microtype}
+% Safety valve: lets TeX stretch a line rather than overflow the margin
+% when an unbreakable token (e.g. \texttt{qwen-plus-latest}) lands badly.
+\setlength{\emergencystretch}{3em}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalize]{cleveref}   % load AFTER hyperref
+\crefname{algorithm}{Algorithm}{Algorithms}
+\Crefname{algorithm}{Algorithm}{Algorithms}
+
+\title{Scene Graphs as Evidence Indexes:\\
+       Lazy Memory and Confidence-Driven LLM Agents\\
+       for Long-Video Question Answering}
+\author{Your Name}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+% --- Earlier chapters are stubs. The source outline puts Method as Chapter 4,
+% --- so we advance the chapter counter to 3; the next \chapter becomes "4".
+% --- Replace this with your real Chapters 1--3. The Method section
+% --- cross-references two labels defined in OTHER chapters:
+% ---   \label{ch:diagnosis} -> Ch.3 (baseline & diagnosis)
+% ---   \label{ch:eval}      -> Ch.5 (evaluation)
+% --- Until those chapters exist, \cref to them renders as "??" (normal placeholder).
+\setcounter{chapter}{3}
+
+\input{sec/method}
+
+\input{sec/evaluation}
+
+% --- Later chapters (Ch.6 conclusion, etc.) go here.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\appendix
+\input{sec/appendix}
+
+\end{document}

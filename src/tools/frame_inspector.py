@@ -147,7 +147,11 @@ def make_inspect_frame(session: "VideoSession"):
 
         if frame_meta is None:
             if session.cached_frames:
-                frame_meta = next(iter(session.cached_frames.values()))
+                # Degraded fallback: extraction failed (e.g. video file gone),
+                # so use the temporally nearest cached frame regardless of
+                # tolerance; the mismatch is disclosed via timestamp_used.
+                frame_meta = min(session.cached_frames.values(),
+                                 key=lambda f: abs(f.timestamp - timestamp))
             else:
                 return json.dumps({
                     "answer": (

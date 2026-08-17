@@ -1,0 +1,24 @@
+# LaTeX build artefacts (regenerate with `make`)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.brf
+*.lof
+*.lot
+sec/*.aux
+
+# Built PDFs — rebuild locally; keep the repo about sources
+conference/main.pdf
+dissertation/main.pdf
+
+# Overleaf upload bundles (regenerate with `make zips` equivalent / the zip cmd
+# documented in README.md)
+*.zip
+
+.DS_Store

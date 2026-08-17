@@ -1,0 +1,99 @@
+% !TEX root = ../main.tex
+% =====================================================================
+% Appendix — supplementary evaluation tables (dissertation).
+% Corresponds to thesis_outline.md Appendix D. Numbers verbatim from:
+%   docs/analysis/benchmark_mmbv_final_analysis.md (Appendix A, full-150)
+%   docs/results/benchmark_mmbv_final_gpt4judge.md (L2 table, gpt-4-turbo)
+%   docs/results/benchmark_mmbv_final_official_agg.md (L2 table, qwen-max)
+% =====================================================================
+
+\chapter{Supplementary Evaluation Tables}
+\label{app:tables}
+
+\section{Frame-scaling under the full-150 protocol}
+\label{app:full150}
+
+\Cref{tab:full150} reports the frame-scaling experiment of
+\cref{subsec:framescaling} under the transparency protocol that keeps all 150
+questions, scoring the deterministically moderation-blocked items
+(\cref{subsec:framescaling}) as 0. Because only the dense conditions are affected
+(0 errors at 8f, 1 at 16f, 3 at 32f), this accounting \emph{underestimates} the
+dense baselines relative to common-147; conclusions are unchanged.
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Frame-scaling, full-150 protocol (0--3, trial-1; moderation-blocked
+  items scored 0).}
+  \label{tab:full150}
+  \begin{tabular}{@{}llccc@{}}
+    \toprule
+    Judge & Method & 8f & 16f & 32f \\
+    \midrule
+    qwen-max & vlm\_direct & 1.447 & 1.507 & 1.647 \\
+    qwen-max & vlm\_transcript & 1.747 & 1.667 & 1.787 \\
+    gpt-4-turbo & vlm\_direct & 1.513 & 1.700 & 1.820 \\
+    gpt-4-turbo & vlm\_transcript & 1.700 & 1.860 & 1.893 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Per-dimension results with standard deviations}
+\label{app:l2full}
+
+\Cref{tab:l2gpt,tab:l2qwen} give the full L2-dimension breakdown (official
+multi-label aggregation, runs=3 mean $\pm$ std) under both judge settings; $n$ is
+the number of subset questions tagged with each dimension (multi-label, so the
+L2 counts sum to more than 150).
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{L2 dimensions and roll-ups, gpt-4-turbo judge (paper setting).}
+  \label{tab:l2gpt}
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    Dimension & $n$ & agent\_v2 & vlm\_transcript & vlm\_direct \\
+    \midrule
+    CP & 17 & $2.18 \pm 0.08$ & $1.78 \pm 0.06$ & $1.53 \pm 0.08$ \\
+    FP-S & 36 & $2.08 \pm 0.15$ & $1.81 \pm 0.02$ & $1.64 \pm 0.06$ \\
+    FP-C & 17 & $1.47 \pm 0.10$ & $0.90 \pm 0.06$ & $0.77 \pm 0.05$ \\
+    HL & 15 & $2.29 \pm 0.08$ & $0.78 \pm 0.03$ & $0.64 \pm 0.03$ \\
+    LR & 11 & $2.18 \pm 0.22$ & $1.73 \pm 0.15$ & $1.39 \pm 0.04$ \\
+    AR & 14 & $2.07 \pm 0.17$ & $2.50 \pm 0.06$ & $2.21 \pm 0.10$ \\
+    RR & 14 & $2.07 \pm 0.15$ & $2.12 \pm 0.09$ & $1.81 \pm 0.03$ \\
+    CSR & 13 & $2.21 \pm 0.13$ & $2.28 \pm 0.04$ & $2.26 \pm 0.04$ \\
+    TR & 33 & $1.74 \pm 0.10$ & $1.87 \pm 0.05$ & $1.52 \pm 0.01$ \\
+    \midrule
+    Perception & 78 & $2.04 \pm 0.09$ & $1.42 \pm 0.02$ & $1.28 \pm 0.06$ \\
+    Reasoning & 83 & $1.98 \pm 0.12$ & $2.07 \pm 0.02$ & $1.79 \pm 0.02$ \\
+    Overall & 150 & $1.98 \pm 0.10$ & $1.71 \pm 0.02$ & $1.49 \pm 0.02$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{L2 dimensions and roll-ups, qwen-max judge (as-run robustness control).}
+  \label{tab:l2qwen}
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    Dimension & $n$ & agent\_v2 & vlm\_transcript & vlm\_direct \\
+    \midrule
+    CP & 17 & $2.25 \pm 0.10$ & $1.63 \pm 0.03$ & $1.57 \pm 0.06$ \\
+    FP-S & 36 & $2.06 \pm 0.16$ & $1.73 \pm 0.04$ & $1.55 \pm 0.01$ \\
+    FP-C & 17 & $1.39 \pm 0.12$ & $0.78 \pm 0.06$ & $0.61 \pm 0.06$ \\
+    HL & 15 & $2.42 \pm 0.19$ & $1.04 \pm 0.14$ & $0.62 \pm 0.13$ \\
+    LR & 11 & $2.21 \pm 0.30$ & $1.85 \pm 0.04$ & $1.61 \pm 0.04$ \\
+    AR & 14 & $2.14 \pm 0.10$ & $2.50 \pm 0.00$ & $2.33 \pm 0.03$ \\
+    RR & 14 & $2.00 \pm 0.12$ & $2.12 \pm 0.03$ & $1.76 \pm 0.03$ \\
+    CSR & 13 & $2.23 \pm 0.13$ & $2.36 \pm 0.04$ & $2.31 \pm 0.00$ \\
+    TR & 33 & $1.68 \pm 0.14$ & $1.88 \pm 0.09$ & $1.51 \pm 0.03$ \\
+    \midrule
+    Perception & 78 & $2.06 \pm 0.12$ & $1.40 \pm 0.04$ & $1.22 \pm 0.05$ \\
+    Reasoning & 83 & $1.96 \pm 0.13$ & $2.09 \pm 0.03$ & $1.82 \pm 0.01$ \\
+    Overall & 150 & $1.98 \pm 0.10$ & $1.73 \pm 0.02$ & $1.48 \pm 0.03$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}

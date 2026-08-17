@@ -28,7 +28,7 @@
 | 文件 | 说明 |
 |---|---|
 | `benchmark_mmbv_final_analysis.md` | **MMBench-Video 收官分析**（叙事取数源：抗噪/归因/舒适区/关键维度/Frame-scaling/披露；维度数字已同步官方多标签口径） |
-| `frame_scaling.svg` | 帧数-准确率曲线图（Phase 16.2；论文 Ch.5.5 主图候选） |
+| `frame_scaling.svg` | 帧数-准确率曲线图（Phase 16.2；已作为学位版 Fig. 5.1 / 会议版 Fig. 2 用图，副本在 `thesis/latex/*/fig/`） |
 | `em_vs_agent_analysis.md` | EM 指标与生成式 Agent 的错配分析（评测方法论，`run_benchmark.py` 注释引用） |
 
 ## reviews/ — 审核与规划（论文 / 求职）
@@ -37,14 +37,20 @@
 |---|---|
 | `project_review_202607.md` | 2026-07 全仓综述；**§1.4 = 简历/面试用权威数字**；§1.5 = 系统设计审核；§4 = 面试准备包 |
 | `architecture_review_202607.md` | 2026-07 架构评审（论文第 6 章素材） |
-| `thesis_outline.md` | 论文大纲 + 材料映射表（定义各章取数源） |
+| `thesis_outline.md` | **学位论文**大纲 + 材料映射表（定义各章取数源） |
+| `paper_outline_cvpr.md` | **会议论文（CVPR）全文大纲**：贡献列表、章节骨架、素材映射与砍弃清单、supplementary 分流清单、图表配额、claim 纪律。会议版不是学位版的压缩改写，写 Intro/Related/Conclusion 时照此执行 |
 
-## thesis/ — 论文章节草稿
+## thesis/ — 论文章节草稿与 LaTeX 工程
 
 | 文件 | 说明 |
 |---|---|
-| `ch4_method.md` | **Ch.4 Method 完整英文初稿**（英文正文 + HTML 注释内嵌中文写作注、定稿零成本剥离；常数速查表在文末注释，均经源码核对） |
-| `fig/ch4_architecture.svg` | Fig. 4.1 架构图（论文候选正式图；草稿内另有 mermaid 迭代版） |
+| `ch4_method.md` | **Ch.4 Method 完整英文初稿**（英文正文 + HTML 注释内嵌中文写作注、定稿零成本剥离；常数与出处见正文 Table 4.3，均经源码核对）。LaTeX 版由此**仅做格式转换**得到，本文件保留为正文的可读源 |
+| `fig/ch4_architecture.svg` | Fig. 4.1 架构图（两版论文正式用图；草稿内另有 mermaid 迭代版） |
+| `latex/` | **两套可编译 LaTeX 工程**（见 [`latex/README.md`](thesis/latex/README.md)）：`conference/`（CVPR 2026，含官方 cvpr.sty，9 页）+ `dissertation/`（report 类，23 页）。各含 Method 章与评测章（学位版 Ch.5 Evaluation 5.1–5.9 + 附录；会议版紧凑 Experiments）。本地 `make` 编译，不依赖 Overleaf 额度 |
+
+**LaTeX 工程约定**：两版 `sec/method.tex` 正文逐字相同；评测章**文风刻意不同但数字必须一致**，
+改数字要两版同改并重跑数字审计。取数口径（gpt-4-turbo 论文级 / qwen-max 抗噪 ±std）写在各
+tex 文件头部注释里。详见 `latex/README.md` §四点五。
 
 ## archive/ — 历史归档
 

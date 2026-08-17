@@ -1,0 +1,487 @@
+% !TEX root = ../main.tex
+% =====================================================================
+% Method section --- CONFERENCE (CVPR) version.
+% Converted from docs/thesis/ch4_method.md. Body text kept verbatim;
+% only formatting changed (markdown -> LaTeX). Format-only deviations are
+% logged in ../README.md ("变动清单 / change log").
+%
+% Placeholder cross-reference labels (live in OTHER sections, not yet written):
+%   sec:diagnosis  -> Ch.3 baseline & empirical diagnosis
+%   sec:eval       -> Ch.5 evaluation
+% \cref to an undefined label renders as "??" until that section exists --- expected.
+%
+% Honesty red-lines preserved from source (do NOT "strengthen" these):
+%   - exploration budget (<=2/round, <=3 rounds) is an INSTRUCTED budget; the
+%     only enforced hard cap is recursion_limit = 40 (Lambda = 5K+10).
+%   - cross-batch entity alignment threshold is difflib 0.85 (not the
+%     reserved-but-unused 0.9).
+%   - L0 summary uses 8 frames (hard-coded); the VLM is qwen-vl-plus.
+% =====================================================================
+
+\section{Method: Lazy Three-Layer Memory and Confidence-Driven Orchestration}
+\label{sec:method}
+
+\subsection{Overview}
+\label{subsec:overview}
+
+\subsubsection{Problem setup and notation}
+\label{subsubsec:setup}
+
+We address long-video question answering: given a video $V$ of duration $T$ (roughly 20 s to
+6 min in our evaluation setting; \cref{sec:eval}) and a natural-language question $q$, produce an answer $a$
+that is \emph{grounded in evidence extracted from $V$}. The system operates under a perception budget:
+every look at the video --- whether a set of sampled frames or a single frame --- costs one call to a
+vision--language model (VLM), and the central design question of this thesis is \emph{where} those calls
+should be spent. We accordingly measure the per-question perception cost as
+%
+\begin{equation}
+\label{eq:cost}
+C(q) \;=\; \#\textsc{Explore}(q) \;+\; \#\textsc{Inspect}(q)
+\end{equation}
+%
+VLM calls (equivalently, the frames those calls consume), on top of a once-per-video $L_0$
+initialisation of a single VLM call; \cref{sec:eval} reports both calls and frames per question under this
+definition.
+
+Throughout this chapter we use the following notation. The system maintains an external memory
+%
+\begin{equation}
+\label{eq:mem}
+\mathcal{M} \;=\; \langle L_0,\; L_1,\; L_2 \rangle,
+\end{equation}
+%
+whose three layers are defined in \cref{subsec:memory}: a global layer $L_0$ (one-off, cheap), an evidence layer
+$L_1$ of densely captioned segments $s_i$ (built on demand), and an index layer $L_2$ of
+timestamped triplets $\tau$ with provenance links back to $L_1$. A segment is a tuple
+$s_i = (\mathrm{id}_i,\, t_i^{s},\, t_i^{e},\, c_i,\, F_i)$ with time window $[t_i^s, t_i^e]$,
+dense caption $c_i$, and sampled frames $F_i$; a triplet is a five-tuple
+$\tau = \langle \mathit{subj},\, \mathit{rel},\, \mathit{obj},\, t^{s},\, t^{e} \rangle$ with a
+provenance tag $\sigma(\tau)$ identifying the segment it was extracted from. The agent interacts
+with $\mathcal{M}$ exclusively through three tools --- $\textsc{Search}$ (free), $\textsc{Explore}$
+(one VLM call over at most 6 frames), and $\textsc{Inspect}$ (one VLM call over a single frame) ---
+under a bounded interaction budget (\cref{subsec:orchestration}). While answering one question the agent accumulates an
+evidence set $E$ --- the union of tool results returned so far --- and maintains a self-assessed
+confidence $\gamma \in \{1, 2, 3\}$ that $E$, together with the $L_0$ context, suffices to answer
+$q$; both are given operational meaning in \cref{subsec:orchestration}.
+
+\subsubsection{Design requirements}
+\label{subsubsec:requirements}
+
+\Cref{sec:diagnosis} diagnosed two failure modes of the scene-graph-centric baseline (v1): triplets used as
+the \emph{answer source} form a lossy bottleneck (on-screen text, attribute detail and causal narration
+are discarded at the ``emit JSON triplets'' step), and a \emph{full upfront} graph build never amortises
+at the observed load of roughly one question per video. Inverting these failures yields three
+requirements that the present design satisfies by construction:
+
+\begin{itemize}
+  \item \textbf{R1 --- Memory must be multi-granular and built on demand.} Cheap global context is acquired
+  once; expensive dense perception is a per-question decision, spent only where a question demands
+  it (\cref{subsec:memory,subsec:orchestration}).
+  \item \textbf{R2 --- Evidence must be preserved verbatim.} Structured representations may \emph{locate} evidence
+  but must never \emph{replace} it: retrieval returns the original captions and narration text, not
+  their compressed surrogates (\cref{subsubsec:provenance}).
+  \item \textbf{R3 --- Orchestration must be confidence-driven.} Whether to spend another perception call is
+  decided at run time from the agent's own assessment of evidence sufficiency, under an explicit
+  budget, rather than by a fixed pipeline (\cref{subsec:orchestration}).
+\end{itemize}
+
+\subsubsection{Architecture and question lifecycle}
+\label{subsubsec:lifecycle}
+
+\Cref{fig:arch} shows the architecture. A \texttt{VideoSession} object owns the memory $\mathcal{M}$ for one
+video; the agent --- a tool-calling LLM loop in the ReAct tradition \cite{yao2023react} --- holds no
+state of its own, and every tool reads and writes the session (\cref{subsec:impl}).
+
+\begin{figure*}[t]
+  \centering
+  % Figure is a PDF pre-converted from fig/ch4_architecture.svg (rsvg-convert -f pdf).
+  % Using the PDF avoids invoking Inkscape on every compile: much faster on
+  % Overleaf, and it works in any TeX install without shell-escape.
+  % SVG fallback: keep \usepackage{svg} and swap this line back to
+  %   \includesvg[inkscapelatex=false,width=0.9\linewidth]{fig/ch4_architecture}
+  \includegraphics[width=0.9\linewidth]{fig/ch4_architecture}
+  \caption{System architecture.}
+  \label{fig:arch}
+\end{figure*}
+
+The lifecycle of one question proceeds as follows. (1) At session creation, $L_0$ is initialised
+once: a global summary from 8 uniformly sampled frames and a full narration transcript from local
+ASR (\cref{subsubsec:l0}). (2) When $q$ arrives, an $L_0$-derived context prefix is prepended to the prompt and
+the agent must first call $\textsc{Search}$, a zero-cost joint lookup over all three layers
+(\cref{subsubsec:search}). (3) The agent privately rates the sufficiency of the returned evidence on a 1--3 scale;
+if insufficient, it selects a time window and calls $\textsc{Explore}$, which performs one VLM
+call over at most 6 frames and \emph{writes} a new dense caption into $L_1$ together with its indexed
+triplets into $L_2$ (\cref{subsubsec:explore}). (4) Questions demanding pixel-level detail (on-screen text, exact
+counts) may use $\textsc{Inspect}$ on a single frame, whose findings are written back into $L_2$
+(\cref{subsubsec:inspect}). (5) The loop terminates when confidence reaches 3 or the budget is spent, and the agent
+answers strictly from accumulated evidence (\cref{subsec:orchestration}). Because $\mathcal{M}$ persists across
+questions, later questions on the same video frequently succeed at step (2) with no further
+perception cost.
+
+\subsection{Lazy Three-Layer Memory}
+\label{subsec:memory}
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{The three memory layers.}
+  \label{tab:layers}
+  \begin{tabular}{@{}p{0.11\linewidth}p{0.30\linewidth}p{0.24\linewidth}p{0.19\linewidth}@{}}
+    \toprule
+    Layer & Contents & Built when & Cost \\
+    \midrule
+    $L_0$ global & 8-frame global summary; full timestamped ASR transcript; duration $T$ & once at session init (idempotent) & 1 VLM call + local ASR (no API cost) \\
+    $L_1$ evidence & segments $s_i$ with dense captions $c_i$ (3--5 sentences, on-screen text quoted) & on demand, per $\textsc{Explore}$ call & 1 VLM call per segment ($\leq 6$ frames) \\
+    $L_2$ index & entities; triplets $\tau$ with provenance $\sigma(\tau)$; closed 50-relation vocabulary & written together with $L_1$ (and by $\textsc{Inspect}$) & no extra call (joint output of the $L_1$ call) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{$L_0$: the global layer}
+\label{subsubsec:l0}
+
+$L_0$ answers the question ``what is this video about, and what is said in it'' at the lowest
+possible cost, so that many questions never need dense perception at all.
+
+\textbf{Global summary.} Eight frames are sampled uniformly over $[0, T]$ and passed to the VLM in a
+single call with a factual-summary instruction (setting, people, main activities in rough order,
+prominent on-screen text; 3--5 sentences). On VLM failure the summary degrades to the empty string
+rather than to fabricated content --- a system-wide \emph{fail-loud} contract (\cref{subsec:impl}).
+
+\textbf{Narration transcript.} The full audio track is transcribed locally with faster-whisper --- a
+CTranslate2 reimplementation of Whisper \cite{radford2023whisper} --- using model size \emph{small}, int8
+quantisation on CPU, and voice-activity detection, yielding rows
+$(t^{s}, t^{e}, \mathit{text})$. Transcription is disk-cached per video and incurs no API cost.
+The transcript is rendered into the context as timestamped lines under a budget of 12,000
+characters; when a long video exceeds the budget, the head and tail are kept (60\%/40\%) and the
+middle elided. The head/tail policy is empirically motivated: procedural and conclusive content ---
+``what happened in the end'', final steps, outcomes --- concentrates at the ends of the track, and an
+earlier truncate-the-tail policy was observed to lose exactly those questions.
+
+\textbf{Context injection.} Every question's prompt is prefixed with an $L_0$-derived context block:
+duration, global summary, the (budgeted) transcript, and --- once any exploration has happened ---
+the list of already-explored windows. The prefix is recomputed from the session for each incoming
+question, so it reflects the memory state left by all earlier questions rather than any
+conversation history (\cref{subsec:impl}).
+
+\subsubsection{$L_1$: the evidence layer}
+\label{subsubsec:l1}
+
+$L_1$ is a growing set of \emph{segments}. Each $\textsc{Explore}(t^{s}, t^{e}, \mathit{focus})$ call
+samples at most 6 frames uniformly within the chosen window and issues \textbf{one} multi-image VLM
+call that produces \emph{both} outputs of the perception step jointly: a dense caption $c_i$ (3--5
+sentences describing actions in order, enumerating visible objects, quoting any on-screen text
+exactly) and the structured entities/relations that index it (\cref{subsubsec:l2}). Producing caption and
+triplets in one call is deliberate: relative to issuing separate captioning and extraction calls
+it halves the perception cost of a segment, and it guarantees by construction that every triplet
+has a caption to point back to.
+
+The caption is the \emph{evidence payload} of the layer --- it is what retrieval ultimately returns to
+the agent (R2). The segment also records its window, its focus string, and its frame identifiers,
+which makes each piece of evidence auditable down to the frames it was derived from.
+
+\subsubsection{$L_2$: the temporal triplet index}
+\label{subsubsec:l2}
+
+$L_2$ contains an entity store and a triplet list. Entities carry a name, a type
+(object/person/place/other), free-form attributes, and first/last-seen timestamps. Triplets are
+five-tuples $\tau = \langle \mathit{subj}, \mathit{rel}, \mathit{obj}, t^{s}, t^{e} \rangle$ with
+two metadata fields: a confidence score and a provenance tag $\sigma(\tau)$ --- \texttt{seg:<id>} for
+triplets extracted by $\textsc{Explore}$, \texttt{inspector} for those written back by
+$\textsc{Inspect}$. Duplicate triplets are collapsed on the key
+$(\mathit{subj}, \mathit{rel}, \mathit{obj}, t^{s}, t^{e})$.
+
+\textbf{Closed relation vocabulary.} Relations are constrained to a closed set $\mathcal{R}$ of 50
+verbs (e.g. \emph{holding}, \emph{walking\_toward}, \emph{talking\_to}, \emph{placed\_on}), organised in 9 semantic
+groups. The VLM prompt injects $\mathcal{R}$ with a hard instruction to choose labels only from
+the list. A closed vocabulary trades recall on long-tail relations for index consistency --- the
+same physical relation always receives the same label, which keyword retrieval (\cref{subsubsec:search}) depends
+on.
+
+\textbf{Entity-name canonicalisation (three defences).} The same person or object must map to one node
+across independently processed segments; naming drift would fragment the index. Three defences
+apply in order of increasing cost:
+
+\begin{enumerate}
+  \item \emph{Prevention at generation time}: the extraction prompt includes a \texttt{[Known entities]} block
+  listing up to 20 existing graph entities with the instruction to reuse their exact names ---
+  drift that never happens costs nothing to repair.
+  \item \emph{In-batch deduplication}: within one extraction batch, entities are canonicalised on the key
+  (lower-cased label, type), merging attributes and widening first/last-seen spans.
+  \item \emph{Cross-batch alignment}: new labels are matched against the existing graph by string
+  similarity (difflib ratio $\geq 0.85$, same type) and merged into the existing node, with the
+  rename propagated to all relations in the batch.
+\end{enumerate}
+
+\textbf{Temporal merging.} Relations that share $(\mathit{subj}, \mathit{rel}, \mathit{obj})$ and whose
+intervals are within a 3.0 s gap are merged into one triplet (interval union, confidence maximum);
+after merging, \emph{all} edges with confidence below 0.75 are discarded (a missing confidence defaults
+to 0.75 and is therefore retained). This keeps the index compact under continuous
+activity --- ``person holding cup'' observed on adjacent frames becomes one interval, not a triplet
+per frame.
+
+\subsubsection{The provenance principle: the graph is a catalogue, not the answer}
+\label{subsubsec:provenance}
+
+$L_2$ exists to \emph{locate} evidence, never to \emph{be} the evidence. Mechanically: when retrieval
+matches a triplet $\tau$ with $\sigma(\tau) = \texttt{seg:}i$, the parent segment's full caption
+$c_i$ is forced into the result set at maximum relevance (score 1.0), regardless of whether the
+caption itself matched the query. The structured fact serves as a timestamped pointer; what the
+agent actually reads is the original dense description (and, through $L_0$, the narration around
+that window). This single mechanism is the difference between v2 and the failed v1 design: both
+build scene graphs, but v1 answered \emph{from} the graph while v2 answers \emph{through} it. The
+information lost by compressing perception into $\langle \mathit{subj}, \mathit{rel},
+\mathit{obj}\rangle$ tuples is recovered at retrieval time by construction.
+
+\subsection{The Memory Interface: Three Tools}
+\label{subsec:tools}
+
+The agent never touches frames, files or the graph directly; it acts through three tools that
+read or grow $\mathcal{M}$. \Cref{tab:tools} summarises their contracts.
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Tool contracts.}
+  \label{tab:tools}
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{@{}llp{0.40\linewidth}ll@{}}
+    \toprule
+    Tool & Input & Returns & Cost & Writes \\
+    \midrule
+    $\textsc{Search}$ & question text & matched triplets, segment captions, transcript lines, entity summary, explored windows & \textbf{free} (no API call) & --- \\
+    $\textsc{Explore}$ & window $[t^{s}, t^{e}]$, focus & new segment id, caption, graph deltas, updated explored windows & 1 VLM call ($\leq 6$ frames) & $L_1$ + $L_2$ \\
+    $\textsc{Inspect}$ & timestamp, sub-question & pixel-level answer, entities/relations found & 1 VLM call (1 frame) & $L_2$ \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\subsubsection{$\textsc{Search}$: free joint retrieval}
+\label{subsubsec:search}
+
+$\textsc{Search}(q)$ performs keyword retrieval jointly over all three layers. Query and memory
+text are tokenised identically: lower-cased, split on alphanumerics, stop-words removed, and each
+token lemmatised against WordNet \cite{miller1995wordnet} (via NLTK \cite{bird2009nltk}) --- verb reading
+first, then noun --- so that surface variants match (``cooking'' $\approx$ ``cooks'' $\approx$ ``cook''). When the
+WordNet data is unavailable (fully offline deployments), lemmatisation degrades to a lightweight
+suffix-stripping stemmer; all reported experiments used the WordNet path.
+
+\begin{itemize}
+  \item \textbf{Over $L_2$} (top 5, minimum score 0.3): a triplet is scored by summed keyword weights
+  %
+  \begin{equation}
+  \label{eq:score}
+  \begin{aligned}
+  \mathrm{score}(\tau, q) &\;=\; \sum_{t \,\in\, \mathrm{tok}(q)} w(t, \tau), \\[2pt]
+  w(t, \tau) &\;=\; \begin{cases}
+  2.0 & t = \mathit{subj} \ \text{or}\ t = \mathit{obj} \\
+  1.5 & t = \mathit{rel} \\
+  0.5 & t \sqsubset \mathit{subj} \ \text{or}\ t \sqsubset \mathit{obj} \\
+  0.3 & t \sqsubset \mathit{rel} \\
+  0 & \text{otherwise,}
+  \end{cases}
+  \end{aligned}
+  \end{equation}
+  %
+  where $\sqsubset$ denotes proper substring containment and the first matching case applies.
+  Temporal phrases in the question additionally filter by time: ``at the beginning/first''
+  restricts to the first 20\% of $[0,T]$, ``at the end/last'' to the final 20\%, and an explicit
+  second/minute reference to a $\pm 3$ s ($\pm 5$ s) neighbourhood.
+  \item \textbf{Over $L_1$} (top 3): captions score by query-token coverage
+  $\mathrm{cov}(c_i, q) = |\mathrm{tok}(q) \cap \mathrm{tok}(c_i)| \,/\, |\mathrm{tok}(q)|$,
+  plus the provenance pull-back of \cref{subsubsec:provenance}.
+  \item \textbf{Over $L_0$} (top 4): each transcript line scores by the same coverage measure
+  $\mathrm{cov}(\cdot, q)$.
+\end{itemize}
+
+A minimum score of 0.15 filters segment and transcript hits. The result also reports the current
+explored windows, so the agent can reason about \emph{where memory has not looked yet} --- the basis of
+the grounding rule in \cref{subsubsec:grounding}. Because $\textsc{Search}$ is free, the orchestration policy can
+mandate it unconditionally as the first action of every question.
+
+\subsubsection{$\textsc{Explore}$: on-demand dense perception}
+\label{subsubsec:explore}
+
+$\textsc{Explore}$ is the only operation that grows the evidence base, implementing R1's ``build
+on demand''. The agent chooses the window itself --- guided by the transcript timestamps, the
+question's temporal cues, and the gaps in explored windows --- which is precisely what
+distinguishes \emph{guided} sampling from the uniform sampling of direct-VLM baselines (\cref{sec:eval} quantifies
+this difference). The tool contract advises windows of 10--30 s; a degenerate window below 0.5 s
+falls back to a single frame.
+
+\subsubsection{$\textsc{Inspect}$: single-frame pixel reading}
+\label{subsubsec:inspect}
+
+$\textsc{Inspect}(t, q')$ answers a focused sub-question on the single frame nearest to $t$.
+Frame selection degrades in three stages: a cached frame within a 2 s tolerance is preferred;
+failing that, the frame is extracted from the video on demand; and if extraction itself fails
+(e.g. the source file is no longer accessible), the tool falls back to the temporally nearest
+cached frame regardless of tolerance, disclosing the timestamp actually used in its result.
+It exists because
+some evidence --- exact on-screen wording, small object counts --- survives neither summarisation nor
+6-frame segment captioning. Entities and relations discovered during inspection are written back
+into $L_2$ (provenance \texttt{inspector}, confidence 0.75), so pixel-level findings become retrievable
+by later questions. If the frame cannot be read or the backend is unavailable, the tool returns
+an explicit error rather than a guess (\cref{subsec:impl}).
+
+\subsection{Confidence-Driven Orchestration}
+\label{subsec:orchestration}
+
+\subsubsection{The loop}
+\label{subsubsec:loop}
+
+The orchestration policy is stated to the agent as a procedure and realised as a tool-calling LLM
+loop (\cref{alg:loop}). The agent must open with $\textsc{Search}$; it then privately rates the
+sufficiency of available evidence on a three-point scale --- 1 (insufficient), 2 (partial), 3
+(sufficient) --- and, while below 3, gathers evidence with $\textsc{Explore}$ under an instructed
+budget of at most 2 explorations per round and 3 rounds in total. The loop stops as soon as
+confidence reaches 3 or the budget is spent, and the agent must then give its best \emph{supported}
+answer --- or state what evidence is missing, rather than guess.
+
+\begin{algorithm}[t]
+\caption{Confidence-driven answering (one question).}
+\label{alg:loop}
+\begin{algorithmic}[1]
+\Require question $q$, session memory $\mathcal{M} = \langle L_0, L_1, L_2 \rangle$
+\Ensure answer $a$ grounded in $\mathcal{M}$
+\State $E \gets \textsc{Search}(q)$ \Comment{[system] mandatory first action; free}
+\For{round $r = 1..3$} \Comment{instructed budget (see \cref{subsubsec:budget})}
+    \State $\gamma \gets$ self-rate confidence of $(E,\, L_0\text{-context}) \in \{1, 2, 3\}$ \Comment{[LLM]}
+    \If{$\gamma = 3$} \State \textbf{break} \EndIf
+    \State $j \gets 0$
+    \While{$\gamma < 3$ \textbf{and} $j < 2$} \Comment{up to 2 explorations per round}
+        \State $[t_s, t_e] \gets$ choose window \Comment{[LLM] transcript cues, temporal phrases, gaps in explored windows}
+        \State $E \gets E \cup \textsc{Explore}(t_s, t_e, \mathit{focus})$ \Comment{[system] writes $L_1 + L_2$}
+        \State $\gamma \gets$ re-rate confidence on the new evidence \Comment{[LLM]}
+        \State $j \gets j + 1$
+    \EndWhile
+    \State (optional) $E \gets E \cup \textsc{Inspect}(t, q')$ \Comment{[LLM] pixel-level detail}
+\EndFor
+\State $a \gets$ answer from $E$ and $L_0$-context only \Comment{grounding rules, \cref{subsubsec:grounding}}
+\end{algorithmic}
+\vspace{3pt}
+{\footnotesize
+$\triangleright$~[system] the whole loop runs under an enforced recursion cap $\Lambda = 5K+10 = 40$.\par
+$\triangleright$~lines tagged [LLM] are model decisions instructed by the system prompt;
+lines tagged [system] are enforced by the orchestration code.\par}
+\end{algorithm}
+
+\subsubsection{Instructed budget versus enforced cap}
+\label{subsubsec:budget}
+
+The budget in \cref{alg:loop} (lines 2 and 6) is \emph{instructed}: it is part of the system prompt, and
+the model is trusted to follow it. It is not enforced by a counter in code. The \emph{enforced}
+bound is the orchestration framework's recursion limit $\Lambda = 5K + 10 = 40$ graph steps,
+where $K = 6$ is the framework-level iteration allowance carried in the configuration --- a
+quantity distinct from, and deliberately looser than, the three instructed rounds. The factor
+five is a heuristic per-round upper bound (one model call, up to two tool invocations and their
+returns) and the constant term adds headroom for the initial and final exchanges; $\Lambda$ is
+intentionally generous, because the tight constraint is meant to be the instructed budget, not
+the cap. In the runs=3 benchmark campaign (\cref{sec:eval}), no question exhausted
+$\Lambda$, and observed behaviour stayed within the instructed budget (mean 1.7 tool calls and
+3.6 frames per question); we nevertheless report the budget as instructed rather than enforced,
+because that is what the implementation guarantees.
+
+\subsubsection{Grounding rules}
+\label{subsubsec:grounding}
+
+Three rules connect confidence to \emph{evidence} rather than to the model's parametric knowledge:
+
+\begin{enumerate}
+  \item \textbf{Absence is not ``no''.} Memory covers only explored windows; failing to find a fact in
+  $\mathcal{M}$ is not evidence of its absence in $V$. Before answering ``no'', the agent must
+  explore the relevant window. This rule is the mechanism behind the hallucination-resistance
+  results of \cref{sec:eval}: fabricating an answer about unexplored content is procedurally disallowed.
+  \item \textbf{The transcript is authoritative for narration.} Questions about reasons, methods, spoken
+  content or step order are answered from ASR text with visual confirmation, not from visual
+  inference alone.
+  \item \textbf{No parametric answers.} The final answer must derive from retrieved or newly gathered
+  evidence and the $L_0$ context; if the budget expires with insufficient evidence, the agent
+  states what is missing.
+\end{enumerate}
+
+Two auxiliary window-selection heuristics are instructed alongside: a short video ($\lesssim$60 s)
+with nothing explored should be explored in full first; and duration or order comparisons require
+the complete extent of the events involved --- if a fact's interval touches the edge of an explored
+window, the window is widened before concluding.
+
+\subsubsection{Answer modes and robustness}
+\label{subsubsec:modes}
+
+The same agent runs in two answer modes: a benchmark mode constrained to short answers (single
+word or phrase; exact ``yes''/``no'') and a product mode producing 1--3 sentences with timestamps.
+Two robustness mechanisms wrap the loop. First, small open-weight models occasionally emit a
+tool call as plain text instead of a structured call; a pattern detector catches such
+``pseudo-calls'' on the final message and re-asks once with a corrective instruction. Second, VLM
+JSON output is parsed with three-level tolerance (direct parse; outermost-braces extraction;
+bracket-depth array salvage for the entity/relation lists), recovering the caption from free text
+when structure is mangled. Failures that survive all defences degrade loudly --- empty results and
+explicit error payloads --- never silently into fabricated content.
+
+\subsection{Implementation Notes}
+\label{subsec:impl}
+
+The agent is built on LangChain's \texttt{create\_agent} (LangGraph runtime; \cite{langchain2022}) with the tool
+set of \cref{tab:tools}; the backbone LLM is Qwen (the DashScope \texttt{qwen-plus-latest} alias in all
+reported experiments; a local vLLM backend is interface-compatible), and the VLM is
+\texttt{qwen-vl-plus}, with images resized to a 1280 px longest edge. Both are hosted models behind
+rolling aliases that cannot be pinned to a fixed snapshot; all experiments were run within a
+single access window (June--July 2026), and this limitation is revisited among the threats to
+validity in \cref{sec:eval}. All durable state lives in the \texttt{VideoSession} --- the LangGraph message list
+is not reused across questions; each question starts a fresh conversation whose only continuity
+is the session memory itself. This externalisation keeps prompt length constant in the number of
+questions, makes memory growth explicit (only $\textsc{Explore}$/$\textsc{Inspect}$ write), and
+gives multi-turn reuse for free: consecutive questions about neighbouring content typically
+resolve at $\textsc{Search}$ time with zero perception cost.
+
+Reliability follows a \emph{fail-loud} contract used throughout: mock/offline paths are visually
+labelled and never fabricate domain data; real-path failures return explicit error markers
+(degrading, e.g., to a missing summary or an empty transcript) instead of synthetic evidence that
+could contaminate answers or evaluation. All token and call counts reported in \cref{sec:eval} come from a
+thread-safe usage ledger recording the API-reported usage of every call --- no estimates. VLM calls
+carry six retries with a 90 s timeout; the ASR transcript is disk-cached per video and reused
+across runs and sessions.
+
+\Cref{tab:constants} consolidates every constant used in this chapter, with its provenance: \emph{hard-coded}
+(fixed in source), \emph{config default} (exposed in the layered configuration but left at its
+default), or \emph{prompt-instructed} (stated to the model, not enforced in code). All values were
+frozen before the evaluation campaign reported in \cref{sec:eval}; none were tuned against the benchmark
+after that point.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Constants and hyperparameters (verified against the implementation).}
+  \label{tab:constants}
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{@{}p{0.43\linewidth}p{0.29\linewidth}p{0.17\linewidth}@{}}
+    \toprule
+    Constant & Value & Provenance \\
+    \midrule
+    $L_0$ summary frames & 8, uniform & hard-coded \\
+    ASR model & faster-whisper \emph{small}, int8, VAD & hard-coded \\
+    Transcript context budget & 12,000 chars (60\% head / 40\% tail) & hard-coded \\
+    $\textsc{Explore}$ frames per window & $\leq 6$, uniform & hard-coded \\
+    Exploration budget & $\leq 2$ per round, $\leq 3$ rounds & prompt-instructed \\
+    $\textsc{Inspect}$ frame tolerance & 2.0 s & config default \\
+    $\textsc{Inspect}$ write-back confidence & 0.75 & config default \\
+    Relation vocabulary & 50 verbs / 9 groups & hard-coded \\
+    \texttt{[Known entities]} prompt block & $\leq 20$ entities & hard-coded \\
+    Cross-batch name alignment & difflib ratio $\geq 0.85$, same type & hard-coded\textsuperscript{1} \\
+    Temporal merge gap & $\leq 3.0$ s & config default \\
+    Edge confidence filter & $\geq 0.75$ & config default \\
+    $\textsc{Search}$ weights $w$ & 2.0 / 1.5 / 0.5 / 0.3 & hard-coded \\
+    $\textsc{Search}$ top-$k$ ($L_2$/$L_1$/$L_0$) & 5 / 3 / 4 & hard-coded \\
+    $\textsc{Search}$ minimum scores & 0.3 (triplets); 0.15 (captions, transcript) & hard-coded \\
+    Provenance pull-back score & 1.0 & hard-coded \\
+    Time-phrase filters & first/last 20\%; $\pm 3$ s ($\pm 5$ s for minutes) & hard-coded \\
+    Iteration allowance $K$ / cap $\Lambda$ & 6 / 40 (= 5K+10) & config default / derived \\
+    VLM retries / timeout & 6 / 90 s & hard-coded \\
+    Image longest edge & 1280 px & config default \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2pt}
+  {\footnotesize \textsuperscript{1} A \texttt{dedup\_threshold: 0.9} field exists in the configuration but is reserved for a future
+  embedding-based deduplication and is not wired to this path; the operative value is 0.85.}
+\end{table}

@@ -180,7 +180,7 @@ GPU 机器（单卡 RTX 4090, 24GB VRAM）— 接口就绪, 未实跑（无 GPU,
 └── vLLM server (port 8001) → Qwen2.5-VL-7B-AWQ (VLM)
 
 CPU 机器（开发 / macOS）
-└── DashScope API (qwen-plus-latest + qwen-vl-plus-latest)
+└── DashScope API (qwen-plus-latest + qwen-vl-plus — VL 的 -latest 别名该账号无权限, 见 configs/default.yaml)
 
 配置切换：BACKEND=vllm | BACKEND=dashscope
 ```

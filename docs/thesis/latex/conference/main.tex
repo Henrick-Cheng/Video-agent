@@ -1,0 +1,74 @@
+% =====================================================================
+% CVPR 2026 --- main file (CONFERENCE version).
+%
+% Structure follows the OFFICIAL author kit (github.com/cvpr-org/author-kit,
+% tag CVPR2026-v1(latex)); cvpr.sty and ieeenat_fullname.bst in this folder are
+% the unmodified official files from that release. Extra packages this paper
+% needs live in preamble.tex, below the "PAPER-SPECIFIC" rule.
+%
+% Local build:   latexmk -pdf main.tex      (see ../Makefile)
+% Overleaf:      upload this whole folder; compiler = pdfLaTeX.
+% =====================================================================
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE - PLEASE UPDATE FOR FINAL VERSION
+% \usepackage{cvpr}              % CAMERA-READY
+\usepackage[review]{cvpr}        % REVIEW version (adds line numbers)
+% \usepackage[pagenumbers]{cvpr} % force page numbers, e.g. for an arXiv version
+
+% Import additional packages in the preamble file, before hyperref
+\input{preamble}
+
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+
+% cvpr.sty loads cleveref itself via \AtEndPreamble (it must come after
+% hyperref). This hook is registered later, so it runs after cleveref exists.
+\AtEndPreamble{%
+  \crefname{algorithm}{Alg.}{Algs.}%
+  \Crefname{algorithm}{Algorithm}{Algorithms}%
+}
+
+%%%%%%%%% PAPER ID - PLEASE UPDATE
+\def\paperID{*****} % *** Enter the Paper ID here
+\def\confName{CVPR}
+\def\confYear{2026}
+
+\title{Scene Graphs as Evidence Indexes: Lazy Memory and Confidence-Driven
+       LLM Agents for Long-Video Question Answering}
+
+\author{Anonymous \confName~submission\\
+Paper ID \paperID
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% TODO: abstract
+\end{abstract}
+
+%%%%%%%%% BODY %%%%%%%%%
+% Earlier sections are stubs for now. The Method section cross-references one
+% label that must be defined once you write that section:
+%   \label{sec:diagnosis}  -> the Ch.3 "baseline & diagnosis" material
+% Until it exists, \cref to it renders as "??" (a normal LaTeX placeholder).
+
+% \input{sec/intro}
+% \input{sec/related}      % put \section{...}\label{sec:diagnosis} here
+\input{sec/method}
+\input{sec/experiments}    % defines \label{sec:eval}
+% \input{sec/conclusion}
+
+%%%%%%%%% REFERENCES %%%%%%%%%
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{refs}     % <- refs.bib (the stock kit says "main"; we renamed)
+}
+
+% WARNING: delete the supplementary pages from the main submission
+% \input{sec/X_suppl}
+
+\end{document}

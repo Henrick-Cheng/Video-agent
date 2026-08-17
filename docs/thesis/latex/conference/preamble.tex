@@ -1,0 +1,97 @@
+%% Official CVPR 2026 author-kit preamble (CVPR2026-v1), plus the extra packages
+%% this paper needs. Everything above the "PAPER-SPECIFIC" rule is the stock kit
+%% content, left untouched so it stays easy to diff against a future kit release.
+%%
+%% This file contains a number of tweaks that are typically applied to the main document.
+%% They are not enabled by default, but can be enabled by uncommenting the relevant lines.
+
+%%
+%% Inline annotations; for predefined colors, refer to "dvipsnames" in the xcolor package:
+%% https://tinyurl.com/overleaf-colors
+%%
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\todo}[1]{{\color{red}#1}}
+\newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+%%
+%% disable for camera ready / submission by uncommenting these lines
+%%
+% \renewcommand{\TODO}[1]{}
+% \renewcommand{\todo}[1]{#1}
+
+%%
+%% work harder in optimizing text layout. Typically shrinks text by 1/6 of page, enable
+%% it at the very end of the writing process, when you are just above the page limit
+%%
+% \usepackage{microtype}
+
+%%
+%% fine-tune paragraph spacing
+%%
+% \renewcommand{\paragraph}[1]{\vspace{.5em}\noindent\textbf{#1.}}
+
+%%
+%% globally adjusts space between figure and caption
+%%
+% \setlength{\abovecaptionskip}{.5em}
+
+
+%%
+%% Allows "the use of \paper to refer to the project name"
+%% with automatic management of space at the end of the word
+%%
+% \usepackage{xspace}
+% \newcommand{\paper}{ProjectName\xspace}
+
+%%
+%% Commonly used math definitions
+%%
+% \DeclareMathOperator*{\argmin}{arg\,min}
+% \DeclareMathOperator*{\argmax}{arg\,max}
+
+%%
+%% Tigthen underline
+%%
+% \usepackage{soul}
+% \setuldepth{foobar}
+
+% =====================================================================
+% PAPER-SPECIFIC ADDITIONS (not part of the stock author kit)
+% =====================================================================
+% cvpr.sty already provides: times, xspace, xcolor, graphicx, amsmath, amssymb,
+% booktabs, natbib, caption/subcaption, enumitem, and it loads cleveref itself
+% via \AtEndPreamble (i.e. after hyperref). Only the following are missing.
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Figures are pre-converted PDFs, so the svg package is NOT needed. Uncomment it
+% only if you switch a figure back to \includesvg[inkscapelatex=false]{...}.
+% \usepackage{svg}
+
+% ---------------------------------------------------------------------
+% Review line numbers: keep them out of the text.
+%
+% cvpr.sty loads lineno with [switch], which picks the side from "am I in the
+% first or second column?". In a two-column document with full-width floats
+% that test is unreliable: here it came out inverted, so BOTH columns' numbers
+% were set into the 22pt gutter. With the stock \linenumbersep of .75cm (21pt)
+% plus a 13pt-wide three-digit number, each one then ran into the neighbouring
+% column's text (~500 collisions over 9 pages).
+%
+%   \switchlinenumbers*  -- flip the side test back, so numbers land in the
+%                           OUTER page margins (left column -> left margin,
+%                           right column -> right margin).
+%   \linenumbersep 8pt   -- belt and braces: small enough that a number still
+%                           fits inside the gutter on any page where lineno
+%                           guesses "inner" anyway (page 1, whose column sense
+%                           is thrown off by \twocolumn[\maketitle]).
+%
+% This is a deviation from the stock author kit; it changes only where the
+% numbers sit, never the numbering itself. Guarded so the camera-ready build
+% (no [review] option => no lineno) is unaffected.
+% ---------------------------------------------------------------------
+\makeatletter
+\@ifpackageloaded{lineno}{%
+  \switchlinenumbers*%
+  \setlength{\linenumbersep}{8pt}%
+}{}
+\makeatother

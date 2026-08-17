@@ -1,0 +1,223 @@
+% !TEX root = ../main.tex
+% =====================================================================
+% Experiments section --- CONFERENCE (CVPR) version, written per
+% docs/reviews/paper_outline_cvpr.md §3 (compact, contribution-driven).
+% Same canonical numbers and honesty rules as the dissertation Ch.5
+% (dissertation/sec/evaluation.tex); prose is genre-adapted, NOT identical.
+% Sources: project_review_202607.md §1.4, benchmark_mmbv_final_analysis.md,
+% benchmark_mmbv_final_gpt4judge.md (+_official_agg), dense 16f/32f reports,
+% benchmark_v2_agqa.md, progress.md §14.1/14.2/16.1/16.2.
+% Judge discipline: paper-level & dimension-level = gpt-4-turbo; runs=3 ±std
+% noise argument = qwen-max; duration/attribution derived from qwen-max raw.
+% AGQA + annotation audit: short paragraphs here, tables in supplementary.
+% =====================================================================
+
+\section{Experiments}
+\label{sec:eval}
+
+\subsection{Setup}
+\label{subsec:exp-setup}
+
+\textbf{Benchmark and protocol.} We evaluate on a 150-question stratified subset
+(seed 42; 136 videos) of MMBench-Video~\cite{fang2024mmbenchvideo}, oversampling
+the Temporal Reasoning (TR) and Hallucination (HL) dimensions; scores are therefore
+\emph{not comparable to the public leaderboard} (re-weighting by the official
+distribution moves totals by $\leq 0.04$). We replicate the official
+VLMEvalKit~\cite{duan2024vlmevalkit} judging protocol (0--3 LLM judge, official
+multi-label dimension aggregation) under two judges: \texttt{qwen-max} as-run and
+a full \texttt{gpt-4-turbo}~\cite{openai2023gpt4} re-judge (1{,}350 judgements).
+Unless noted, dimension-level numbers use gpt-4-turbo; the two settings agree
+within 0.015 on all totals (per-question agreement 0.76--0.81). Duration and
+attribution analyses derive from qwen-max raw scores.
+
+\textbf{Systems.} All systems share the same LLM
+(\texttt{qwen-plus-latest}~\cite{bai2023qwen}) and VLM
+(\texttt{qwen-vl-plus}~\cite{bai2023qwenvl}): our agent;
+\textbf{vlm\_direct@8} (8 uniform frames); \textbf{vlm\_transcript@8}, the
+\emph{fair baseline} that additionally receives the full ASR transcript, holding
+modalities equal to the agent's; and the v1 scene-graph pipeline
+(\cref{sec:diagnosis}). Main systems are run 3 times (mean$\pm$std); all token,
+call, and frame counts are API-reported, never estimated.
+
+\subsection{Main Results and Attribution}
+\label{subsec:exp-main}
+
+\begin{table}[t]
+  \centering
+  \footnotesize
+  \caption{Overall results (0--3, mean$\pm$std over 3 runs) and per-question cost.
+  v1: legacy scene-graph pipeline, single run.}
+  \label{tab:main}
+  \setlength{\tabcolsep}{2pt}
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    Method & gpt-4-turbo & qwen-max & Frames/Q & Tokens/Q \\
+    \midrule
+    \textbf{agent (ours)} & $\mathbf{1.978{\pm}0.097}$ & $\mathbf{1.984{\pm}0.101}$ & \textbf{3.6} & 16{,}655 \\
+    vlm\_transcript@8 & $1.713{\pm}0.019$ & $1.727{\pm}0.020$ & 8.0 & 7{,}299 \\
+    vlm\_direct@8 & $1.491{\pm}0.019$ & $1.478{\pm}0.025$ & 8.0 & 6{,}748 \\
+    v1 pipeline & --- & 1.193 & --- & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\Cref{tab:main}: the agent leads the fair baseline by 0.265 (gpt-4-turbo; 0.257
+under qwen-max), and the reversal survives run noise --- the qwen-max gap exceeds
+the sum of both standard deviations ($0.257 > 0.101 + 0.020$). The agent's larger
+variance reflects exploration-path randomness across runs. v1's 1.193 --- below
+even the direct baseline --- shows that a scene graph used as \emph{answer source}
+is a liability; the gain comes from using it as an index
+(\cref{subsubsec:provenance}).
+
+\textbf{Attribution.} The fair baseline splits the total gain cleanly in two
+(qwen-max): adding the ASR modality to the direct baseline is worth $+0.249$
+($1.478 \to 1.727$); the architecture --- lazy evidence memory, provenance
+pull-back, confidence-driven exploration --- adds $+0.257$ on top
+($1.727 \to 1.984$; $+0.265$ under gpt-4-turbo) with modalities held fixed. The
+agent does not win merely by hearing the narration.
+
+\subsection{Analysis}
+\label{subsec:exp-analysis}
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Per-dimension results, MMBench-Video Table-3 layout (gpt-4-turbo judge,
+  official multi-label aggregation, 0--3). Full tables with std for both judges in
+  the supplementary material.}
+  \label{tab:dimensions}
+  \begin{tabular}{@{}lcccccccccccc@{}}
+    \toprule
+    Model & Overall & CP & FP-S & FP-C & HL & \emph{P. Mean} & LR & AR & RR & CSR & TR & \emph{R. Mean} \\
+    \midrule
+    agent (ours) & \textbf{1.98} & \textbf{2.18} & \textbf{2.08} & \textbf{1.47} & \textbf{2.29} & \textbf{2.04} & \textbf{2.18} & 2.07 & 2.07 & 2.21 & 1.74 & 1.98 \\
+    vlm\_transcript & 1.71 & 1.78 & 1.81 & 0.90 & 0.78 & 1.42 & 1.73 & \textbf{2.50} & \textbf{2.12} & \textbf{2.28} & \textbf{1.87} & \textbf{2.07} \\
+    vlm\_direct & 1.49 & 1.53 & 1.64 & 0.77 & 0.64 & 1.28 & 1.39 & 2.21 & 1.81 & 2.26 & 1.52 & 1.79 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Overall by video duration (qwen-max raw scores, runs=3 means).}
+  \label{tab:duration}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Duration & agent & vlm\_transcript & vlm\_direct \\
+    \midrule
+    $<$90\,s \hfill ($n{=}52$) & 1.81 & 1.76 & 1.57 \\
+    90--180\,s \hfill ($n{=}50$) & \textbf{2.10} & 1.55 & 1.34 \\
+    $>$180\,s \hfill ($n{=}48$) & \textbf{2.05} & 1.87 & 1.52 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Where the gain lives.} By duration (\cref{tab:duration}), the agent and
+the fair baseline are on par below 90\,s (1.81 vs.\ 1.76) and separate sharply
+beyond it (2.10 vs.\ 1.55 at 90--180\,s; 2.05 vs.\ 1.87 above 180\,s): uniform
+sampling dilutes with length, guided sampling does not. By dimension
+(\cref{tab:dimensions}), the win is a \emph{perception} win (P.\ Mean 2.04 vs.\
+1.42) while reasoning stays near parity (1.98 vs.\ 2.07) --- all systems share
+one LLM, so the architecture buys seeing accurately, not thinking harder.
+Hallucination resistance is the standout: HL 2.29 vs.\ 0.78
+($\approx$2.9$\times$; 2.42 vs.\ 1.04 under qwen-max), which we attribute to the
+grounding rule that forbids answering ``no'' about unexplored content
+(\cref{subsubsec:grounding}). We disclose the one losing dimension: TR (1.74 vs.\
+1.87). The baseline's own TR jump with ASR (1.52 $\to$ 1.87) shows the temporal
+signal is largely \emph{modality}-carried, which is why we claim evidence
+localization and integration, not improved temporal reasoning.
+
+\textbf{Qualitative example.} Asked \emph{``Did NIO rank the 20th place in the
+chart?''} (HL item mmbv-1185), free retrieval finds a company list without NIO; instead
+of answering ``no'' directly, the agent explores 120--150\,s and then 60--120\,s
+(12 frames total), verifies that chart blocks carry explicit rank numbers, reasons
+that the explored range must contain rank \#20, and only then answers ``no'' with
+the evidence trail --- a negative claim earned by targeted perception (full trace
+in the supplementary material).
+
+\subsection{Frame Scaling}
+\label{subsec:exp-scaling}
+
+Can the baselines catch up by simply looking at more frames? We densify both
+baselines to 16 and 32 uniform frames (single run, both judges).
+Three questions are excluded from \emph{all} conditions (common-147): dense
+sampling deterministically triggers the hosting provider's content moderation
+(errors grow 0/1/3 at 8/16/32 frames, 100\% reproducible; the agent and 8f
+baselines are unaffected), so keeping them would credit the agent for
+infrastructure failures.\footnote{The full-150 accounting, which scores the blocked
+items as 0 and thus \emph{underestimates} the dense baselines, is in the
+supplementary material; conclusions are unchanged.}
+
+\begin{figure}[t]
+  \centering
+  % Figure is a PDF pre-converted from fig/frame_scaling.svg (rsvg-convert -f pdf).
+  % Using the PDF avoids invoking Inkscape on every compile: much faster on
+  % Overleaf, and it works in any TeX install without shell-escape.
+  % SVG fallback: keep \usepackage{svg} and swap this line back to
+  %   \includesvg[inkscapelatex=false,width=\linewidth]{fig/frame_scaling}
+  \includegraphics[width=\linewidth]{fig/frame_scaling}
+  \caption{Frame-accuracy scaling (common-147, trial-1): dense uniform sampling
+  never overtakes guided sampling under either judge.}
+  \label{fig:framescaling}
+\end{figure}
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Frame-scaling (0--3, common-147, trial-1). agent = its
+  $\sim$3.6-frame operating point; $\Delta$32f = gap remaining at 32 frames.}
+  \label{tab:framescaling}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}lccccc@{}}
+    \toprule
+    Method (judge) & 8f & 16f & 32f & agent & $\Delta$32f \\
+    \midrule
+    direct (qwen) & 1.442 & 1.497 & 1.680 & \textbf{2.109} & $-0.429$ \\
+    transcript (qwen) & 1.735 & 1.660 & 1.823 & \textbf{2.109} & $-0.286$ \\
+    direct (gpt-4-t) & 1.510 & 1.707 & 1.857 & \textbf{2.088} & $-0.231$ \\
+    transcript (gpt-4-t) & 1.694 & 1.871 & 1.932 & \textbf{2.088} & $-0.156$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\Cref{fig:framescaling,tab:framescaling}: vlm\_direct gains only $+0.12$--$0.17$
+per frame doubling and at 32f still trails by 0.23--0.43; log-linear extrapolation
+puts break-even at $\sim$81 (gpt-4-turbo) to $\sim$389 (qwen-max) frames ---
+\textbf{22--108$\times$ the agent's frame budget}. The transcript baseline at 32f
+reaches the agent's noise band only under the more lenient gpt-4-turbo judge
+(1.932 vs.\ 1.957, gap 0.025) --- at the price of the full narration modality plus
+$\sim$9$\times$ the frames, and still 0.29 behind under the stricter judge. Dense
+sampling thus sits on a strictly worse cost--accuracy frontier, and grows more
+fragile with density (the moderation failure above).
+
+\subsection{Negative Results and Limitations}
+\label{subsec:exp-limits}
+
+\textbf{Falsified alternatives.} (i)~\emph{Oracle routing}: zero-exploration
+questions score higher than escalated ones (2.259 vs.\ 1.551, single-run
+diagnostic), suggesting a router that skips exploration per dimension. Routing on
+\emph{gold} labels --- an upper bound for any learned router --- drops the total
+from 1.933 to 1.733 and hurts every routed dimension (TR $-0.37$, FP-C $-0.27$,
+LR $-0.40$; matched questions: 2 improved, 13 worsened): the correlation is
+selection bias (easy questions do not trigger exploration), and the direction is
+closed. (ii)~\emph{Deeper evidence}: raising the per-window frame cap ($6 \to 9$)
+with a restructured caption prompt recovered 0 of 4 targeted failures --- the
+residual gap is model capability, not evidence depth. The dominant remaining
+failure class is localization on videos over 200\,s.
+
+\textbf{Transfer and annotation quality.} On a 70-question English AGQA
+subset~\cite{grundemclaughlin2021agqa} (single run), the agent's profile
+transfers: overall 0.436 (LLM-judge), strongest on duration questions (0.682),
+weak on open-vocabulary naming (0.190) and sequencing (0.286); per-category tables and an
+analysis of exact-match scoring artefacts are in the supplementary material. An
+audit of 30 sampled gold answers found 97\% fully evidence-supported (score
+ceiling $\approx$0.98), so the remaining headroom reflects capability, not label
+noise (audit protocol and its LLM-proxy caveat in the supplementary material).
+
+\textbf{Limitations.} Results rest on one benchmark subset (not
+leaderboard-comparable; composition effect $\leq 0.04$); judge self-preference is
+refuted by the cross-judge agreement above; the agent costs $\approx$2.1$\times$
+the baseline's tokens and $\approx$6$\times$ its latency --- the contribution is
+frame efficiency and long-video accuracy, not cost; backbone models are hosted
+behind rolling aliases (all runs within June--July 2026).

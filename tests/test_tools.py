@@ -162,15 +162,19 @@ def test_inspect_back_propagates_entities(session: VideoSession, mock_mode) -> N
     assert len(session.scene_graph) > graph_size_before  # back-propagation
 
 
-def test_inspect_frame_fallback(session: VideoSession, mock_mode) -> None:
-    # register a frame at ts=50, request ts=30 with tight tolerance
-    session.register_frames([FrameMeta("f50", timestamp=50.0, extracted=True)])
+def test_inspect_frame_fallback_uses_nearest(session: VideoSession, mock_mode) -> None:
+    # No frame within tolerance of ts=40 and the video file doesn't exist, so
+    # on-demand extraction fails → degraded fallback must pick the temporally
+    # NEAREST cached frame (f50, not f5) and disclose it via timestamp_used.
+    session.register_frames([
+        FrameMeta("f5", timestamp=5.0, extracted=True),
+        FrameMeta("f50", timestamp=50.0, extracted=True),
+    ])
 
     tool = make_inspect_frame(session)
-    # tolerance in mock is 5s, so ts=30 → 50 is 20s away → should fall back
-    result = json.loads(tool.invoke({"timestamp": 30.0, "question": "What is here?"}))
-    # mock falls back to any available frame
-    assert result["frame_id"] is not None
+    result = json.loads(tool.invoke({"timestamp": 40.0, "question": "What is here?"}))
+    assert result["frame_id"] == "f50"
+    assert result["timestamp_used"] == pytest.approx(50.0, abs=0.1)
 
 
 def test_inspect_mock_is_honest(session: VideoSession, mock_mode) -> None:

@@ -1190,3 +1190,13 @@ OPENAI_API_KEY 到位，`rejudge_gpt4` 对缓存答案全量重判（1350 次，
 - **结论——无交叉，改写为成本-精度前沿**：`vlm_direct`（纯密集帧）任一判分下都没追平，32 帧仍低 0.23–0.43，log-线性外推需 **~81（gpt-4-turbo）～389（qwen-max）帧**追平 agent 的 3.6 帧（22×–108× 帧预算）。唯一接近的是 `vlm_transcript`（密集帧+全量旁白）在宽松 gpt-4-turbo 下 32 帧落进 agent 3-run 噪声带（1.932 vs 1.957，gap 0.025）——但需同时吃满旁白 + ~10× 帧、且只在宽松 judge 成立（严 judge 仍差 0.29）。**agent 在 ~3.6 帧即达同一水平**。
 - **报错根因（推翻交接假设）**：dense 的 `[ERROR]` 全为 **DashScope 内容审核 400**（"inappropriate content"），**非能力失败、非帧数/token 上限、非解码错误**。报错随帧数单调升（8f=0→16f=1→32f=3）：帧越密越易触审核。3 题（0131/0679/1185）经 16f/32f 确认性重跑 **100% 复现**（确定性均匀采样→同样的帧），**重试无效**；8 帧/agent 对这三题零报错。这是"喂更多帧"的一个隐藏副作用，如实披露并统一剔除。
 - **背书**：`pytest -q` 全绿（70 passed / 12 skipped），含 `test_mmbv_aggregation::test_overall_all_equals_legacy_flat_mean`（Overall(all)≡旧 flat mean）为聚合口径背书。文档同步：`benchmark_mmbv_final_analysis.md` 增 Frame-scaling 节 + 附录 A；`project_review_202607.md` §4.2 增 Q7+（数据版反驳）。
+
+---
+
+## 第十七阶段：论文写作启动 —— 大纲 + Ch.4 英文初稿（2026-07-18）
+
+- **docs/ 索引重组**：按用途四分类（`results/` 评测产物 / `analysis/` 现行分析 / `reviews/` 审核规划 / `thesis/` 论文章节），历史产物归 `archive/`；`docs/README.md` 全量索引重写。
+- **论文大纲定稿**：`reviews/thesis_outline.md` —— 六章骨架（NTU EEE MSc，英文）+ 材料映射表（各章取数源）+ 写作顺序（先图后文、Ch.5 先写）+ 避坑纪律（主张口径统一 evidence localization & integration、不可比性主动声明、禁写已撤回结论）。
+- **Ch.4 Method 完整英文初稿**：`thesis/ch4_method.md`（问题形式化 M=⟨L0,L1,L2⟩ / Table 4.1 工具契约 / Table 4.2 三层总览 / Algorithm 4.1 / 4.4.2 instructed-vs-enforced 预算二分）；中文写作注以 HTML 注释内嵌，定稿零成本剥离。**全部常数经源码逐一核对**（文末速查表：dedup 0.85 非 config 预留的 0.9、VL=qwen-vl-plus 非 -latest、L0=8 帧硬编码等）。配图 `thesis/fig/ch4_architecture.svg`（Fig 4.1 论文候选正式图）。
+- **文档审计修正**（本日全量核对现行文档 vs 源码/结果数据）：清掉两处漏改的 "3.1 帧" 残留（final_analysis 披露节、thesis_outline 贡献条）；review 中 4 处 "60 个离线测试" 更新为实测 70；architecture.md 部署节 VL 模型名改回 qwen-vl-plus（与 configs 一致）。其余文档（含 ch4 常数表、跨文档权威数字）核对无误。
+- **Ch.4 学术性修订轮**（同日，第二次逐段代码复核）：事实修正 5 处——关系闭集 9 组非 10、L0 前缀重算粒度 per-question 非 per-turn、时长范围 ~20s–6min（实测 19–354s）非 30s 起、合并后全边过 conf≥0.75 的精确语义、inspect 三级帧降级链如实成文；严谨性升级——检索打分公式化（score/cov 与 retriever.py 逐字对应）、Algorithm 4.1 行级 [LLM]/[system] 标注 + while 语义、Λ=5K+10 推导防御（K 是框架层配额非指令轮数）、滚动模型别名可复现性声明（accessed 2026-06/07）、引用占位（Whisper/ReAct/WordNet/NLTK/LangChain，作者-年份 + 文末 BibTeX 键）、常数速查表升格为 Table 4.3（值 + 出处三分类，标注 config 预留 0.9 未接线）。**配套代码修复**：`frame_inspector` 提取失败的回退从"任意缓存帧"改为**时间最近缓存帧**（benchmark 不可达的边缘路径，行为中立），guard 测试收紧为最近帧断言；全量 70 passed / 12 skipped。

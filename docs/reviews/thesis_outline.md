@@ -17,7 +17,7 @@
   - RQ1：场景图作为「证据的时序索引」（而非答案来源）能否让 agent 反超直接看帧的 VLM？
   - RQ2：按需建图（lazy）相对全量预建，在成本与精度上各带来什么？
   - RQ3：增益来自多模态（ASR）还是架构本身？（归因协议）
-- 1.4 Contributions（三条，对应 review §2.1）：①图的角色重定位 + lazy 逐题建图；②置信度驱动的感知预算分配（3.1 vs 8 帧）；③模态/架构归因评测协议 + 负结果留档。
+- 1.4 Contributions（三条，对应 review §2.1）：①图的角色重定位 + lazy 逐题建图；②置信度驱动的感知预算分配（3.6 vs 8 帧）；③模态/架构归因评测协议 + 负结果留档。
 - 1.5 Organization。
 
 ### Ch.2 Background & Related Work（~15%）
@@ -44,7 +44,7 @@
 - 4.3 Memory interface（**Table 4.1** 工具契约）：search_memory 评分权重 2.0/1.5/0.5/0.3、top-k 5/3/4、时间约束 first/last 20%；explore_segment；inspect_frame 回写（σ=inspector, conf 0.75）。
 - 4.4 Confidence-driven orchestration（**Algorithm 4.1**）：自评 1-3；⚠️ **写作红线——预算措辞**：「≤2/轮、≤3 轮」是 prompt 指令性约束（instructed），代码唯一硬上限是 recursion_limit=5K+10=40（K=6）——正文必须用 instructed/enforced 二分，不可写 enforced budget（runs=3 实测均值 1.7 calls/3.6 帧可引为"实际被遵守"的证据）；grounding rules 三条（absence≠no —— HL 2.3× 的机制来源，此处先讲设计、Ch.5 给数）；short/verbose 双模式；pseudo-call 防护 + 三级 JSON 容错。
 - 4.5 Implementation notes（半页到一页）：`create_agent`（LangGraph）、记忆外置 session（messages 跨问不复用、session 持久）、fail-loud 契约、真实计费账本——展开放 Appendix。
-- ⚠️ 常数一律以 `docs/thesis/ch4_method.md` 文末注释的速查表为准（源码逐一核对过）：L0=8 帧（硬编码）、explore≤6 帧、dedup 0.85（非 config 预留的 0.9）、VLM=qwen-vl-plus（非 -latest）。
+- ⚠️ 常数一律以 `docs/thesis/ch4_method.md` 正文 **Table 4.3**（含出处列：hard-coded / config default / prompt-instructed）为准（源码逐一核对过）：L0=8 帧（硬编码）、explore≤6 帧、dedup 0.85（非 config 预留的 0.9）、VLM=qwen-vl-plus（非 -latest）、关系闭集 50 词/9 组。
 
 ### Ch.5 Evaluation（~30%，全文重心）
 - 5.1 Setup：MMBench-Video 150 题分层子集（seed=42，**如实声明与公开榜不可直接比**）；VLMEvalKit 0–3 judge 复刻；runs=3；真实 usage 口径；基线三件套（vlm_direct / **vlm_transcript 公平基线** / v1）。
